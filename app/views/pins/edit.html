@@ -1,0 +1,24 @@
+{% extends "layouts.base" %}
+
+{% block crumbs %}
+<li><a href="/pins/{{ pin.id }}/edit">Pin ({{ pin.title | truncate(255) }})</a></li>
+{% endblock %}
+
+{% block content %}
+<form method="POST" action="/pins/{{ pin.id }}" class="record">
+	<input type="text" name="_method" value="PUT" hidden>
+
+	<div class="record-field">
+		<label for="name">URL</label>
+		<input type="text" name="url" value="{{ pin.url }}" required>
+	</div>
+	<div class="record-field">
+		<label for="title">Title</label>
+		<input type="text" name="title" value="{{ pin.title }}" required>
+	</div>
+
+	<div class="record-actions">
+		<button type="submit">Save</button>
+	</div>
+</form>
+{% endblock %}

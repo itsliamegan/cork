@@ -1,0 +1,22 @@
+{% extends "layouts.base" %}
+
+{% block crumbs %}
+<li><a href="/pins/new">New Pin</a></li>
+{% endblock %}
+
+{% block content %}
+<form method="POST" action="/pins/" class="record">
+	<div class="record-field">
+		<label for="name">URL</label>
+		<input type="text" name="url" required>
+	</div>
+	<div class="record-field">
+		<label for="title">Title</label>
+		<input type="text" name="title" required>
+	</div>
+
+	<div class="record-actions">
+		<button type="submit">Save</button>
+	</div>
+</form>
+{% endblock %}

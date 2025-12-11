@@ -1,0 +1,49 @@
+{% extends "layouts.base" %}
+
+{% block content %}
+<section>
+	<ol class="pin-list">
+	{% for pin in inbox %}
+		<li>
+			<article class="pin">
+				<div class="pin-details">
+					<a href="{{ pin.url }}" class="pin-title">{{ pin.title }}</a>
+					<p class="pin-timestamp">{{ pin.created_at | elapsed }}</p>
+				</div>
+				<div class="pin-actions">
+					<a href="/pins/{{ pin.id }}/edit">Edit</a>
+					<form method="POST" action="/pins/{{ pin.id }}/hide">
+						<button type="submit" class="btn">Hide</button>
+					</form>
+				</div>
+			</article>
+		</li>
+	{% endfor %}
+	</ol>
+</section>
+
+<details>
+	<summary>
+		<h2>Hidden</h2>
+	</summary>
+	<ol class="pin-list">
+	{% for pin in hidden %}
+		<li>
+			<article class="pin">
+				<div class="pin-details">
+					<a href="{{ pin.url }}" class="pin-title">{{ pin.title }}</a>
+					<p class="pin-timestamp">{{ pin.created_at | elapsed }}</p>
+				</div>
+				<div class="pin-actions">
+					<a href="/pins/{{ pin.id }}/edit">Edit</a>
+					<form method="POST" action="/pins/{{ pin.id }}/hide">
+						<input type="text" name="_method" value="DELETE" hidden>
+						<button type="submit" class="btn">Show</button>
+					</form>
+				</div>
+			</article>
+		</li>
+	{% endfor %}
+	</ol>
+</details>
+{% endblock %}

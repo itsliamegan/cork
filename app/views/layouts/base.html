@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width,initial-scale=1">
+
+		<title>Board</title>
+
+		<style>
+			* {
+				box-sizing: border-box;
+			}
+
+			body,
+			h1, h2, h3, h4,
+			p,
+			ul, ol,
+			figure,
+			blockquote,
+			pre {
+				margin: 0;
+				padding: 0;
+			}
+
+			ul, ol {
+				list-style: none;
+			}
+
+			h1, h2, h3, h4 {
+				font-size: 1rem;
+				font-weight: normal;
+			}
+
+			input, button {
+				font-size: inherit;
+			}
+		</style>
+
+		<style>
+			body {
+				font-family: "Helvetica Neue", sans-serif;
+			}
+
+			body > * + * {
+				margin-top: 0.75em;
+			}
+
+			h1 {
+				font-size: 1.125rem;
+				font-weight: bold;
+			}
+
+			body > header {
+				display: flex;
+				padding: 0.5em 0;
+				border-bottom: 0.1em solid #000000;
+			}
+
+			body > header, main {
+				width: 70ch;
+				margin-left: auto;
+				margin-right: auto;
+			}
+
+			body > header > .crumbs ol {
+				display: flex;
+				align-items: center;
+			}
+
+			body > header > .crumbs li:not(:first-child) {
+				margin-left: 0.375em;
+			}
+
+			body > header > .crumbs li:not(:first-child)::before {
+				content: "/";
+				margin-right: 0.375em;
+			}
+
+			body > header > .crumbs a {
+				text-decoration: none;
+			}
+
+			body > header > .crumbs a:hover {
+				text-decoration: underline;
+			}
+
+			*:focus-visible {
+				outline: 0.1em solid #0031a9;
+			}
+
+			summary {
+				cursor: pointer;
+				user-select: none;
+			}
+
+			summary > * {
+				display: inline-block;
+			}
+
+			form label {
+			}
+
+			form input {
+				padding: 0.25em;
+
+				border: 0.075em solid #000000;
+				border-radius: none;
+			}
+
+			a {
+				color: inherit;
+			}
+
+			button {
+				padding: 0.25em 0.75em;
+				border: 0.075em solid #000000;
+
+				background-color: transparent;
+
+				color: inherit;
+				font-weight: normal;
+
+				cursor: pointer;
+			}
+
+			button:hover {
+				background-color: #f0f0f0;
+			}
+
+			header > h2, section > h2, summary > h2 {
+				font-size: 0.875rem;
+				font-weight: bold;
+				text-transform: uppercase;
+			}
+
+			section:nth-child(1) > .pin-list {
+				margin-top: -0.75em;
+			}
+
+			.pin-list > li {
+				padding: 0.5em 0;
+			}
+
+			.pin-list > li + li {
+				border-top: 0.075em solid #c4c4c4;
+			}
+
+			.pin {
+				display: flex;
+				flex-direction: row;
+				align-items: center;
+			}
+
+			.pin-details {
+			}
+
+			.pin-title {
+				color: #0031a9;
+				text-decoration: none;
+			}
+
+			.pin-title:hover {
+				text-decoration: underline;
+			}
+
+			.pin-title:visited {
+				color: #5f1fad;
+			}
+
+			.pin-timestamp {
+				color: #777777;
+			}
+
+			.pin-actions {
+				display: flex;
+				align-items: center;
+				margin-left: auto;
+			}
+
+			.pin-actions > * + * {
+				margin-left: 0.75em;
+			}
+
+			.record {
+				display: flex;
+				flex-direction: column;
+			}
+
+			.record > .record-field + .record-field {
+				margin-top: 0.5em;
+			}
+
+			.record-field {
+				display: flex;
+				align-items: center;
+			}
+
+			.record-field > *:nth-child(1) {
+				width: 75px;
+			}
+
+			.record-field > *:nth-child(2) {
+				flex: 1;
+				margin-left: 1em;
+			}
+
+			.record-actions {
+				display: flex;
+				justify-content: flex-end;
+				margin-top: 1em;
+				padding: 0.5em 0;
+				border-top: 0.075em solid #c4c4c4;
+			}
+
+			.record-actions > * + * {
+				margin-left: 0.5em;
+			}
+
+			.nav {
+				margin-left: auto;
+			}
+
+			@media screen and (max-width: 768px) {
+				body > header, main {
+					width: 95vw;
+				}
+			}
+		</style>
+	</head>
+
+	<body>
+		<header>
+			<nav class="crumbs">
+				<ol>
+					<li>
+						<h1>
+							<a href="/">Board</a>
+						</h1>
+					</li>
+					{% block crumbs %}
+					{% endblock %}
+				</ol>
+			</nav>
+			<nav class="nav">
+				<ul>
+					<li>
+						<a href="/pins/new">New</a>
+					</li>
+				</ul>
+			</nav>
+		</header>
+		<main>
+			{% block content %}
+			{% endblock %}
+		</main>
+	</body>
+</html>
