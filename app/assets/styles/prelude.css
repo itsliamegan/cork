@@ -1,0 +1,27 @@
+* {
+	box-sizing: border-box;
+}
+
+body,
+h1, h2, h3, h4,
+p,
+ul, ol,
+figure,
+blockquote,
+pre {
+	margin: 0;
+	padding: 0;
+}
+
+ul, ol {
+	list-style: none;
+}
+
+h1, h2, h3, h4 {
+	font-size: 1rem;
+	font-weight: normal;
+}
+
+input, button {
+	font-size: inherit;
+}
