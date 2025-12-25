@@ -46,6 +46,12 @@ class Session:
 	def __setitem__(self, key: str, val: Any):
 		self.items[key] = val
 
+	def clear(self):
+		self.items = {}
+
+	def __contains__(self, key: str) -> bool:
+		return key in self.items
+
 	def __repr__(self) -> str:
 		return f"Session({repr(self.id)}, {repr(self.items)})"
 
