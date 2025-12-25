@@ -1,4 +1,6 @@
 from collections.abc import Callable
+from io import StringIO
+import sys
 
 class Result:
 	def __init__(self, test: "Test", case: "Case"):
@@ -18,6 +20,21 @@ class Error(Result):
 		super().__init__(test, case)
 		self.err = err
 
+class Filter:
+	def match(self, case: Case) -> bool:
+		raise NotImplementedError
+
+class EmptyFilter(Filter):
+	def match(self, case: Case) -> bool:
+		return True
+
+class TestNameFilter(Filter):
+	def __init__(self, name: str):
+		self.name = name
+
+	def match(self, case: Case) -> Bool:
+		return case.test.name == self.name
+
 class Case:
 	def __init__(self, test: "Test", name: str, impl: Callable[[], None]):
 		self.test = test
@@ -25,6 +42,10 @@ class Case:
 		self.impl = impl
 
 	def run(self):
+		stdout = sys.stdout
+		stderr = sys.stderr
+		sys.stdout = StringIO()
+		sys.stderr = StringIO()
 		try:
 			self.impl()
 			return Pass(self.test, self)
@@ -32,6 +53,9 @@ class Case:
 			return Fail(self.test, self, err)
 		except Exception as err:
 			return Error(self.test, self, err)
+		finally:
+			sys.stdout = stdout
+			sys.stderr = stderr
 
 	def __repr__(self) -> str:
 		return f"Case(name={repr(self.name)}, impl={repr(self.impl)})"
@@ -41,10 +65,11 @@ class Test:
 		self.name = name
 		self.cases = cases
 
-	def run(self) -> list[Result]:
+	def run(self, filter: Filter) -> list[Result]:
 		results = []
 		for case in self.cases:
-			results.append(case.run())
+			if filter.match(case):
+				results.append(case.run())
 		return results
 
 	def __repr__(self) -> str:
@@ -54,10 +79,10 @@ class Suite:
 	def __init__(self, tests: list[Test]):
 		self.tests = tests
 
-	def run(self) -> list[Result]:
+	def run(self, filter: Filter) -> list[Result]:
 		results = []
 		for test in self.tests:
-			results += test.run()
+			results += test.run(filter)
 		return results
 
 	def __repr__(self) -> str:
@@ -75,7 +100,6 @@ def report(results: list[Result]):
 		print(f"{desc}\t{result.test.name}:{result.case.name}")
 
 		if isinstance(result, Fail) or isinstance(result, Error):
-			from io import StringIO
 			import traceback
 			stack = traceback.extract_tb(result.err.__traceback__)
 			frame = stack[-1]
@@ -87,6 +111,7 @@ def report(results: list[Result]):
 if __name__ == "__main__":
 	from importlib.util import spec_from_file_location, module_from_spec
 	from pathlib import Path
+	import sys
 	from types import ModuleType
 
 	def import_from_file(path: Path) -> ModuleType:
@@ -94,6 +119,11 @@ if __name__ == "__main__":
 		module = module_from_spec(spec)
 		spec.loader.exec_module(module)
 		return module
+
+	if len(sys.argv) == 2:
+		filter = TestNameFilter(sys.argv[1])
+	else:
+		filter = EmptyFilter()
 
 	test_dir = Path.cwd().joinpath("test")
 	tests = []
@@ -110,6 +140,6 @@ if __name__ == "__main__":
 						cases.append(case)
 				tests.append(test)
 	suite = Suite(tests)
-	results = suite.run()
+	results = suite.run(filter)
 
 	report(results)
