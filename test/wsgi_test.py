@@ -50,6 +50,7 @@ def test_adapts_res():
 	)
 
 	def start_res(status, pairs):
+		assert status == "200 OK"
 		assert pairs == [
 			("Content-Type", "text/html"),
 			("Set-Cookie", "session_id=51d0d53a-11dd-47a5-b438-5eb1b84e1432")
@@ -58,3 +59,16 @@ def test_adapts_res():
 	body = adapt_res(res, start_res)
 
 	assert list(body) == ["<h1>Index</h1>".encode("utf8")]
+
+def test_adapts_multiple_cookies():
+	res = Response.empty()
+	res.cookies["session_id"] = "51d0d53a-11dd-47a5-b438-5eb1b84e1432"
+	res.cookies["csrf_token"] = "fd3e6aff6360af4d6ba905d4299cff81"
+
+	def start_res(status, pairs):
+		assert pairs == [
+			("Set-Cookie", "session_id=51d0d53a-11dd-47a5-b438-5eb1b84e1432"),
+			("Set-Cookie", "csrf_token=fd3e6aff6360af4d6ba905d4299cff81")
+		]
+
+	adapt_res(res, start_res)

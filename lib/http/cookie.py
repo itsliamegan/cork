@@ -1,14 +1,29 @@
 from collections.abc import Iterable
+from datetime import datetime
+from email.utils import formatdate
 
 from .headers import Headers
 
 class Cookie:
-	def __init__(self, name: str, val: str):
+	def __init__(
+		self,
+		name: str,
+		val: str,
+		expires: datetime | None = None,
+		http_only: bool = False,
+	):
 		self.name = name
 		self.val = val
+		self.expires = expires
+		self.http_only = http_only
 
 	def __str__(self) -> str:
-		return f"{self.name}={self.val}"
+		res = f"{self.name}={self.val}"
+		if self.expires is not None:
+			res += f"; Expires={formatdate(self.expires.timestamp(), usegmt = True)}"
+		if self.http_only:
+			res += "; HttpOnly"
+		return res
 
 	def __repr__(self) -> str:
 		return f"Cookie(name={self.name}, val={self.val})"
@@ -27,9 +42,9 @@ class Cookies:
 		cookies = cls()
 		if "Cookie" not in headers:
 			return cookies
-		cookie_pairs = str(headers["Cookie"]).split(";")
+		cookie_pairs = str(headers["Cookie"]).split(", ")
 		for cookie_pair in cookie_pairs:
-			name, val = cookie_pair.split("=")
+			name, val = cookie_pair.split("=", 1)
 			cookies[name] = val
 		return cookies
 
@@ -49,3 +64,9 @@ class Cookies:
 			self.cookies[name].val = val
 		else:
 			self.cookies[name] = Cookie(name, val)
+
+	def __contains__(self, name: str) -> bool:
+		return name in self.cookies
+
+	def __repr__(self) -> str:
+		return f"Cookies({repr({name: self.cookies[name].val for name in self.cookies})})"

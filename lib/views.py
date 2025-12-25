@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import Any
 
 from lib.app import Component, Context
+from lib.http import Request
 
 class Component(Component):
 	def __init__(self, dir: Path):
@@ -13,7 +14,7 @@ class Component(Component):
 	def boot(self):
 		self.engine = load(self.dir)
 
-	def before(self, ctx: Context):
+	def before(self, req: Request, ctx: Context):
 		ctx.views = self.engine
 
 class Views:

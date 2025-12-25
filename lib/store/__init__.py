@@ -7,16 +7,17 @@ from uuid import uuid4, UUID
 
 import lib.store.types as types
 from lib.app import Component, Context
+from lib.http import Request, Response
 
 class Component(Component):
 	def __init__(self, file: Path, model_types: "ModelTypes"):
 		self.file = file
 		self.model_types = model_types
 
-	def before(self, ctx: Context):
+	def before(self, req: Request, ctx: Context):
 		ctx.store = load(self.file, self.model_types)
 
-	def after(self, ctx: Context):
+	def after(self, res: Response, ctx: Context):
 		save(self.file, ctx.store)
 
 class Attribute:

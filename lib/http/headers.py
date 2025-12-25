@@ -1,27 +1,27 @@
 from collections.abc import Iterable
 
 class Header:
-	def __init__(self, name: str, val: str | list[str]):
+	def __init__(self, name: str, vals: str | list[str]):
 		self.name = name
-		self.val = val if isinstance(val, list) else [val]
+		self.vals = vals if isinstance(vals, list) else [vals]
 
 	def set(self, val: str | list[str]):
 		if isinstance(val, list):
-			self.val = val
+			self.vals = val
 		else:
-			self.val = [val]
+			self.vals = [val]
 
 	def __add__(self, other: str) -> list[str]:
-		return self.val + [other]
+		return self.vals + [other]
 
 	def __iter__(self) -> Iterable[str]:
-		return iter(self.val)
+		return iter(self.vals)
 
 	def __str__(self) -> str:
-		return ", ".join(self.val)
+		return ", ".join(self.vals)
 
 	def __repr__(self) -> str:
-		return f"Header({repr(self.name)}, {repr(self.val)})"
+		return f"Header({repr(self.name)}, {repr(self.vals)})"
 
 class Headers:
 	def __init__(self, pairs: dict[str, str | list[str]] | None = None):
@@ -48,7 +48,12 @@ class Headers:
 
 	def __iter__(self) -> Iterable[tuple[str, str]]:
 		for name in self.headers:
-			yield name, str(self.headers[name])
+			header = self.headers[name]
+			if name == "Set-Cookie":
+				for val in header.vals:
+					yield name, val
+			else:
+				yield name, str(header)
 
 	def __repr__(self) -> str:
 		return f"Headers({repr(self.headers)})"

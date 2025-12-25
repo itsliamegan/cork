@@ -1,20 +1,36 @@
+from datetime import datetime, timedelta
 import json
 from pathlib import Path
 from typing import Any
-from uuid import UUID
+from uuid import uuid4, UUID
 
 from lib.app import Component, Context
+from lib.http import Request, Response
 
 class Component(Component):
 	def __init__(self, file: Path):
 		self.file = file
 		self.sessions = None
 
-	def before(self, ctx: Context):
+	def before(self, req: Request, ctx: Context):
 		self.sessions = load(self.file)
-		ctx.session = None
+		if "session_id" in req.cookies:
+			id = UUID(req.cookies["session_id"].val)
+			if id in self.sessions:
+				ctx.session = self.sessions.get(id)
+			else:
+				session = Session(id)
+				self.sessions.put(session)
+				ctx.session = session
+		else:
+			session = Session(uuid4())
+			self.sessions.put(session)
+			ctx.session = session
 
-	def after(self, ctx: Context):
+	def after(self, res: Response, ctx: Context):
+		res.cookies["session_id"] = str(ctx.session.id)
+		res.cookies["session_id"].expires = datetime.now() + timedelta(days = 30)
+		res.cookies["session_id"].http_only = True
 		save(self.file, self.sessions)
 
 class Session:
@@ -30,6 +46,9 @@ class Session:
 	def __setitem__(self, key: str, val: Any):
 		self.items[key] = val
 
+	def __repr__(self) -> str:
+		return f"Session({repr(self.id)}, {repr(self.items)})"
+
 class Sessions:
 	def __init__(self, sessions: dict[UUID, Session] | None = None):
 		if sessions is None:
@@ -41,6 +60,12 @@ class Sessions:
 
 	def put(self, session: Session):
 		self.sessions[session.id] = session
+
+	def __contains__(self, id: UUID) -> bool:
+		return id in self.sessions
+
+	def __repr__(self) -> str:
+		return f"Sessions({repr(self.sessions)})"
 
 def save(path: Path, sessions: Sessions):
 	with open(path, "w") as file:

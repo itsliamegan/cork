@@ -7,6 +7,6 @@ class Pin(Model):
 		Attribute("hidden", types.Bool(), default = False),
 	]
 
-models = ModelTypes([
+model_types = ModelTypes([
 	Pin,
 ])

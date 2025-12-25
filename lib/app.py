@@ -26,16 +26,16 @@ class Component:
 	def boot(self):
 		pass
 
-	def before(self, ctx: Context):
+	def before(self, req: Request, ctx: Context):
 		pass
 
-	def after(self, ctx: Context):
+	def after(self, res: Response, ctx: Context):
 		pass
 
 	def __call__(self, req: Request, ctx: Context, next: Next) -> Response:
-		self.before(ctx)
+		self.before(req, ctx)
 		res = next(req, ctx)
-		self.after(ctx)
+		self.after(res, ctx)
 		return res
 
 class Application:
