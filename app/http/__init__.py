@@ -11,5 +11,5 @@ routes = [
 	Route(Method.GET, Pattern("/pins/{id}/edit"), pins.edit),
 	Route(Method.PUT, Pattern("/pins/{id}"), pins.update),
 	Route(Method.POST, Pattern("/pins/{id}/hide"), hides.store),
-	Route(Method.DELETE, Pattern("/pins/{id}/hide"), hides.destroy),
+	Route(Method.DELETE, Pattern("/pins/{id}/hide"), hides.destroy)
 ]
