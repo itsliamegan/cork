@@ -46,6 +46,9 @@ class Session:
 	def __setitem__(self, key: str, val: Any):
 		self.items[key] = val
 
+	def __delitem__(self, key: str):
+		del self.items[key]
+
 	def clear(self):
 		self.items = {}
 
