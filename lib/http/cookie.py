@@ -9,16 +9,18 @@ class Cookie:
 		self,
 		name: str,
 		val: str,
+		path: str = "/",
 		expires: datetime | None = None,
 		http_only: bool = False,
 	):
 		self.name = name
 		self.val = val
+		self.path = path
 		self.expires = expires
 		self.http_only = http_only
 
 	def __str__(self) -> str:
-		res = f"{self.name}={self.val}"
+		res = f"{self.name}={self.val}; Path={self.path}"
 		if self.expires is not None:
 			res += f"; Expires={formatdate(self.expires.timestamp(), usegmt = True)}"
 		if self.http_only:
