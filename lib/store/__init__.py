@@ -43,7 +43,7 @@ class Model:
 					val = attr.default
 				else:
 					raise ModelError(f"missing attr '{attr.name}'")
-			attrs[attr.name] = val
+			attrs[attr.name] = attr.type.decode(val)
 		self.id = id
 		self.created_at = created_at
 		self.attrs = attrs

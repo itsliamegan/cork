@@ -10,25 +10,37 @@ class Str(Type):
 		return val
 
 	def decode(self, val: Any) -> str:
-		return str(val)
+		if isinstance(val, str):
+			return val
+		else:
+			return str(val)
 
 class Bool(Type):
 	def encode(self, val: bool) -> Any:
 		return val
 
 	def decode(self, val: Any) -> bool:
-		return bool(val)
+		if isinstance(val, bool):
+			return val
+		else:
+			return bool(val)
 
 class UUID(Type):
 	def encode(self, val: uuid.UUID) -> Any:
 		return str(val)
 
 	def decode(self, val: Any) -> uuid.UUID:
-		return uuid.UUID(val)
+		if isinstance(val, uuid.UUID):
+			return val
+		else:
+			return uuid.UUID(val)
 
 class Date(Type):
 	def encode(self, val: datetime) -> Any:
 		return val.isoformat()
 
 	def decode(self, val: Any) -> datetime:
-		return datetime.fromisoformat(val)
+		if isinstance(val, datetime):
+			return val
+		else:
+			return datetime.fromisoformat(val)

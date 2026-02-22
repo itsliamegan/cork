@@ -1,9 +1,12 @@
 from lib.store import decode, encode, types, Attribute, Model, ModelError, ModelTypes, Store
 
+from uuid import uuid4
+
 class Article(Model):
 	attrs = [
 		Attribute("title", types.Str()),
 		Attribute("unread", types.Bool(), default = True),
+		Attribute("author_id", types.UUID(), default = uuid4()),
 	]
 
 def test_creates_model():
@@ -53,3 +56,13 @@ def test_encodes_and_decodes_store():
 	assert found.id == article.id
 	assert found.title == article.title
 	assert found.unread == article.unread
+
+def test_decodes_attrs_with_complex_types():
+	store = Store()
+	article = store.create(Article, title = "Intro")
+
+	encoded = encode(store)
+	decoded = decode(encoded, ModelTypes([Article]))
+	found = decoded.find_one(Article, article.id)
+
+	assert found.author_id == article.author_id
