@@ -20,6 +20,9 @@ class Component(Component):
 	def after(self, res: Response, ctx: Context):
 		save(self.file, ctx.store)
 
+class ModelError(RuntimeError):
+	pass
+
 class Attribute:
 	def __init__(self, name: str, typ: types.Type, default: Any | None = None):
 		self.name = name
@@ -36,7 +39,10 @@ class Model:
 		for attr in type(self).attrs:
 			val = attrs.get(attr.name)
 			if val is None:
-				val = attr.default
+				if attr.default is not None:
+					val = attr.default
+				else:
+					raise ModelError(f"missing attr '{attr.name}'")
 			attrs[attr.name] = val
 		self.id = id
 		self.created_at = created_at

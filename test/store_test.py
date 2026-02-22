@@ -1,4 +1,4 @@
-from lib.store import decode, encode, types, Attribute, Model, ModelTypes, Store
+from lib.store import decode, encode, types, Attribute, Model, ModelError, ModelTypes, Store
 
 class Article(Model):
 	attrs = [
@@ -16,10 +16,19 @@ def test_creates_model():
 	assert article.title == "Intro"
 	assert article.unread == True
 
+def test_doesnt_create_model_with_missing_attr():
+	store = Store()
+
+	try:
+		store.create(Article)
+		assert False
+	except ModelError:
+		pass
+
 def test_finds_all_models():
 	store = Store()
-	store.create(Article)
-	store.create(Article)
+	store.create(Article, title = "Intro")
+	store.create(Article, title = "Re: Intro")
 
 	articles = store.find_all(Article)
 
@@ -27,7 +36,7 @@ def test_finds_all_models():
 
 def test_finds_one_model():
 	store = Store()
-	article = store.create(Article)
+	article = store.create(Article, title = "Intro")
 
 	found = store.find_one(Article, article.id)
 
