@@ -83,6 +83,15 @@ class Store:
 	def find_one(self, model_type: type[Model], id: UUID) -> Model | None:
 		return self.models.get(id, None)
 
+	def find_by(self, model_type: type[Model], **attrs: dict[str, Any]) -> list[Model]:
+		models = []
+		for model in self.models.values():
+			if type(model) == model_type:
+				for attr in attrs:
+					if getattr(model, attr) == attrs[attr]:
+						models.append(model)
+		return models
+
 	def create(self, model_type: type[Model], **attrs: dict[str, Any]) -> Model:
 		id = uuid4()
 		created_at = datetime.now(UTC)

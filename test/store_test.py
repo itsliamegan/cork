@@ -45,6 +45,16 @@ def test_finds_one_model():
 
 	assert found == article
 
+def test_finds_model_by_attrs():
+	store = Store()
+	store.create(Article, title = "Intro", unread = False)
+	store.create(Article, title = "Re: Intro", unread = True)
+	store.create(Article, title = "Re: Re: Intro", unread = True)
+
+	found = store.find_by(Article, unread = True)
+
+	assert len(found) == 2
+
 def test_encodes_and_decodes_store():
 	store = Store()
 	article = store.create(Article, title = "Intro")
