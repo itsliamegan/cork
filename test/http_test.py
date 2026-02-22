@@ -36,8 +36,9 @@ def test_iterates_header_pairs():
 def test_encodes_cookies():
 	cookies = Cookies()
 	cookies["session_id"] = "51d0d53a-11dd-47a5-b438-5eb1b84e1432"
+	cookies["session_id"].http_only = True
 
-	assert str(cookies["session_id"]) == "session_id=51d0d53a-11dd-47a5-b438-5eb1b84e1432"
+	assert str(cookies["session_id"]) == "session_id=51d0d53a-11dd-47a5-b438-5eb1b84e1432; Path=/; HttpOnly"
 
 def test_adapts_cookies_from_headers():
 	headers = Headers()
@@ -55,6 +56,6 @@ def test_adapts_cookies_to_headers():
 	headers = cookies.to_headers()
 
 	assert list(headers["Set-Cookie"]) == [
-		"session_id=51d0d53a-11dd-47a5-b438-5eb1b84e1432",
-		"csrf_token=fd3e6aff6360af4d6ba905d4299cff81"
+		"session_id=51d0d53a-11dd-47a5-b438-5eb1b84e1432; Path=/",
+		"csrf_token=fd3e6aff6360af4d6ba905d4299cff81; Path=/"
 	]
