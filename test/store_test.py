@@ -5,6 +5,7 @@ from uuid import uuid4
 class Article(Model):
 	attrs = [
 		Attribute("title", types.Str()),
+		Attribute("subtitle", types.Str(), nullable = True),
 		Attribute("unread", types.Bool(), default = True),
 		Attribute("author_id", types.UUID(), default = uuid4()),
 	]
@@ -67,7 +68,7 @@ def test_encodes_and_decodes_store():
 	assert found.title == article.title
 	assert found.unread == article.unread
 
-def test_decodes_attrs_with_complex_types():
+def test_encodes_and_decodes_attrs_with_complex_types():
 	store = Store()
 	article = store.create(Article, title = "Intro")
 
@@ -76,3 +77,13 @@ def test_decodes_attrs_with_complex_types():
 	found = decoded.find_one(Article, article.id)
 
 	assert found.author_id == article.author_id
+
+def test_encodes_and_decodes_nullable_attrs():
+	store = Store()
+	article = store.create(Article, title = "Intro")
+
+	encoded = encode(store)
+	decoded = decode(encoded, ModelTypes([Article]))
+	found = decoded.find_one(Article, article.id)
+
+	assert found.subtitle == None

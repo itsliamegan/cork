@@ -24,13 +24,20 @@ class ModelError(RuntimeError):
 	pass
 
 class Attribute:
-	def __init__(self, name: str, typ: types.Type, default: Any | None = None):
+	def __init__(
+		self,
+		name: str,
+		typ: types.Type,
+		default: Any | None = None,
+		nullable: bool = False
+	):
 		self.name = name
 		self.type = typ
 		self.default = default
+		self.nullable = nullable
 
 	def __repr__(self) -> str:
-		return f"Attribute({repr(self.name)}, {repr(self.type)}, default = {repr(self.default)})"
+		return f"Attribute({repr(self.name)}, {repr(self.type)}, default = {repr(self.default)}, nullable = {repr(self.nullable)})"
 
 class Model:
 	attrs = []
@@ -41,9 +48,13 @@ class Model:
 			if val is None:
 				if attr.default is not None:
 					val = attr.default
+				elif attr.nullable:
+					val = None
 				else:
 					raise ModelError(f"missing attr '{attr.name}'")
-			attrs[attr.name] = attr.type.decode(val)
+			else:
+				val = attr.type.decode(val)
+			attrs[attr.name] = val
 		self.id = id
 		self.created_at = created_at
 		self.attrs = attrs
