@@ -21,13 +21,44 @@ def test_creates_model():
 	assert article.unread == True
 
 def test_doesnt_create_model_with_missing_attr():
+	class Post(Model):
+		attrs = [
+			Attribute("title", types.Str())
+		]
+
 	store = Store()
 
 	try:
-		store.create(Article)
-		assert False
+		store.create(Post)
+		assert False, "should throw ModelError"
 	except ModelError:
-		pass
+		assert True
+
+def test_doesnt_create_model_with_extra_attr():
+	class Post(Model):
+		attrs = []
+
+	store = Store()
+
+	try:
+		store.create(Post, title = "Intro")
+		assert False, "should throw ModelError"
+	except ModelError:
+		assert True
+
+def test_doesnt_create_model_with_null_attr():
+	class Post(Model):
+		attrs = [
+			Attribute("title", types.Str())
+		]
+
+	store = Store()
+
+	try:
+		store.create(Post, title = None)
+		assert False, "should throw ModelError"
+	except ModelError:
+		assert True
 
 def test_finds_all_models():
 	store = Store()
