@@ -2,23 +2,40 @@ from lib.store import decode, encode, types, Attribute, Model, ModelError, Model
 
 from uuid import uuid4
 
-class Article(Model):
-	attrs = [
-		Attribute("title", types.Str()),
-		Attribute("subtitle", types.Str(), nullable = True),
-		Attribute("unread", types.Bool(), default = True),
-		Attribute("author_id", types.UUID(), default = uuid4()),
-	]
+def test_creates_model_with_builtin_attrs():
+	class Post(Model):
+		pass
 
-def test_creates_model():
 	store = Store()
 
-	article = store.create(Article, title = "Intro")
+	created = store.create(Post)
 
-	assert article.id is not None
-	assert article.created_at is not None
-	assert article.title == "Intro"
-	assert article.unread == True
+	assert created.id is not None
+	assert created.created_at is not None
+
+def test_creates_model_with_attr():
+	class Post(Model):
+		attrs = [
+			Attribute("title", types.Str())
+		]
+
+	store = Store()
+
+	created = store.create(Post, title = "Intro")
+
+	assert created.title == "Intro"
+
+def test_creates_model_with_default_attr():
+	class Post(Model):
+		attrs = [
+			Attribute("unread", types.Bool(), default = True)
+		]
+
+	store = Store()
+
+	created = store.create(Post)
+
+	assert created.unread == True
 
 def test_doesnt_create_model_with_missing_attr():
 	class Post(Model):
@@ -61,60 +78,99 @@ def test_doesnt_create_model_with_null_attr():
 		assert True
 
 def test_finds_all_models():
+	class Post(Model):
+		pass
+
 	store = Store()
-	store.create(Article, title = "Intro")
-	store.create(Article, title = "Re: Intro")
+	store.create(Post)
+	store.create(Post)
 
-	articles = store.find_all(Article)
+	found = store.find_all(Post)
 
-	assert len(articles) == 2
+	assert len(found) == 2
 
 def test_finds_one_model():
+	class Post(Model):
+		pass
+
 	store = Store()
-	article = store.create(Article, title = "Intro")
+	created = store.create(Post)
 
-	found = store.find_one(Article, article.id)
+	found = store.find_one(Post, created.id)
 
-	assert found == article
+	assert found.id == created.id
 
 def test_finds_model_by_attrs():
-	store = Store()
-	store.create(Article, title = "Intro", unread = False)
-	store.create(Article, title = "Re: Intro", unread = True)
-	store.create(Article, title = "Re: Re: Intro", unread = True)
+	class User(Model):
+		attrs = [
+			Attribute("admin", types.Bool())
+		]
 
-	found = store.find_by(Article, unread = True)
+	store = Store()
+	store.create(User, admin = False)
+	store.create(User, admin = False)
+	store.create(User, admin = True)
+
+	found = store.find_by(User, admin = False)
 
 	assert len(found) == 2
 
 def test_encodes_and_decodes_store():
+	class Post(Model):
+		pass
+
 	store = Store()
-	article = store.create(Article, title = "Intro")
+	created = store.create(Post)
 
 	encoded = encode(store)
-	decoded = decode(encoded, ModelTypes([Article]))
-	found = decoded.find_one(Article, article.id)
+	decoded = decode(encoded, ModelTypes([Post]))
+	found = decoded.find_one(Post, created.id)
 
-	assert found.id == article.id
-	assert found.title == article.title
-	assert found.unread == article.unread
+	assert found.id == created.id
+
+def test_encodes_and_decodes_attrs_with_simple_types():
+	class Post(Model):
+		attrs = [
+			Attribute("title", types.Str())
+		]
+
+	store = Store()
+	created = store.create(Post, title = "Intro")
+
+	encoded = encode(store)
+	decoded = decode(encoded, ModelTypes([Post]))
+	found = decoded.find_one(Post, created.id)
+
+	assert found.id == created.id
+	assert found.created_at == created.created_at
+	assert found.title == created.title
 
 def test_encodes_and_decodes_attrs_with_complex_types():
+	class Post(Model):
+		attrs = [
+			Attribute("author_id", types.UUID())
+		]
+
 	store = Store()
-	article = store.create(Article, title = "Intro")
+	created = store.create(Post, author_id = uuid4())
 
 	encoded = encode(store)
-	decoded = decode(encoded, ModelTypes([Article]))
-	found = decoded.find_one(Article, article.id)
+	decoded = decode(encoded, ModelTypes([Post]))
+	found = decoded.find_one(Post, created.id)
 
-	assert found.author_id == article.author_id
+	assert found.author_id == created.author_id
 
 def test_encodes_and_decodes_nullable_attrs():
+	class Post(Model):
+		attrs = [
+			Attribute("subtitle", types.Str(), nullable = True)
+		]
+
 	store = Store()
-	article = store.create(Article, title = "Intro")
+	created = store.create(Post)
 
 	encoded = encode(store)
-	decoded = decode(encoded, ModelTypes([Article]))
-	found = decoded.find_one(Article, article.id)
+	decoded = decode(encoded, ModelTypes([Post]))
+	found = decoded.find_one(Post, created.id)
 
-	assert found.subtitle == None
+	assert created.subtitle == None
