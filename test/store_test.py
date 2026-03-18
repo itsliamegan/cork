@@ -25,6 +25,18 @@ def test_creates_model_with_attr():
 
 	assert created.title == "Intro"
 
+def test_creates_model_with_compound_attr():
+	class Post(Model):
+		attrs = [
+			Attribute("tags", types.List(types.Str()))
+		]
+
+	store = Store()
+
+	created = store.create(Post, tags = ["news"])
+
+	assert created.tags == ["news"]
+
 def test_creates_model_with_default_attr():
 	class Post(Model):
 		attrs = [
@@ -159,6 +171,21 @@ def test_encodes_and_decodes_attrs_with_complex_types():
 	found = decoded.find_one(Post, created.id)
 
 	assert found.author_id == created.author_id
+
+def test_encodes_and_decodes_attrs_with_compound_types():
+	class Post(Model):
+		attrs = [
+			Attribute("backlink_ids", types.List(types.UUID()))
+		]
+
+	store = Store()
+	created = store.create(Post, backlink_ids = [uuid4()])
+
+	encoded = encode(store)
+	decoded = decode(encoded, ModelTypes([Post]))
+	found = decoded.find_one(Post, created.id)
+
+	assert found.backlink_ids == created.backlink_ids
 
 def test_encodes_and_decodes_nullable_attrs():
 	class Post(Model):

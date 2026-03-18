@@ -25,6 +25,22 @@ class Bool(Type):
 		else:
 			return bool(val)
 
+class List(Type):
+	def __init__(self, item: Type):
+		self.item = item
+
+	def encode(self, val: list[Any]) -> Any:
+		encoded = []
+		for item in val:
+			encoded.append(self.item.encode(item))
+		return encoded
+
+	def decode(self, val: Any) -> list[Any]:
+		decoded = []
+		for item in val:
+			decoded.append(self.item.decode(item))
+		return decoded
+
 class UUID(Type):
 	def encode(self, val: uuid.UUID) -> Any:
 		return str(val)
