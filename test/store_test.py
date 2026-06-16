@@ -187,10 +187,25 @@ def test_encodes_and_decodes_attrs_with_compound_types():
 
 	assert found.backlink_ids == created.backlink_ids
 
-def test_encodes_and_decodes_nullable_attrs():
+def test_encodes_and_decodes_nullable_attrs_when_present():
 	class Post(Model):
 		attrs = [
-			Attribute("subtitle", types.Str(), nullable = True)
+			Attribute("author_id", types.UUID(), nullable = True)
+		]
+
+	store = Store()
+	created = store.create(Post, author_id = uuid4())
+
+	encoded = encode(store)
+	decoded = decode(encoded, ModelTypes([Post]))
+	found = decoded.find_one(Post, created.id)
+
+	assert found.author_id == created.author_id
+
+def test_encodes_and_decodes_nullable_attrs_when_absent():
+	class Post(Model):
+		attrs = [
+			Attribute("author_id", types.UUID(), nullable = True)
 		]
 
 	store = Store()
@@ -200,4 +215,4 @@ def test_encodes_and_decodes_nullable_attrs():
 	decoded = decode(encoded, ModelTypes([Post]))
 	found = decoded.find_one(Post, created.id)
 
-	assert created.subtitle == None
+	assert found.author_id == None

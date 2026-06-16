@@ -145,7 +145,10 @@ def encode(store: Store) -> dict[str, Any]:
 		for name in type(model).attrs:
 			attr = type(model).attrs[name]
 			raw_attr_val = getattr(model, attr.name)
-			attr_val = attr.type.encode(raw_attr_val)
+			if raw_attr_val is None and attr.nullable:
+				attr_val = None
+			else:
+				attr_val = attr.type.encode(raw_attr_val)
 			model_data[attr.name] = attr_val
 		data[str(id)] = model_data
 	return data
@@ -162,9 +165,11 @@ def decode(data: dict[str, Any], model_types: ModelTypes) -> Store:
 		model_data = {}
 		for name in raw_model_data:
 			attr = model_type.attrs[name]
-			val = raw_model_data[name]
-			if val is not None and not attr.nullable:
-				val = attr.type.decode(raw_model_data[name])
+			raw_val = raw_model_data[name]
+			if raw_val is None and attr.nullable:
+				val = None
+			else:
+				val = attr.type.decode(raw_val)
 			model_data[name] = val
 		model = model_type(id, created_at, model_data)
 		models[id] = model
