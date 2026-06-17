@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from lib.views import elapsed, Views
+from lib.views import helpers, Views
 
 def test_renders_simple():
 	views = Views({"index": "<h1>{{ title }}</h1>"})
@@ -23,28 +23,28 @@ def test_formats_elapsed_seconds():
 	then = datetime(year = 2025, month = 9, day = 1, hour = 12, minute = 0, second = 0)
 	now = datetime(year = 2025, month = 9, day = 1, hour = 12, minute = 0, second = 25)
 
-	assert elapsed(then, now) == "less than a minute ago"
+	assert helpers.elapsed(then, now) == "less than a minute ago"
 
 def test_formats_elapsed_minutes():
 	then = datetime(year = 2025, month = 9, day = 1, hour = 12, minute = 0, second = 0)
 	now = datetime(year = 2025, month = 9, day = 1, hour = 12, minute = 30, second = 0)
 
-	assert elapsed(then, now) == "30 minutes ago"
+	assert helpers.elapsed(then, now) == "30 minutes ago"
 
 def test_formats_elapsed_hours():
 	then = datetime(year = 2025, month = 9, day = 1, hour = 12, minute = 0, second = 0)
 	now = datetime(year = 2025, month = 9, day = 1, hour = 14, minute = 10, second = 0)
 
-	assert elapsed(then, now) == "2 hours ago"
+	assert helpers.elapsed(then, now) == "2 hours ago"
 
 def test_formats_elapsed_days():
 	then = datetime(year = 2025, month = 9, day = 1, hour = 12, minute = 0, second = 0)
 	now = datetime(year = 2025, month = 9, day = 3, hour = 14, minute = 0, second = 0)
 
-	assert elapsed(then, now) == "2 days ago"
+	assert helpers.elapsed(then, now) == "2 days ago"
 
 def test_formats_then_if_elapsed_over_a_week():
 	then = datetime(year = 2025, month = 9, day = 1, hour = 12, minute = 0, second = 0)
 	now = datetime(year = 2025, month = 9, day = 8, hour = 12, minute = 0, second = 0)
 
-	assert elapsed(then, now) == "Sep 1, 2025"
+	assert helpers.elapsed(then, now) == "Sep 1, 2025"

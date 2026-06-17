@@ -5,6 +5,7 @@ from typing import Any
 
 from lib.app import Component, Context
 from lib.http import Request
+from lib.views import helpers
 
 class Component(Component):
 	def __init__(self, dir: Path):
@@ -25,7 +26,7 @@ class Views:
 			loader = DictLoader(tmpls),
 			autoescape = select_autoescape
 		)
-		self.jinja.filters["elapsed"] = elapsed
+		self.jinja.filters["elapsed"] = helpers.elapsed
 
 	def render(self, name: str, assigns: dict[str, Any] | None = None) -> str:
 		if assigns is None:
@@ -45,27 +46,3 @@ def load(views_dir: Path) -> Views:
 					src = stream.read()
 					tmpls[name] = src
 	return Views(tmpls)
-
-def elapsed(then: datetime, now: datetime = None) -> str:
-	if now is None:
-		now = datetime.now(UTC)
-	diff = now - then
-	if diff.days == 0:
-		mins = diff.seconds / 60
-		hours = diff.seconds / (60 * 60)
-		if mins < 1:
-			return "less than a minute ago"
-		elif hours < 1:
-			return f"{round(mins)} {pluralize("minute", round(mins))} ago"
-		else:
-			return f"{round(hours)} {pluralize("hour", round(hours))} ago"
-	elif diff.days < 7:
-		return f"{diff.days} {pluralize("day", diff.days)} ago"
-	else:
-		return then.strftime("%b %-d, %Y")
-
-def pluralize(noun: str, count: int) -> str:
-	if count == 1:
-		return noun
-	else:
-		return noun + "s"
