@@ -1,3 +1,8 @@
+from datetime import datetime, UTC
+
+def date(date: datetime) -> str:
+	return date.strftime("%b %-d, %Y")
+
 def elapsed(then: datetime, now: datetime = None) -> str:
 	if now is None:
 		now = datetime.now(UTC)
@@ -14,7 +19,7 @@ def elapsed(then: datetime, now: datetime = None) -> str:
 	elif diff.days < 7:
 		return f"{diff.days} {pluralize("day", diff.days)} ago"
 	else:
-		return then.strftime("%b %-d, %Y")
+		return date(then)
 
 def pluralize(noun: str, count: int) -> str:
 	if count == 1:

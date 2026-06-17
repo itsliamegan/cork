@@ -26,6 +26,7 @@ class Views:
 			loader = DictLoader(tmpls),
 			autoescape = select_autoescape
 		)
+		self.jinja.filters["date"] = helpers.date
 		self.jinja.filters["elapsed"] = helpers.elapsed
 
 	def render(self, name: str, assigns: dict[str, Any] | None = None) -> str:

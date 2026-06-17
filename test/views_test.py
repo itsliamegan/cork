@@ -48,3 +48,8 @@ def test_formats_then_if_elapsed_over_a_week():
 	now = datetime(year = 2025, month = 9, day = 8, hour = 12, minute = 0, second = 0)
 
 	assert helpers.elapsed(then, now) == "Sep 1, 2025"
+
+def test_formats_date():
+	date = datetime(year = 2026, month = 4, day = 7)
+
+	assert helpers.date(date) == "Apr 7, 2026"
