@@ -1,0 +1,21 @@
+{% extends "layouts.base" %}
+
+{% block content %}
+<section>
+	<h2>{{ board.title }}</h2>
+
+	<ol>
+	{% for pin in pins %}
+		<li>
+			<article>
+				<a href="{{ pin.url }}">
+					<h3>{{ pin.title }}</h3>
+					<h4>{{ pin.url }}</h4>
+				</a>
+				<time>{{ pin.created_at }}</time>
+			</article>
+		</li>
+	{% endfor %}
+	</ol>
+</section>
+{% endblock %}

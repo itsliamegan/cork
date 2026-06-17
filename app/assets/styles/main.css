@@ -61,11 +61,15 @@ summary > * {
 form label {
 }
 
-form input {
+form input, form select {
 	padding: 0.25em;
 
 	border: 0.075em solid #000000;
 	border-radius: none;
+
+	font-size: inherit;
+
+	background-color: transparent;
 }
 
 a {

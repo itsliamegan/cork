@@ -14,6 +14,15 @@
 		<label for="title">Title</label>
 		<input type="text" name="title" required>
 	</div>
+	<div class="record-field">
+		<label for="board_id">Board</label>
+		<select name="board_id">
+			<option selected value="">Inbox (Default)</option>
+		{% for board in boards %}
+			<option value="{{ board.id }}">{{ board.title }}</option>
+		{% endfor %}
+		</select>
+	</div>
 
 	<div class="record-actions">
 		<button type="submit">Save</button>

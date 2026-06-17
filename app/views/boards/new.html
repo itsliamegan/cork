@@ -1,0 +1,12 @@
+{% extends "layouts.base" %}
+
+{% block content %}
+<form action="/boards/" method="POST">
+	<label>
+		<span>Title:</span>
+		<input type="text" name="title" required>
+	</label>
+
+	<button type="submit">Save</button>
+</form>
+{% endblock %}
