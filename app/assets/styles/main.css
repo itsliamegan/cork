@@ -182,7 +182,52 @@ section:nth-child(1) > .pin-list {
 }
 
 .nav {
+	position: relative;
 	margin-left: auto;
+}
+
+.nav > summary {
+	padding: 0.25em 0.75em;
+	border: 0.075em solid #000000;
+
+	background-color: transparent;
+
+	color: inherit;
+	font-weight: normal;
+
+	cursor: pointer;
+}
+
+.nav > summary:hover {
+	background-color: #f0f0f0;
+}
+
+.nav > summary::marker {
+	content: "";
+}
+
+.nav > nav {
+	position: absolute;
+	top: 2em;
+	width: 125px;
+	border: 0.075em solid #000000;
+	background-color: #ffffff;
+}
+
+.nav > nav > ul {
+	display: flex;
+	flex-direction: column;
+}
+
+.nav > nav > ul > li > a {
+	display: block;
+	width: 100%;
+	padding: 0.25em 0.75em;
+	text-decoration: none;
+}
+
+.nav > nav > ul > li > a:hover {
+	background-color: #f0f0f0;
 }
 
 @media screen and (max-width: 768px) {

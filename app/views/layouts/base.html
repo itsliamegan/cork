@@ -23,13 +23,19 @@
 					{% endblock %}
 				</ol>
 			</nav>
-			<nav class="nav">
-				<ul>
-					<li>
-						<a href="/pins/new">New</a>
-					</li>
-				</ul>
-			</nav>
+			<details class="nav">
+				<summary>New +</summary>
+				<nav>
+					<ul>
+						<li>
+							<a href="/pins/new">Pin</a>
+						</li>
+						<li>
+							<a href="/boards/new">Board</a>
+						</li>
+					</ul>
+				</nav>
+			</details>
 		</header>
 		<main>
 			{% block content %}
