@@ -1,5 +1,9 @@
 {% extends "layouts.base" %}
 
+{% block crumbs %}
+<li><a href="/boards/new">New Board</a></li>
+{% endblock %}
+
 {% block content %}
 <form action="/boards/" method="POST">
 	<label>

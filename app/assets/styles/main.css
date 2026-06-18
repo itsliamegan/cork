@@ -92,10 +92,32 @@ button:hover {
 	background-color: #f0f0f0;
 }
 
-header > h2, section > h2, summary > h2 {
+summary > h2 {
 	font-size: 0.875rem;
 	font-weight: bold;
 	text-transform: uppercase;
+}
+
+section > header {
+	display: flex;
+}
+
+section > header > h2 {
+	margin-bottom: 0.5em;
+	font-size: 1.25rem;
+	font-weight: bold;
+}
+
+section > header > h2 > a {
+	text-decoration: none;
+}
+
+section > header > h2 > a:hover {
+	text-decoration: underline;
+}
+
+section > header > a {
+	margin-left: auto;
 }
 
 section:nth-child(1) > .pin-list {
@@ -117,19 +139,26 @@ section:nth-child(1) > .pin-list {
 }
 
 .pin-details {
-}
-
-.pin-title {
-	color: #0031a9;
+	--underline: none;
+	flex: 1;
 	text-decoration: none;
 }
 
-.pin-title:hover {
-	text-decoration: underline;
+.pin-details:visited {
+	color: #5f1fad;
 }
 
-.pin-title:visited {
-	color: #5f1fad;
+.pin-details:hover {
+	--underline: underline;
+}
+
+.pin-title {
+	text-decoration: var(--underline);
+}
+
+.pin-url {
+	color: #000000;
+	text-decoration: var(--underline);
 }
 
 .pin-timestamp {
@@ -139,7 +168,7 @@ section:nth-child(1) > .pin-list {
 .pin-actions {
 	display: flex;
 	align-items: center;
-	margin-left: auto;
+	margin-left: 1em;
 }
 
 .pin-actions > * + * {
@@ -202,7 +231,7 @@ section:nth-child(1) > .pin-list {
 	background-color: #f0f0f0;
 }
 
-.nav > summary::marker {
+.nav > summary::marker, .nav > summary::-webkit-details-marker {
 	content: "";
 }
 

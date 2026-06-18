@@ -1,5 +1,9 @@
 {% extends "layouts.base" %}
 
+{% block crumbs %}
+<li><a href="/boards/{{ board.id }}/edit">Board ({{ board.title }})</a></li>
+{% endblock %}
+
 {% block content %}
 <form action="/boards/{{ board.id }}" method="POST">
 	<input type="text" name="_method" value="PUT" hidden>

@@ -6,10 +6,11 @@
 	{% for pin in inbox %}
 		<li>
 			<article class="pin">
-				<div class="pin-details">
-					<a href="{{ pin.url }}" class="pin-title">{{ pin.title }}</a>
-					<p class="pin-timestamp">{{ pin.created_at | elapsed }}</p>
-				</div>
+				<a href="{{ pin.url }}" class="pin-details">
+					<h3 class="pin-title">{{ pin.title }}</h3>
+					<h3 class="pin-url">{{ pin.url | truncate(50) }}</h3>
+					<time datetime="{{ pin.created_at }}" class="pin-timestamp">{{ pin.created_at | date }}</time>
+				</a>
 				<div class="pin-actions">
 					<a href="/pins/{{ pin.id }}/edit">Edit</a>
 					<form method="POST" action="/pins/{{ pin.id }}/hide">
@@ -30,10 +31,11 @@
 	{% for pin in hidden %}
 		<li>
 			<article class="pin">
-				<div class="pin-details">
-					<a href="{{ pin.url }}" class="pin-title">{{ pin.title }}</a>
-					<p class="pin-timestamp">{{ pin.created_at | elapsed }}</p>
-				</div>
+				<a href="{{ pin.url }}" class="pin-details">
+					<h3 class="pin-title">{{ pin.title }}</h3>
+					<h3 class="pin-url">{{ pin.url | truncate(50) }}</h3>
+					<time datetime="{{ pin.created_at }}" class="pin-timestamp">{{ pin.created_at | date }}</time>
+				</a>
 				<div class="pin-actions">
 					<a href="/pins/{{ pin.id }}/edit">Edit</a>
 					<form method="POST" action="/pins/{{ pin.id }}/hide">
