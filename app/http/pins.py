@@ -1,8 +1,8 @@
 from uuid import UUID
 
-from lib.app import Context
-from lib.forms import rules, Field, Form
-from lib.http import Request, Response, Status, URL
+from lux.app import Context
+from lux.forms import rules, Field, Form
+from lux.http import Request, Response, Status, URL
 
 from app.data import Board, Pin
 

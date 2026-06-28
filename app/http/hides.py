@@ -1,7 +1,7 @@
 from uuid import UUID
 
-from lib.app import Context
-from lib.http import Request, Response, URL
+from lux.app import Context
+from lux.http import Request, Response, URL
 
 from app.data import Pin
 

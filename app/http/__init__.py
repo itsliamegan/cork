@@ -1,5 +1,5 @@
-from lib.http import Method
-from lib.routing import Pattern, Route
+from lux.http import Method
+from lux.routing import Pattern, Route
 
 import app.http.boards as boards
 import app.http.pins as pins

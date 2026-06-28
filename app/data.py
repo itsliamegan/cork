@@ -1,4 +1,4 @@
-from lib.store import types, Attribute, Model, ModelTypes
+from lux.store import types, Attribute, Model, ModelTypes
 
 class Pin(Model):
 	attrs = [

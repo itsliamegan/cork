@@ -1,18 +1,18 @@
 from pathlib import Path
 
-import lib.flash
-import lib.session
-import lib.store
-import lib.views
-from lib.wsgi import Application
+import lux.flash
+import lux.session
+import lux.store
+import lux.views
+from lux.wsgi import Application
 
 from app.data import Pin, model_types
 from app.http import routes
 
 app = Application(routes, [
-	lib.store.Component(Path("data", "store.json"), model_types),
-	lib.views.Component(Path("app", "views")),
-	lib.session.Component(Path("data", "sessions.json")),
-	lib.flash.Component()
+	lux.store.Component(Path("data", "store.json"), model_types),
+	lux.views.Component(Path("app", "views")),
+	lux.session.Component(Path("data", "sessions.json")),
+	lux.flash.Component()
 ])
 app.boot()
