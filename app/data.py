@@ -1,4 +1,4 @@
-from lux.store import types, Attribute, Model, ModelTypes
+from lux.store import types, Attribute, Model, Schema
 
 class Pin(Model):
 	attrs = [
@@ -13,7 +13,7 @@ class Board(Model):
 		Attribute("title", types.Str()),
 	]
 
-model_types = ModelTypes([
+schema = Schema([
 	Pin,
 	Board,
 ])
