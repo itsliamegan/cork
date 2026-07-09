@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 	<head>
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width,initial-scale=1">
@@ -7,35 +7,38 @@
 		<title>Cork</title>
 
 		<link rel="stylesheet" type="text/css" href="/static/styles/prelude.css">
+		<link rel="stylesheet" type="text/css" href="/static/styles/theme.css">
 		<link rel="stylesheet" type="text/css" href="/static/styles/main.css">
+
+		<script type="module" src="https://cdn.jsdelivr.net/npm/@hotwired/turbo@8.0"></script>
+		<script type="module" src="https://cdn.jsdelivr.net/npm/@hotwired/stimulus@3.2"></script>
+		<script type="module" src="/static/scripts/main.js"></script>
 	</head>
 
 	<body>
-		<header>
-			<nav class="crumbs">
-				<ol>
-					<li>
-						<h1>
-							<a href="/">Cork</a>
-						</h1>
-					</li>
-					{% block crumbs %}
-					{% endblock %}
-				</ol>
-			</nav>
-			<details class="nav">
-				<summary>New +</summary>
-				<nav>
-					<ul>
+		<header class="header">
+			<h1 class="header-title">Cork</h1>
+			<ul class="header-nav">
+				<li><a href="/inbox">Inbox</a></li>
+				<li><a href="/boards/">Boards</a></li>
+			</ul>
+			<section class="header-actions" data-controller="menu" data-menu-open-class="menu-open">
+				<div class="menu-anchor">
+					<button data-action="click->menu#toggle" data-menu-target="button">
+						≡
+					</button>
+					<ul class="menu" data-menu-target="items">
 						<li>
-							<a href="/pins/new">Pin</a>
+							<a href="/settings">Settings</a>
 						</li>
 						<li>
-							<a href="/boards/new">Board</a>
+							<form method="POST" action="/sign-out">
+								<button type="submit">Sign Out</button>
+							</form>
 						</li>
 					</ul>
-				</nav>
-			</details>
+				</div>
+			</section>
 		</header>
 		<main>
 			{% block content %}

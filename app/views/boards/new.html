@@ -1,16 +1,23 @@
 {% extends "layouts.base" %}
 
-{% block crumbs %}
-<li><a href="/boards/new">New Board</a></li>
-{% endblock %}
-
 {% block content %}
-<form action="/boards/" method="POST">
-	<label>
-		<span>Title:</span>
+<header class="records-header">
+	<h2 class="records-title"><a href="/boards/">Boards</a></h2>
+	<div class="records-actions">
+		<a href="/boards/new">
+			<button>+ New</button>
+		</a>
+	</div>
+</header>
+
+<form class="record" action="/boards/" method="POST" autocomplete="off">
+	<label class="record-field">
+		<span>Title</span>
 		<input type="text" name="title" required>
 	</label>
 
-	<button type="submit">Save</button>
+	<footer class="record-actions">
+		<button type="submit">Save</button>
+	</footer>
 </form>
 {% endblock %}

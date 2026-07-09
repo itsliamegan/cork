@@ -1,34 +1,39 @@
 {% extends "layouts.base" %}
 
 {% block content %}
-<section>
-	<header>
-		<h2>
+<section class="records">
+	<header class="records-header">
+		<h2 class="records-title">
 			<a href="/boards/{{ board.id }}">{{ board.title }}</a>
 		</h2>
-
-		<a href="/boards/{{ board.id }}/edit">Edit</a>
+		<div class="records-actions">
+			<a href="/boards/{{ board.id }}/pins/new">
+				<button>+ New</button>
+			</a>
+		</div>
 	</header>
 
-	<ol>
-	{% for pin in pins %}
-		<li>
-			<article class="pin">
-				<a href="{{ pin.url }}" class="pin-details">
-					<h3 class="pin-title">{{ pin.title }}</h3>
-					<h3 class="pin-url">{{ pin.url | truncate(50) }}</h3>
-					<time datetime="{{ pin.created_at }}" class="pin-timestamp">{{ pin.created_at | date }}</time>
-				</a>
-				<div class="pin-actions">
-					<a href="/pins/{{ pin.id }}/edit">Edit</a>
-					<form method="POST" action="/pins/{{ pin.id }}/hide">
-						<input type="text" name="_method" value="DELETE" hidden>
-						<button type="submit" class="btn">Show</button>
-					</form>
-				</div>
-			</article>
-		</li>
-	{% endfor %}
-	</ol>
+	<div class="records-content">
+		<ol>
+			{% for pin in pins | sort(attribute = "created_at", reverse = True) %}
+			<li>
+				<article class="pin">
+					<section class="pin-details">
+						<a class="pin-link" href="{{ pin.url }}">
+							<h3 class="pin-title">{{ pin.title }}</h3>
+							<h3 class="pin-url">{{ pin.url | url }}</h3>
+						</a>
+						<time class="pin-timestamp" datetime="{{ pin.created_at }}">{{ pin.created_at | date }}</time>
+					</section>
+					<section class="pin-actions">
+						<a class="action" href="/pins/{{ pin.id }}/edit">Edit</a>
+					</section>
+				</article>
+			</li>
+			{% else %}
+			<span>No pins to display</span>
+			{% endfor %}
+		</ol>
+	</div>
 </section>
 {% endblock %}

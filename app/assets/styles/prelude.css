@@ -18,10 +18,12 @@ ul, ol {
 }
 
 h1, h2, h3, h4 {
-	font-size: 1rem;
+	font-size: inherit;
 	font-weight: normal;
 }
 
-input, button {
+input, select, option, button {
+	font-family: inherit;
 	font-size: inherit;
+	color: inherit;
 }

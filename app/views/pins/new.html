@@ -1,31 +1,41 @@
 {% extends "layouts.base" %}
 
-{% block crumbs %}
-<li><a href="/pins/new">New Pin</a></li>
-{% endblock %}
-
 {% block content %}
-<form method="POST" action="/pins/" class="record">
-	<div class="record-field">
-		<label for="name">URL</label>
-		<input type="text" name="url" required>
+<header class="records-header">
+	<h2 class="records-title">
+		<a href="/boards/{{ board.id }}">{{ board.title }}</a>
+	</h2>
+	<div class="records-actions">
+		<a href="/boards/{{ board.id }}/pins/new">
+			<button>+ New</button>
+		</a>
 	</div>
-	<div class="record-field">
-		<label for="title">Title</label>
-		<input type="text" name="title" required>
-	</div>
-	<div class="record-field">
-		<label for="board_id">Board</label>
-		<select name="board_id">
-			<option selected value="">Inbox (Default)</option>
-		{% for board in boards %}
-			<option value="{{ board.id }}">{{ board.title }}</option>
-		{% endfor %}
-		</select>
-	</div>
+</header>
 
-	<div class="record-actions">
+<form class="record" method="POST" action="/pins/" autocomplete="off">
+	<label class="record-field">
+		<span>Title</span>
+		<input type="text" name="title" required>
+	</label>
+
+	<label class="record-field">
+		<span>URL</span>
+		<input type="text" name="url" required>
+	</label>
+
+	<label class="record-field">
+		<span>Board</span>
+		<select name="board_id">
+			<option value="">Inbox (Default)</option>
+			{% for board in boards %}
+			{% set selected = board.id | string == board_id | string %}
+			<option {% if selected %} selected {% endif %} value="{{ board.id }}">{{ board.title }}</option>
+			{% endfor %}
+		</select>
+	</label>
+
+	<footer class="record-actions">
 		<button type="submit">Save</button>
-	</div>
+	</footer>
 </form>
 {% endblock %}

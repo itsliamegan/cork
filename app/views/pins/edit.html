@@ -1,33 +1,43 @@
 {% extends "layouts.base" %}
 
-{% block crumbs %}
-<li><a href="/pins/{{ pin.id }}/edit">Pin ({{ pin.title | truncate(255) }})</a></li>
-{% endblock %}
-
 {% block content %}
-<form method="POST" action="/pins/{{ pin.id }}" class="record">
+<header class="records-header">
+	<h2 class="records-title">
+		<a href="/boards/{{ board.id }}">{{ board.title }}</a>
+	</h2>
+	<div class="records-actions">
+		<a href="/boards/{{ board.id }}/pins/new">
+			<button>+ New</button>
+		</a>
+	</div>
+</header>
+
+<form class="record" method="POST" action="/pins/{{ pin.id }}" autocomplete="off">
 	<input type="text" name="_method" value="PUT" hidden>
 
-	<div class="record-field">
-		<label for="name">URL</label>
-		<input type="text" name="url" value="{{ pin.url }}" required>
-	</div>
-	<div class="record-field">
-		<label for="title">Title</label>
-		<input type="text" name="title" value="{{ pin.title }}" required>
-	</div>
-	<div class="record-field">
-		<label for="board_id">Board</label>
-		<select name="board_id">
-			<option value="">Inbox (Default)</option>
-		{% for board in boards %}
-			<option {% if board.id | string == pin.board_id | string %}selected{% endif %} value="{{ board.id }}">{{ board.title }}</option>
-		{% endfor %}
-		</select>
-	</div>
+	<label class="record-field">
+		<span>Title</span>
+		<input type="text" name="title" required value="{{ pin.title }}">
+	</label>
 
-	<div class="record-actions">
+	<label class="record-field">
+		<span>URL</span>
+		<input type="text" name="url" required value="{{ pin.url }}">
+	</label>
+
+	<label class="record-field">
+		<span>Board</span>
+		<select name="board_id">
+			<option selected value="">Inbox (Default)</option>
+			{% for board in boards %}
+			{% set selected = board.id | string == pin.board_id | string %}
+			<option {% if selected %} selected {% endif %} value="{{ board.id }}">{{ board.title }}</option>
+			{% endfor %}
+		</select>
+	</label>
+
+	<footer class="record-actions">
 		<button type="submit">Save</button>
-	</div>
+	</footer>
 </form>
 {% endblock %}

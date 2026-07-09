@@ -1,10 +1,14 @@
 from lux.store import types, Attribute, Model, Schema
 
+class User(Model):
+	attrs = [
+		Attribute("name", types.Str())
+	]
+
 class Pin(Model):
 	attrs = [
 		Attribute("url", types.Str()),
 		Attribute("title", types.Str()),
-		Attribute("hidden", types.Bool(), default = False),
 		Attribute("board_id", types.UUID(), nullable = True),
 	]
 
@@ -14,6 +18,7 @@ class Board(Model):
 	]
 
 schema = Schema([
+	User,
 	Pin,
 	Board,
 ])

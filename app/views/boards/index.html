@@ -1,0 +1,35 @@
+{% extends "layouts.base" %}
+
+{% block content %}
+<div class="records">
+	<header class="records-header">
+		<h2 class="records-title">Boards</h2>
+		<div class="records-actions">
+			<a href="/boards/new">
+				<button>+ New</button>
+			</a>
+		</div>
+	</header>
+
+	<section class="records-content">
+		<ol>
+			{% for board in boards | sort(attribute = "created_at", reverse = True) %}
+			<li>
+				<article class="board">
+					<section class="board-details">
+						<a href="/boards/{{ board.id }}">
+							<h3>{{ board.title }}</h3>
+						</a>
+						<time class="pin-timestamp" datetime="{{ board.created_at }}">{{ board.created_at | date }}</time>					</section>
+					<section class="board-actions">
+						<a class="action" href="/boards/{{ board.id }}/edit">Edit</a>
+					</section>
+				</article>
+			</li>
+			{% else %}
+			<span>No boards to display</span>
+			{% endfor %}
+		</ol>
+	</section>
+</div>
+{% endblock %}

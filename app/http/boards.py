@@ -6,7 +6,14 @@ from lux.http import Request, Response, Status, URL
 
 from uuid import UUID
 
-def store(req: Request, ctx: Context) -> Response:
+def index(req: Request, ctx: Context) -> Response:
+	boards = ctx.store.find_all(Board)
+
+	html = ctx.views.render("boards.index", {"boards": boards})
+
+	return Response.html(html)
+
+def create(req: Request, ctx: Context) -> Response:
 	form = Form([
 		Field("title", [rules.required])
 	])
@@ -55,4 +62,4 @@ def update(req: Request, ctx: Context, params: dict[str, str]) -> Response:
 	if errs:
 		return Response.text("400 Bad Request", status = Status.BAD_REQUEST)
 	board.title = input["title"]
-	return Response.redirect(URL(f"/boards/{board.id}"))
+	return Response.redirect(URL("/boards"))

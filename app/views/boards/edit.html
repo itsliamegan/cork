@@ -1,18 +1,27 @@
 {% extends "layouts.base" %}
 
-{% block crumbs %}
-<li><a href="/boards/{{ board.id }}/edit">Board ({{ board.title }})</a></li>
-{% endblock %}
-
 {% block content %}
-<form action="/boards/{{ board.id }}" method="POST">
+<header class="records-header">
+	<h2 class="records-title">
+		<a href="/boards/">Boards</a>
+	</h2>
+	<div class="records-actions">
+		<a href="/boards/new">
+			<button>+ New</button>
+		</a>
+	</div>
+</header>
+
+<form class="record" action="/boards/{{ board.id }}" method="POST" autocomplete="off">
 	<input type="text" name="_method" value="PUT" hidden>
 
-	<label>
-		<span>Title:</span>
+	<label class="record-field">
+		<span>Title</span>
 		<input type="text" name="title" value="{{ board.title }}" required>
 	</label>
 
-	<button type="submit">Save</button>
+	<footer class="record-actions">
+		<button type="submit">Save</button>
+	</footer>
 </form>
 {% endblock %}
