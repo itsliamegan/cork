@@ -66,6 +66,9 @@ def update(req: Request, ctx: Context, params: dict[str, str]) -> Response:
 
 def delete(req: Request, ctx: Context, params: dict[str, str]) -> Response:
 	id = UUID(params["id"])
+	pins = ctx.store.find_by(Pin, board_id = id)
+	for pin in pins:
+		ctx.store.delete(Pin, pin.id)
 	ctx.store.delete(Board, id)
 
 	return Response.redirect(URL("/boards/"))
