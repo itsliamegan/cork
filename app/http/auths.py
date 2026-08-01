@@ -19,6 +19,7 @@ def create(req: Request, ctx: Context) -> Response:
 	if errs:
 		return Response.text("400 Bad Request", status = Status.BAD_REQUEST)
 	user_id = UUID(input["user_id"])
+	ctx.session["user_id"] = str(user_id)
 	return Response.redirect(URL("/boards/"))
 
 def delete(req: Request, ctx: Context) -> Response:
