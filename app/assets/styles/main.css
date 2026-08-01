@@ -78,21 +78,20 @@ a {
 	margin-inline-start: auto;
 }
 
-.menu-anchor {
-	position: relative;
-}
-
 .menu {
 	position: absolute;
-	top: calc(100% + 0.25rem);
-	right: 0;
-	display: none;
+	position-area: block-end span-inline-start;
 	flex-direction: column;
-	width: 80px;
+	margin: 0;
+	padding: 0;
 	border: 0.05em solid var(--color-border);
 	font-size: 0.875rem;
 	text-align: end;
 	background-color: var(--color-bg);
+
+	&:popover-open {
+		display: flex;
+	}
 
 	> li {
 		padding-block: 0.25rem;
@@ -106,10 +105,6 @@ a {
 	> li + li {
 		border-block-start: 0.05em solid var(--color-border-dim);
 	}
-}
-
-.menu-open {
-	display: flex;
 }
 
 main {

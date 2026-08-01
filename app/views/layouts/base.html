@@ -22,12 +22,11 @@
 				<li><a href="/inbox">Inbox</a></li>
 				<li><a href="/boards/">Boards</a></li>
 			</ul>
-			<section class="header-actions" data-controller="menu" data-menu-open-class="menu-open">
-				<div class="menu-anchor">
-					<button data-action="click->menu#toggle" data-menu-target="button">
+			<section class="header-actions">
+					<button popovertarget="header-menu">
 						≡
 					</button>
-					<ul class="menu" data-menu-target="items">
+					<menu class="menu" id="header-menu" popover>
 						<li>
 							<a href="/settings">Settings</a>
 						</li>
@@ -36,8 +35,7 @@
 								<button type="submit">Sign Out</button>
 							</form>
 						</li>
-					</ul>
-				</div>
+					</menu>
 			</section>
 		</header>
 		<main>
