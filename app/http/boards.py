@@ -62,4 +62,10 @@ def update(req: Request, ctx: Context, params: dict[str, str]) -> Response:
 	if errs:
 		return Response.text("400 Bad Request", status = Status.BAD_REQUEST)
 	board.title = input["title"]
-	return Response.redirect(URL("/boards"))
+	return Response.redirect(URL("/boards/"))
+
+def delete(req: Request, ctx: Context, params: dict[str, str]) -> Response:
+	id = UUID(params["id"])
+	ctx.store.delete(Board, id)
+
+	return Response.redirect(URL("/boards/"))

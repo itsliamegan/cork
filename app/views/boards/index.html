@@ -20,7 +20,8 @@
 						<a href="/boards/{{ board.id }}">
 							<h3>{{ board.title }}</h3>
 						</a>
-						<time class="pin-timestamp" datetime="{{ board.created_at }}">{{ board.created_at | date }}</time>					</section>
+						<time class="pin-timestamp" datetime="{{ board.created_at }}">{{ board.created_at | date }}</time>
+					</section>
 					<section class="board-actions">
 						<a class="action" href="/boards/{{ board.id }}/edit">Edit</a>
 					</section>

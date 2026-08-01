@@ -84,3 +84,18 @@ def update(req: Request, ctx: Context, params: dict[str, str]) -> Response:
 		board_url = URL(f"/boards/{board_id}")
 
 	return Response.redirect(board_url)
+
+def delete(req: Request, ctx: Context, params: dict[str, str]) -> Response:
+	id = UUID(params["id"])
+	pin = ctx.store.find_one(Pin, id)
+	if pin is None:
+		return Response.text("404 Not Found", status = Status.NOT_FOUND)
+
+	if pin.board_id is None:
+		board_url = URL("/")
+	else:
+		board_url = URL(f"/boards/{pin.board_id}")
+
+	ctx.store.delete(Pin, pin.id)
+
+	return Response.redirect(board_url)

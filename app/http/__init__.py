@@ -21,9 +21,11 @@ routes = [
 	Route(Method.GET, Pattern("/boards/{id}"), boards.show),
 	Route(Method.GET, Pattern("/boards/{id}/edit"), boards.edit),
 	Route(Method.PUT, Pattern("/boards/{id}"), boards.update),
+	Route(Method.DELETE, Pattern("/boards/{id}"), boards.delete),
 	Route(Method.GET, Pattern("/boards/{id}/pins/new"), pins.new),
 
 	Route(Method.POST, Pattern("/pins/"), pins.create),
 	Route(Method.GET, Pattern("/pins/{id}/edit"), pins.edit),
 	Route(Method.PUT, Pattern("/pins/{id}"), pins.update),
+	Route(Method.DELETE, Pattern("/pins/{id}"), pins.delete),
 ]
