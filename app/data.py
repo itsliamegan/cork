@@ -1,4 +1,4 @@
-from lux.store import types, Attribute, Model, Schema
+from helios.store import types, Attribute, Model, Schema
 
 class User(Model):
 	attrs = [

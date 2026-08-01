@@ -1,18 +1,18 @@
 from pathlib import Path
 
-import lux.flash
-import lux.session
-import lux.store
-import lux.views
-from lux.wsgi import Application
+import helios.flash
+import helios.session
+import helios.store
+import helios.views
+from helios.wsgi import Application
 
 from app.data import schema, Pin
 from app.http import routes
 
 app = Application(routes, [
-	lux.store.Component(Path("data", "store.json"), schema),
-	lux.views.Component(Path("app", "views")),
-	lux.session.Component(Path("data", "sessions.json")),
-	lux.flash.Component()
+	helios.store.Component(Path("data", "store.json"), schema),
+	helios.views.Component(Path("app", "views")),
+	helios.session.Component(Path("data", "sessions.json")),
+	helios.flash.Component()
 ])
 app.boot()

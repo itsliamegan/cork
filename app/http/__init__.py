@@ -1,5 +1,5 @@
-from lux.http import Method
-from lux.routing import Pattern, Route
+from helios.http import Method
+from helios.routing import Pattern, Route
 
 import app.http.auths as auths
 import app.http.home as home
