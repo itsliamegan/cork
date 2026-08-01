@@ -1,4 +1,4 @@
-from helios.http import Method
+from helios.http import Method, Response
 from helios.routing import Pattern, Route
 
 import app.http.auths as auths
@@ -6,6 +6,16 @@ import app.http.home as home
 import app.http.settings as settings
 import app.http.boards as boards
 import app.http.pins as pins
+
+def ensure_signed_in(req, ctx):
+	is_secure_route = not req.url.path.startswith("/sign-in")
+	is_signed_out = "user_id" not in ctx.session
+	if is_secure_route and is_signed_out:
+		return Response.redirect("/sign-in")
+
+guards = [
+	ensure_signed_in,
+]
 
 routes = [
 	Route(Method.GET, Pattern("/sign-in"), auths.new),
