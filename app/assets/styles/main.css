@@ -2,45 +2,63 @@ body {
 	display: flex;
 	flex-direction: column;
 	gap: 0.75rem;
-	margin: 0 auto;
-	width: 95vw;
+	max-width: 35rem;
 	height: 100vh;
+	margin: 0 auto;
+	padding-inline: 0.5rem;
 
-	font-family: "Helvetica Neue", sans-serif;
+	font-family: Helvetica Neue, sans-serif;
+	font-size: var(--font-md);
 
 	color: var(--color-fg);
 	background-color: var(--color-bg);
 }
 
 *:focus {
-	outline: 0.15em solid var(--color-theme);
+	outline: 2px solid var(--color-theme);
 	border-color: transparent;
 }
 
 input, select {
 	padding-block: 0.25em;
 	padding-inline: 0.35em;
-	border: 0.05em solid var(--color-border);
+	border: 1px solid var(--color-border);
 	border-radius: 0;
 	background-color: transparent;
 }
 
 button {
 	padding: 0.25em 0.5em;
-	border: 0.05em solid var(--color-border);
+	border: 1px solid var(--color-border);
 
 	white-space: nowrap;
 
 	background-color: transparent;
+	color: var(--color-fg);
 
 	&:hover {
 		background-color: var(--color-bg-dim);
 		cursor: pointer;
 	}
+
+	&.button--icon {
+		border-width: 0.75px;
+		font-size: var(--font-xs);
+	}
+
+	&.button--primary {
+		background-color: var(--color-fg);
+		color: var(--color-bg);
+
+		&:hover {
+			background-color: var(--color-fg-dim);
+			border-color: var(--color-fg-dim);
+		}
+	}
 }
 
 a {
-	color: inherit;
+	color: var(--color-fg);
 	text-decoration: none;
 
 	&:hover {
@@ -60,7 +78,7 @@ a {
 	display: flex;
 	align-items: center;
 	padding-block: 0.5rem;
-	border-block-end: 0.05em solid var(--color-border);
+	border-block-end: 1px solid var(--color-border);
 }
 
 .header-title {
@@ -71,7 +89,7 @@ a {
 	display: flex;
 	gap: 0.5em;
 	margin-inline-start: 1em;
-	font-size: 0.875rem;
+	font-size: var(--font-sm);
 }
 
 .header-actions {
@@ -82,29 +100,78 @@ a {
 	position: absolute;
 	position-area: block-end span-inline-start;
 	flex-direction: column;
+	width: 5.5rem;
 	margin: 0;
 	padding: 0;
-	border: 0.05em solid var(--color-border);
-	font-size: 0.875rem;
-	text-align: end;
+	border: 1px solid var(--color-border);
+
 	background-color: var(--color-bg);
 
 	&:popover-open {
 		display: flex;
 	}
 
-	> li {
+	> li button, a {
+		width: 100%;
 		padding-block: 0.25rem;
 		padding-inline: 0.35em;
+		text-align: end;
 	}
 
-	> li > a {
-		display: block;
+	> li button {
+		border: none;
+	}
+
+	> li a {
+		display: inline-block;
+		text-decoration: none;
+
+		&:hover {
+			cursor: pointer;
+			background-color: var(--color-bg-dim);
+		}
+
+		& > button {
+			padding: 0;
+		}
 	}
 
 	> li + li {
-		border-block-start: 0.05em solid var(--color-border-dim);
+		border-block-start: 1px solid var(--color-border-dim);
 	}
+}
+
+.dialog {
+	flex-direction: column;
+	gap: 0.5em;
+	width: 300px;
+	padding-block: 0.5rem;
+	padding-inline: 0.5em;
+	border: 1px solid var(--color-border);
+
+	background-color: var(--color-bg);
+	color: var(--color-fg);
+
+	&:open {
+		display: flex;
+
+		&::backdrop {
+			background-color: var(--color-backdrop);
+		}
+	}
+
+	&:focus {
+		outline: none;
+		border-color: var(--color-border);
+	}
+}
+
+.dialog-actions {
+	display: flex;
+	gap: 0.35em;
+	justify-content: flex-end;
+	padding-block-start: 0.5em;
+	border-top: 1px solid var(--color-border-dim);
 }
 
 main {
@@ -118,7 +185,7 @@ main {
 	gap: 0.5rem;
 	grid-template-columns: 1fr 6fr;
 	padding: 0.5rem;
-	border: 0.05em solid var(--color-border);
+	border: 1px solid var(--color-border);
 }
 
 .record-field {
@@ -135,7 +202,7 @@ main {
 	gap: 0.5em;
 	grid-column: 1 / 3;
 	padding-block-start: 0.5rem;
-	border-block-start: 0.05em solid var(--color-border-dim);
+	border-block-start: 1px solid var(--color-border-dim);
 }
 
 .records {
@@ -149,11 +216,11 @@ main {
 	align-items: center;
 	padding-block: 0.5rem;
 	padding-inline: 0.5em;
-	border: 0.05em solid var(--color-border);
+	border: 1px solid var(--color-border);
 }
 
 .records-title {
-	font-size: 1.1rem;
+	font-size: var(--font-lg);
 	font-weight: bold;
 }
 
@@ -167,7 +234,7 @@ main {
 .records-content {
 	padding-block: 0.25rem;
 	padding-inline: 0.5em;
-	border: 0.05em solid var(--color-border);
+	border: 1px solid var(--color-border);
 
 	> ol {
 		display: flex;
@@ -179,7 +246,7 @@ main {
 		}
 
 		> li + li {
-			border-block-start: 0.05em solid var(--color-border-dim);
+			border-block-start: 1px solid var(--color-border-dim);
 		}
 	}
 }
@@ -236,24 +303,12 @@ main {
 }
 
 .pin-timestamp {
-	font-size: 0.875rem;
+	font-size: var(--font-sm);
 	text-decoration-color: var(--color-fg);
 }
 
 .pin-actions {
 	margin-inline-start: auto;
-}
-
-@media screen and (min-width: 768px) {
-	body {
-		width: 55vw;
-	}
-}
-
-@media screen and (min-width: 1280px) {
-	body {
-		width: 40vw;
-	}
 }
 
 .turbo-progress-bar {

@@ -17,13 +17,14 @@
 
 	<label class="record-field">
 		<span>Title</span>
-		<input type="text" name="title" value="{{ board.title }}" required>
+		<input type="text" name="title" value="{{ board.title }}" required autofocus>
 	</label>
 
 	<footer class="record-actions">
-		<a class="action" href="/boards/">Cancel</a>
-		<button type="submit" form="delete-board">Delete</button>
-		<button type="submit">Save</button>
+		<a href="/boards/">
+			<button type="button">Cancel</button>
+		</a>
+		<button class="button--primary" type="submit">Save</button>
 	</footer>
 </form>
 

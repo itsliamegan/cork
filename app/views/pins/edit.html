@@ -17,7 +17,7 @@
 
 	<label class="record-field">
 		<span>Title</span>
-		<input type="text" name="title" required value="{{ pin.title }}">
+		<input type="text" name="title" required value="{{ pin.title }}" autofocus>
 	</label>
 
 	<label class="record-field">
@@ -37,13 +37,10 @@
 	</label>
 
 	<footer class="record-actions">
-		<a class="action" href="/boards/{{ board.id }}">Cancel</a>
-		<button type="submit" form="delete-pin">Delete</button>
-		<button type="submit">Save</button>
+		<a class="action" href="/boards/{{ board.id }}">
+			<button type="button">Cancel</button>
+		</a>
+		<button class="button--primary" type="submit">Save</button>
 	</footer>
-</form>
-
-<form id="delete-pin" method="POST" action="/pins/{{ pin.id }}" hidden>
-	<input type="text" name="_method" value="DELETE" hidden>
 </form>
 {% endblock %}

@@ -23,15 +23,62 @@
 							<h3 class="pin-title">{{ pin.title }}</h3>
 							<h3 class="pin-url">{{ pin.url }}</h3>
 						</a>
-						<time class="pin-timestamp" datetime="{{ pin.created_at }}">{{ pin.created_at | date }}</time>
+						<time class="pin-timestamp" datetime="{{ pin.created_at }}">
+							{{ pin.created_at | date }}
+						</time>
 					</section>
 					<section class="pin-actions">
-						<a class="action" href="/pins/{{ pin.id }}/edit">Edit</a>
+						<button
+							class="button--icon"
+							command="toggle-popover"
+							commandfor="pin-{{ pin.id }}-actions"
+						>
+							&#8942;
+						</button>
+						<menu class="menu" id="pin-{{ pin.id }}-actions" popover>
+							<li>
+								<a class="action" href="/pins/{{ pin.id }}/edit">
+									<button>Edit</button>
+								</a>
+							</li>
+							<li>
+								<button command="show-modal" commandfor="pin-{{ pin.id }}-dialog">
+									Delete
+								</button>
+							</li>
+						</menu>
+
+						<dialog id="pin-{{ pin.id }}-dialog" class="dialog">
+							<p>
+								Are you sure you want to delete this pin? This action cannot be undone.
+							</p>
+							<footer class="dialog-actions">
+								<button command="close" commandfor="pin-{{ pin.id }}-dialog">
+									Cancel
+								</button>
+								<button
+									class="button--primary"
+									type="submit"
+									form="pin-{{ pin.id }}-delete-form"
+									autofocus
+								>
+									OK
+								</button>
+								<form
+									id="pin-{{ pin.id }}-delete-form"
+									action="/pins/{{ pin.id }}"
+									method="POST"
+									hidden
+								>
+									<input type="text" name="_method" value="DELETE" hidden>
+								</form>
+							</footer>
+						</dialog>
 					</section>
 				</article>
 			</li>
 			{% else %}
-			<span>No pins to display</span>
+			<span>There are no pins to display.</span>
 			{% endfor %}
 		</ol>
 	</div>

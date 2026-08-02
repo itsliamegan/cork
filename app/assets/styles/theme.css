@@ -8,6 +8,13 @@
 	--color-border-dim: #bbb;
 	--color-link: #1974d3;
 	--color-link-visited: #2260a0;
+	--color-backdrop: hsla(0 0% 0% / 25%);
+
+	--font-xs: clamp(0.6944rem, 0.684rem + 0.0465vw, 0.72rem);
+	--font-sm: clamp(0.8333rem, 0.8061rem + 0.1212vw, 0.9rem);
+	--font-md: clamp(1rem, 0.9489rem + 0.2273vw, 1.125rem);
+	--font-lg: clamp(1.2rem, 1.1156rem + 0.375vw, 1.4063rem);
+	--font-xl: clamp(1.44rem, 1.31rem + 0.5778vw, 1.7578rem);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -21,5 +28,6 @@
 		--color-border-dim: #535353;
 		--color-link: #6fa4db;
 		--color-link-visited: #145ba5;
+		--color-backdrop: hsla(0 0% 0% / 35%);
 	}
 }

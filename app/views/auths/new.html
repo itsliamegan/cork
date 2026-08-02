@@ -16,12 +16,12 @@
 	<body>
 		<main>
 			<header class="records-header">
-				<h1>Cork <span>📌︎</span>︎</h1>
+				<h1>Cork <span>&#x1F4CC;&#xFE0E;</span>︎</h1>
 			</header>
 			<form class="record" method="POST" action="/sign-in">
 				<label class="record-field">
 					<span>User</span>
-					<select name="user_id">
+					<select name="user_id" autofocus>
 						{% for user in users %}
 						<option value="{{ user.id }}">{{ user.name }}</option>
 						{% endfor %}
@@ -29,7 +29,7 @@
 				</label>
 
 				<footer class="record-actions">
-					<button type="submit">Sign In</button>
+					<button class="button--primary" type="submit">Sign In</button>
 				</footer>
 			</form>
 		</main>
