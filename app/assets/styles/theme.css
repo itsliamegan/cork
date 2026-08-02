@@ -10,11 +10,17 @@
 	--color-link-visited: #2260a0;
 	--color-backdrop: hsla(0 0% 0% / 25%);
 
-	--font-xs: clamp(0.6944rem, 0.684rem + 0.0465vw, 0.72rem);
-	--font-sm: clamp(0.8333rem, 0.8061rem + 0.1212vw, 0.9rem);
-	--font-md: clamp(1rem, 0.9489rem + 0.2273vw, 1.125rem);
-	--font-lg: clamp(1.2rem, 1.1156rem + 0.375vw, 1.4063rem);
-	--font-xl: clamp(1.44rem, 1.31rem + 0.5778vw, 1.7578rem);
+	--font-xs: 0.75rem;
+	--font-sm: 0.85rem;
+	--font-md: 1rem;
+	--font-lg: 1.1rem;
+	--font-xl: 1.3rem;
+
+	--space-xs: 0.25rem;
+	--space-sm: 0.5rem;
+	--space-md: 0.75rem;
+	--space-lg: 1.25rem;
+	--space-xl: 2rem;
 }
 
 @media (prefers-color-scheme: dark) {
