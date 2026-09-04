@@ -4,7 +4,7 @@ from helios.app import Context
 from helios.forms import rules, Field, Form
 from helios.http import Request, Response, Status, URL
 
-from app.data import Board, Pin
+from app.data import find_all_owned, find_owned, Board, Pin
 
 def create(req: Request, ctx: Context) -> Response:
 	form = Form([
@@ -17,7 +17,10 @@ def create(req: Request, ctx: Context) -> Response:
 		return Response.text("400 Bad Request", status = Status.BAD_REQUEST)
 
 	if input["board_id"]:
-		board_id = UUID(input["board_id"])
+		board = find_owned(ctx, Board, UUID(input["board_id"]))
+		if board is None:
+			return Response.text("404 Not Found", status = Status.NOT_FOUND)
+		board_id = board.id
 	else:
 		board_id = None
 
@@ -25,7 +28,8 @@ def create(req: Request, ctx: Context) -> Response:
 		Pin,
 		title = input["title"],
 		url = input["url"],
-		board_id = board_id
+		board_id = board_id,
+		user_id = ctx.auth.user.id
 	)
 
 	if board_id is None:
@@ -37,26 +41,26 @@ def create(req: Request, ctx: Context) -> Response:
 
 def new(req: Request, ctx: Context, params: dict[str, str]) -> Response:
 	board_id = UUID(params["id"])
-	board = ctx.store.find_one(Board, board_id)
+	board = find_owned(ctx, Board, board_id)
 	if board is None:
 		return Response.text("404 Not Found", status = Status.NOT_FOUND)
-	boards = ctx.store.find_all(Board)
+	boards = find_all_owned(ctx, Board)
 	html = ctx.views.render("pins.new", {"board": board, "board_id": board_id, "boards": boards})
 	return Response.html(html)
 
 def edit(req: Request, ctx: Context, params: dict[str, str]) -> Response:
 	id = UUID(params["id"])
-	pin = ctx.store.find_one(Pin, id)
+	pin = find_owned(ctx, Pin, id)
 	if pin is None:
 		return Response.text("404 Not Found", status = Status.NOT_FOUND)
-	board = ctx.store.find_one(Board, pin.board_id)
-	boards = ctx.store.find_all(Board)
+	board = find_owned(ctx, Board, pin.board_id) if pin.board_id else None
+	boards = find_all_owned(ctx, Board)
 	html = ctx.views.render("pins.edit", {"pin": pin, "board": board, "boards": boards})
 	return Response.html(html)
 
 def update(req: Request, ctx: Context, params: dict[str, str]) -> Response:
 	id = UUID(params["id"])
-	pin = ctx.store.find_one(Pin, id)
+	pin = find_owned(ctx, Pin, id)
 	if pin is None:
 		return Response.text("404 Not Found", status = Status.NOT_FOUND)
 
@@ -70,7 +74,10 @@ def update(req: Request, ctx: Context, params: dict[str, str]) -> Response:
 		return Response.text("400 Bad Request", status = Status.BAD_REQUEST)
 
 	if input["board_id"]:
-		board_id = UUID(input["board_id"])
+		board = find_owned(ctx, Board, UUID(input["board_id"]))
+		if board is None:
+			return Response.text("404 Not Found", status = Status.NOT_FOUND)
+		board_id = board.id
 	else:
 		board_id = None
 
@@ -87,7 +94,7 @@ def update(req: Request, ctx: Context, params: dict[str, str]) -> Response:
 
 def delete(req: Request, ctx: Context, params: dict[str, str]) -> Response:
 	id = UUID(params["id"])
-	pin = ctx.store.find_one(Pin, id)
+	pin = find_owned(ctx, Pin, id)
 	if pin is None:
 		return Response.text("404 Not Found", status = Status.NOT_FOUND)
 
