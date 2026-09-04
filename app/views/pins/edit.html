@@ -27,8 +27,7 @@
 
 	<label class="record-field">
 		<span>Board</span>
-		<select name="board_id">
-			<option selected value="">Inbox (Default)</option>
+		<select name="board_id" required>
 			{% for board in boards %}
 			{% set selected = board.id | string == pin.board_id | string %}
 			<option {% if selected %} selected {% endif %} value="{{ board.id }}">{{ board.title }}</option>
