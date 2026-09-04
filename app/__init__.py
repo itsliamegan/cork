@@ -19,8 +19,7 @@ class Guards(Component):
 			res = guard(req, ctx)
 			if res:
 				return res
-			else:
-				return next(req, ctx)
+		return next(req, ctx)
 
 app = Application(routes, [
 	helios.store.Component(Path("data", "store.json"), schema),
