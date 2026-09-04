@@ -37,23 +37,21 @@ def create(req: Request, ctx: Context) -> Response:
 
 	return Response.redirect(board_url)
 
-def new(req: Request, ctx: Context, params: dict[str, str]) -> Response:
-	board_id = UUID(params["id"])
+def new(req: Request, ctx: Context, id: UUID) -> Response:
+	board_id = id
 	board = find_owned(ctx, Board, board_id)
 	boards = find_all_owned(ctx, Board)
 	html = ctx.views.render("pins.new", {"board": board, "board_id": board_id, "boards": boards})
 	return Response.html(html)
 
-def edit(req: Request, ctx: Context, params: dict[str, str]) -> Response:
-	id = UUID(params["id"])
+def edit(req: Request, ctx: Context, id: UUID) -> Response:
 	pin = find_owned(ctx, Pin, id)
 	board = find_owned(ctx, Board, pin.board_id) if pin.board_id else None
 	boards = find_all_owned(ctx, Board)
 	html = ctx.views.render("pins.edit", {"pin": pin, "board": board, "boards": boards})
 	return Response.html(html)
 
-def update(req: Request, ctx: Context, params: dict[str, str]) -> Response:
-	id = UUID(params["id"])
+def update(req: Request, ctx: Context, id: UUID) -> Response:
 	pin = find_owned(ctx, Pin, id)
 
 	form = Form([
@@ -82,8 +80,7 @@ def update(req: Request, ctx: Context, params: dict[str, str]) -> Response:
 
 	return Response.redirect(board_url)
 
-def delete(req: Request, ctx: Context, params: dict[str, str]) -> Response:
-	id = UUID(params["id"])
+def delete(req: Request, ctx: Context, id: UUID) -> Response:
 	pin = find_owned(ctx, Pin, id)
 
 	if pin.board_id is None:

@@ -29,8 +29,7 @@ def new(req: Request, ctx: Context) -> Response:
 	html = ctx.views.render("boards.new")
 	return Response.html(html)
 
-def show(req: Request, ctx: Context, params: dict[str, str]) -> Response:
-	id = UUID(params["id"])
+def show(req: Request, ctx: Context, id: UUID) -> Response:
 	board = find_owned(ctx, Board, id)
 	pins = find_all_owned(ctx, Pin, board_id = board.id)
 
@@ -38,16 +37,14 @@ def show(req: Request, ctx: Context, params: dict[str, str]) -> Response:
 
 	return Response.html(html)
 
-def edit(req: Request, ctx: Context, params: dict[str, str]) -> Response:
-	id = UUID(params["id"])
+def edit(req: Request, ctx: Context, id: UUID) -> Response:
 	board = find_owned(ctx, Board, id)
 
 	html = ctx.views.render("boards.edit", {"board": board})
 
 	return Response.html(html)
 
-def update(req: Request, ctx: Context, params: dict[str, str]) -> Response:
-	id = UUID(params["id"])
+def update(req: Request, ctx: Context, id: UUID) -> Response:
 	board = find_owned(ctx, Board, id)
 	form = Form([
 		Field("title", [rules.required])
@@ -58,8 +55,7 @@ def update(req: Request, ctx: Context, params: dict[str, str]) -> Response:
 	board.title = input["title"]
 	return Response.redirect(URL("/boards/"))
 
-def delete(req: Request, ctx: Context, params: dict[str, str]) -> Response:
-	id = UUID(params["id"])
+def delete(req: Request, ctx: Context, id: UUID) -> Response:
 	board = find_owned(ctx, Board, id)
 	pins = find_all_owned(ctx, Pin, board_id = board.id)
 	for pin in pins:
