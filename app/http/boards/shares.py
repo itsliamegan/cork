@@ -7,7 +7,6 @@ from helios.forms import rules, Field, Form
 from helios.http import Request, Response, URL
 from helios.store import NotFoundError
 
-
 def index(req: Request, ctx: Context, id: UUID) -> Response:
 	board = find_owned(ctx, Board, id)
 
@@ -30,7 +29,7 @@ def index(req: Request, ctx: Context, id: UUID) -> Response:
 	candidates.sort(key = lambda user: user.name.casefold())
 	error = ctx.flash["error"] if "error" in ctx.flash else None
 
-	html = ctx.views.render("boards.shares", {
+	html = ctx.views.render("boards.shares.index", {
 		"board": board,
 		"owner": ctx.auth.user,
 		"recipients": recipients,
@@ -38,7 +37,6 @@ def index(req: Request, ctx: Context, id: UUID) -> Response:
 		"error": error,
 	})
 	return Response.html(html)
-
 
 def create(req: Request, ctx: Context, id: UUID) -> Response:
 	board = find_owned(ctx, Board, id)
@@ -68,7 +66,6 @@ def create(req: Request, ctx: Context, id: UUID) -> Response:
 
 	ctx.store.create(Share, board_id = board.id, user_id = user.id)
 	return Response.redirect(URL(f"/boards/{board.id}/shares"))
-
 
 def delete(req: Request, ctx: Context, id: UUID, share_id: UUID) -> Response:
 	board = find_owned(ctx, Board, id)
