@@ -1,0 +1,23 @@
+[project]
+name = "cork"
+version = "0.1.0"
+dependencies = [
+    "helios",
+]
+
+[project.scripts]
+serve = "app:main"
+
+[build-system]
+requires = ["uv_build"]
+build-backend = "uv_build"
+
+[tool.uv]
+package = true
+
+[tool.uv.build-backend]
+module-name = "app"
+module-root = ""
+
+[tool.uv.sources]
+helios = { path = "../helios", editable = true }
