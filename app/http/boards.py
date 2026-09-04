@@ -32,8 +32,6 @@ def new(req: Request, ctx: Context) -> Response:
 def show(req: Request, ctx: Context, params: dict[str, str]) -> Response:
 	id = UUID(params["id"])
 	board = find_owned(ctx, Board, id)
-	if board is None:
-		return Response.text("404 Not Found", status = Status.NOT_FOUND)
 	pins = find_all_owned(ctx, Pin, board_id = board.id)
 
 	html = ctx.views.render("boards.show", {"board": board, "pins": pins})
@@ -43,8 +41,6 @@ def show(req: Request, ctx: Context, params: dict[str, str]) -> Response:
 def edit(req: Request, ctx: Context, params: dict[str, str]) -> Response:
 	id = UUID(params["id"])
 	board = find_owned(ctx, Board, id)
-	if board is None:
-		return Response.text("404 Not Found", status = Status.NOT_FOUND)
 
 	html = ctx.views.render("boards.edit", {"board": board})
 
@@ -53,8 +49,6 @@ def edit(req: Request, ctx: Context, params: dict[str, str]) -> Response:
 def update(req: Request, ctx: Context, params: dict[str, str]) -> Response:
 	id = UUID(params["id"])
 	board = find_owned(ctx, Board, id)
-	if board is None:
-		return Response.text("404 Not Found", status = Status.NOT_FOUND)
 	form = Form([
 		Field("title", [rules.required])
 	])
@@ -67,8 +61,6 @@ def update(req: Request, ctx: Context, params: dict[str, str]) -> Response:
 def delete(req: Request, ctx: Context, params: dict[str, str]) -> Response:
 	id = UUID(params["id"])
 	board = find_owned(ctx, Board, id)
-	if board is None:
-		return Response.text("404 Not Found", status = Status.NOT_FOUND)
 	pins = find_all_owned(ctx, Pin, board_id = board.id)
 	for pin in pins:
 		ctx.store.delete(Pin, pin.id)

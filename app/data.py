@@ -1,7 +1,7 @@
 from typing import Any
 from uuid import UUID as Id
 
-from helios.store import types, Attribute, Model, Schema
+from helios.store import types, Attribute, Model, NotFoundError, Schema
 
 class User(Model):
 	attrs = [
@@ -28,12 +28,10 @@ schema = Schema([
 	Board,
 ])
 
-def find_owned(ctx, model_type: type[Model], id: Id) -> Model | None:
+def find_owned(ctx, model_type: type[Model], id: Id) -> Model:
 	model = ctx.store.find_one(model_type, id)
-	if model is None:
-		return None
 	if model.user_id != ctx.auth.user.id:
-		return None
+		raise NotFoundError(model_type, id)
 	return model
 
 def find_all_owned(ctx, model_type: type[Model], **attrs: dict[str, Any]) -> list[Model]:

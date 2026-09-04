@@ -18,8 +18,6 @@ def create(req: Request, ctx: Context) -> Response:
 
 	if input["board_id"]:
 		board = find_owned(ctx, Board, UUID(input["board_id"]))
-		if board is None:
-			return Response.text("404 Not Found", status = Status.NOT_FOUND)
 		board_id = board.id
 	else:
 		board_id = None
@@ -42,8 +40,6 @@ def create(req: Request, ctx: Context) -> Response:
 def new(req: Request, ctx: Context, params: dict[str, str]) -> Response:
 	board_id = UUID(params["id"])
 	board = find_owned(ctx, Board, board_id)
-	if board is None:
-		return Response.text("404 Not Found", status = Status.NOT_FOUND)
 	boards = find_all_owned(ctx, Board)
 	html = ctx.views.render("pins.new", {"board": board, "board_id": board_id, "boards": boards})
 	return Response.html(html)
@@ -51,8 +47,6 @@ def new(req: Request, ctx: Context, params: dict[str, str]) -> Response:
 def edit(req: Request, ctx: Context, params: dict[str, str]) -> Response:
 	id = UUID(params["id"])
 	pin = find_owned(ctx, Pin, id)
-	if pin is None:
-		return Response.text("404 Not Found", status = Status.NOT_FOUND)
 	board = find_owned(ctx, Board, pin.board_id) if pin.board_id else None
 	boards = find_all_owned(ctx, Board)
 	html = ctx.views.render("pins.edit", {"pin": pin, "board": board, "boards": boards})
@@ -61,8 +55,6 @@ def edit(req: Request, ctx: Context, params: dict[str, str]) -> Response:
 def update(req: Request, ctx: Context, params: dict[str, str]) -> Response:
 	id = UUID(params["id"])
 	pin = find_owned(ctx, Pin, id)
-	if pin is None:
-		return Response.text("404 Not Found", status = Status.NOT_FOUND)
 
 	form = Form([
 		Field("url", [rules.required]),
@@ -75,8 +67,6 @@ def update(req: Request, ctx: Context, params: dict[str, str]) -> Response:
 
 	if input["board_id"]:
 		board = find_owned(ctx, Board, UUID(input["board_id"]))
-		if board is None:
-			return Response.text("404 Not Found", status = Status.NOT_FOUND)
 		board_id = board.id
 	else:
 		board_id = None
@@ -95,8 +85,6 @@ def update(req: Request, ctx: Context, params: dict[str, str]) -> Response:
 def delete(req: Request, ctx: Context, params: dict[str, str]) -> Response:
 	id = UUID(params["id"])
 	pin = find_owned(ctx, Pin, id)
-	if pin is None:
-		return Response.text("404 Not Found", status = Status.NOT_FOUND)
 
 	if pin.board_id is None:
 		board_url = URL("/")
