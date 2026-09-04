@@ -7,6 +7,11 @@
 			<a href="/boards/{{ board.id }}">{{ board.title }}</a>
 		</h2>
 		<div class="records-actions">
+			{% if board.user_id == current_user_id %}
+			<a href="/boards/{{ board.id }}/shares">
+				<button>Shares</button>
+			</a>
+			{% endif %}
 			<a href="/boards/{{ board.id }}/pins/new">
 				<button>+ New</button>
 			</a>
@@ -27,6 +32,7 @@
 							{{ pin.created_at | date }}
 						</time>
 					</section>
+					{% if pin.user_id == current_user_id %}
 					<section class="pin-actions">
 						<button
 							class="button--icon"
@@ -75,6 +81,7 @@
 							</footer>
 						</dialog>
 					</section>
+					{% endif %}
 				</article>
 			</li>
 			{% else %}

@@ -1,0 +1,85 @@
+{% extends "layouts.base" %}
+
+{% block content %}
+<section class="records">
+	<header class="records-header">
+		<h2 class="records-title">
+			<a href="/boards/{{ board.id }}">{{ board.title }}</a> / Shares
+		</h2>
+		<div class="records-actions">
+			<a href="/boards/{{ board.id }}">
+				<button>Done</button>
+			</a>
+		</div>
+	</header>
+
+	<form class="record" action="/boards/{{ board.id }}/shares" method="POST">
+		<label class="record-field" for="share-user">
+			<span>User</span>
+			<span class="record-controls">
+				<select id="share-user" name="user_id" required {% if not candidates %}disabled{% endif %}>
+					<option value=""></option>
+					{% for user in candidates %}
+					<option value="{{ user.id }}">{{ user.name }}</option>
+					{% endfor %}
+				</select>
+				<button class="button--primary" type="submit" {% if not candidates %}disabled{% endif %}>
+					Share
+				</button>
+			</span>
+		</label>
+
+		{% if error %}
+		<p class="form-error">{{ error }}</p>
+		{% elif not candidates %}
+		<p class="form-error">Everyone already has access.</p>
+		{% endif %}
+	</form>
+
+	<section class="records-content">
+		<ol>
+			<li>
+				<article class="share">
+					<span>{{ owner.name }} (Owner)</span>
+				</article>
+			</li>
+			{% for recipient in recipients %}
+			<li>
+				<article class="share">
+					<span>{{ recipient.user.name }}</span>
+					<form
+						class="share-actions"
+						action="/boards/{{ board.id }}/shares/{{ recipient.share.id }}"
+						method="POST"
+					>
+						<input type="text" name="_method" value="DELETE" hidden>
+						<button
+							type="button"
+							command="show-modal"
+							commandfor="share-{{ recipient.share.id }}-remove"
+						>
+							Remove
+						</button>
+						<dialog id="share-{{ recipient.share.id }}-remove" class="dialog">
+							<p>
+								Are you sure you want to remove this person? They will no longer have access to this board.
+							</p>
+							<footer class="dialog-actions">
+								<button
+									type="button"
+									command="close"
+									commandfor="share-{{ recipient.share.id }}-remove"
+								>
+									Cancel
+								</button>
+								<button class="button--primary" type="submit">Remove</button>
+							</footer>
+						</dialog>
+					</form>
+				</article>
+			</li>
+			{% endfor %}
+		</ol>
+	</section>
+</section>
+{% endblock %}

@@ -4,7 +4,7 @@ from helios.app import Context
 from helios.forms import rules, Field, Form
 from helios.http import Request, Response, Status, URL
 
-from app.data import find_all_owned, find_owned, Board, Pin
+from app.data import find_all_accessible_boards, find_accessible_board, find_owned, Board, Pin
 
 def create(req: Request, ctx: Context) -> Response:
 	form = Form([
@@ -17,7 +17,7 @@ def create(req: Request, ctx: Context) -> Response:
 		return Response.text("400 Bad Request", status = Status.BAD_REQUEST)
 
 	if input["board_id"]:
-		board = find_owned(ctx, Board, UUID(input["board_id"]))
+		board = find_accessible_board(ctx, UUID(input["board_id"]))
 		board_id = board.id
 	else:
 		board_id = None
@@ -39,15 +39,15 @@ def create(req: Request, ctx: Context) -> Response:
 
 def new(req: Request, ctx: Context, id: UUID) -> Response:
 	board_id = id
-	board = find_owned(ctx, Board, board_id)
-	boards = find_all_owned(ctx, Board)
+	board = find_accessible_board(ctx, board_id)
+	boards = find_all_accessible_boards(ctx)
 	html = ctx.views.render("pins.new", {"board": board, "board_id": board_id, "boards": boards})
 	return Response.html(html)
 
 def edit(req: Request, ctx: Context, id: UUID) -> Response:
 	pin = find_owned(ctx, Pin, id)
-	board = find_owned(ctx, Board, pin.board_id) if pin.board_id else None
-	boards = find_all_owned(ctx, Board)
+	board = ctx.store.find_one(Board, pin.board_id) if pin.board_id else None
+	boards = find_all_accessible_boards(ctx)
 	html = ctx.views.render("pins.edit", {"pin": pin, "board": board, "boards": boards})
 	return Response.html(html)
 
@@ -64,7 +64,7 @@ def update(req: Request, ctx: Context, id: UUID) -> Response:
 		return Response.text("400 Bad Request", status = Status.BAD_REQUEST)
 
 	if input["board_id"]:
-		board = find_owned(ctx, Board, UUID(input["board_id"]))
+		board = find_accessible_board(ctx, UUID(input["board_id"]))
 		board_id = board.id
 	else:
 		board_id = None

@@ -5,6 +5,7 @@ import app.http.auths as auths
 import app.http.home as home
 import app.http.settings as settings
 import app.http.boards as boards
+import app.http.boards.shares as shares
 import app.http.pins as pins
 
 def ensure_signed_in(req, ctx):
@@ -33,6 +34,9 @@ routes = [
 	Route(Method.PUT, Pattern("/boards/{id:uuid}"), boards.update),
 	Route(Method.DELETE, Pattern("/boards/{id:uuid}"), boards.delete),
 	Route(Method.GET, Pattern("/boards/{id:uuid}/pins/new"), pins.new),
+	Route(Method.GET, Pattern("/boards/{id:uuid}/shares"), shares.index),
+	Route(Method.POST, Pattern("/boards/{id:uuid}/shares"), shares.create),
+	Route(Method.DELETE, Pattern("/boards/{id:uuid}/shares/{share_id:uuid}"), shares.delete),
 
 	Route(Method.POST, Pattern("/pins/"), pins.create),
 	Route(Method.GET, Pattern("/pins/{id:uuid}/edit"), pins.edit),

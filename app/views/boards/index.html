@@ -18,12 +18,18 @@
 				<article class="board">
 					<section class="board-details">
 						<a href="/boards/{{ board.id }}">
-							<h3>{{ board.title }}</h3>
+							<h3 class="board-title">
+								{{ board.title }}
+								{% if board.user_id != current_user_id %}
+								<span>(Shared)</span>
+								{% endif %}
+							</h3>
 						</a>
 						<time class="pin-timestamp" datetime="{{ board.created_at }}">
 							{{ board.created_at | date }}
 						</time>
 					</section>
+					{% if board.user_id == current_user_id %}
 					<section class="board-actions">
 						<button
 							class="button--icon"
@@ -39,6 +45,11 @@
 								</a>
 							</li>
 							<li>
+								<a href="/boards/{{ board.id }}/shares">
+									<button>Shares</button>
+								</a>
+							</li>
+							<li>
 								<button command="show-modal" commandfor="board-{{ board.id }}-dialog">
 									Delete
 								</button>
@@ -47,7 +58,7 @@
 
 						<dialog id="board-{{ board.id }}-dialog" class="dialog">
 							<p>
-								Are you sure you want to delete this board? This action cannot be undone.
+								Are you sure you want to delete this board? All of its pins and sharing access will be permanently removed. This action cannot be undone.
 							</p>
 							<footer class="dialog-actions">
 								<button command="close" commandfor="board-{{ board.id }}-dialog">
@@ -72,6 +83,7 @@
 							</footer>
 						</dialog>
 					</section>
+					{% endif %}
 				</article>
 			</li>
 			{% else %}
