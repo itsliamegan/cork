@@ -9,7 +9,7 @@ import app.http.pins as pins
 
 def ensure_signed_in(req, ctx):
 	is_secure_route = not req.url.path.startswith("/sign-in")
-	is_signed_out = "user_id" not in ctx.session
+	is_signed_out = not ctx.auth.is_signed_in()
 	if is_secure_route and is_signed_out:
 		return Response.redirect("/sign-in")
 

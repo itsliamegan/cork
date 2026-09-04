@@ -18,10 +18,12 @@ def create(req: Request, ctx: Context) -> Response:
 	input, errs = form.validate(req.input)
 	if errs:
 		return Response.text("400 Bad Request", status = Status.BAD_REQUEST)
-	user_id = UUID(input["user_id"])
-	ctx.session["user_id"] = str(user_id)
+	user = ctx.store.find_one(User, UUID(input["user_id"]))
+	if not user:
+		return Response.text("400 Bad Request", status = Status.BAD_REQUEST)
+	ctx.auth.sign_in(user)
 	return Response.redirect(URL("/boards/"))
 
 def delete(req: Request, ctx: Context) -> Response:
-	ctx.session.clear()
+	ctx.auth.sign_out()
 	return Response.redirect(URL("/sign-in"))

@@ -1,12 +1,13 @@
 from pathlib import Path
 
+import helios.auth
 import helios.flash
 import helios.session
 import helios.store
 import helios.views
 from helios.wsgi import Application
 
-from app.data import schema, Pin
+from app.data import schema, User
 from app.http import guards, routes
 
 from helios.app import Component
@@ -26,6 +27,7 @@ app = Application(routes, [
 	helios.views.Component(Path("app", "views")),
 	helios.session.Component(Path("data", "sessions.json")),
 	helios.flash.Component(),
+	helios.auth.Component(User),
 	Guards(guards),
 ])
 app.boot()
