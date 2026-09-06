@@ -4,14 +4,14 @@
 
 <fieldset class="sharing-items">
 	<label class="frame-item sharing-item sharing-item--owner">
-		<input class="sharing-checkbox" type="checkbox" checked disabled>
+		<input class="form-field" type="checkbox" checked disabled>
 		<span class="sharing-name">{{ owner.name }}</span>
 		<span class="sharing-role">Owner</span>
 	</label>
 	{% for person in people %}
 	<label class="frame-item sharing-item">
 		<input
-			class="sharing-checkbox"
+			class="form-field"
 			type="checkbox"
 			name="user_id"
 			value="{{ person.user.id }}"

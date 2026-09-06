@@ -25,7 +25,11 @@
 		<li class="frame-item">
 			<article class="pin">
 				<section class="pin-details">
-					<a class="pin-link" href="{{ pin.url }}">
+					<a
+						class="pin-link"
+						href="{{ pin.url }}"
+						{% if open_in_new_tab %}target="_blank" rel="noopener noreferrer"{% endif %}
+					>
 						<h3 class="pin-title">{{ pin.title }}</h3>
 						<span class="pin-url">{{ pin.url }}</span>
 					</a>

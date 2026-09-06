@@ -111,6 +111,7 @@ def show(req: Request, ctx: Context, id: UUID) -> Response:
 			"board": board,
 			"pins": pins,
 			"current_user_id": ctx.auth.user.id,
+			"open_in_new_tab": ctx.auth.user.open_in_new_tab,
 		},
 	)
 

@@ -4,7 +4,10 @@ from helios.store import Attribute, Model, NotFoundError, Schema, types
 
 
 class User(Model):
-	attrs = [Attribute("name", types.Str())]
+	attrs = [
+		Attribute("name", types.Str()),
+		Attribute("open_in_new_tab", types.Bool(), default=False),
+	]
 
 
 class Pin(Model):

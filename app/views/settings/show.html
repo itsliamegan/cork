@@ -27,5 +27,28 @@
 		<span class="setting-note">Return to the user chooser.</span>
 		<button class="button" type="submit">Sign out</button>
 	</form>
+
+	<header class="frame-header">
+		<h3 class="frame-title">Preferences</h3>
+	</header>
+
+	<form action="/settings" method="POST">
+		<input type="text" name="_method" value="PUT" hidden>
+		<label class="frame-item setting-option">
+			<input
+				class="form-field"
+				type="checkbox"
+				name="open_in_new_tab"
+				{% if user.open_in_new_tab %}checked{% endif %}
+			>
+			<span class="setting-name">
+				<strong>Open pin links in a new tab</strong>
+				<span class="setting-note">Open saved external URLs in a separate browser tab.</span>
+			</span>
+		</label>
+		<footer class="frame-item form-actions">
+			<button class="button button--action" type="submit">Save</button>
+		</footer>
+	</form>
 </div>
 {% endblock %}

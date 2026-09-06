@@ -235,7 +235,7 @@ a {
 	font-weight: bold;
 }
 
-.form-field {
+.form-field:not([type="checkbox"]) {
 	min-width: 0;
 	padding-block: var(--space-3);
 	padding-inline: var(--space-4);
@@ -245,6 +245,14 @@ a {
 
 	background-color: var(--color-surface-control);
 	color: var(--color-text);
+}
+
+.form-field[type="checkbox"] {
+	width: 1rem;
+	height: 1rem;
+	margin: 0;
+
+	accent-color: var(--color-action);
 }
 
 .sharing-items {
@@ -272,14 +280,6 @@ a {
 	&:hover {
 		background-color: transparent;
 	}
-}
-
-.sharing-checkbox {
-	width: 1rem;
-	height: 1rem;
-	margin: 0;
-
-	accent-color: var(--color-action);
 }
 
 .sharing-name {
@@ -321,6 +321,23 @@ a {
 
 .setting-value {
 	font-weight: bold;
+}
+
+.setting-option {
+	display: flex;
+	align-items: flex-start;
+	gap: var(--space-4);
+	cursor: pointer;
+
+	> .form-field[type="checkbox"] {
+		margin-block-start: var(--space-2);
+	}
+}
+
+.setting-name {
+	display: flex;
+	flex-direction: column;
+	gap: var(--space-1);
 }
 
 .setting-note {

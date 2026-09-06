@@ -18,6 +18,7 @@ routes = [
 			Route(Method.POST, Pattern("/sign-out"), auths.delete),
 			Route(Method.GET, Pattern("/"), home.show),
 			Route(Method.GET, Pattern("/settings"), settings.show),
+			Route(Method.PUT, Pattern("/settings"), settings.update),
 			Group(
 				prefix="/boards",
 				routes=[
