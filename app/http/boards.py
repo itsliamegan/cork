@@ -1,13 +1,13 @@
 from app.data import find_all_accessible_boards, find_accessible_board, find_owned, Board, Pin, Share, User
 
 from helios.app import Context
-from helios.forms import rules, Field, Form
+from helios.form import Field, Form, parser
 from helios.http import Request, Response, Status, URL
 
 from urllib.parse import urlsplit
 from uuid import UUID
 
-def _board_return_url(raw_url: str | list[str] | None, id: UUID) -> URL:
+def _board_return_url(raw_url: str | None, id: UUID) -> URL:
 	fallback = URL(f"/boards/{id}")
 	if not isinstance(raw_url, str):
 		return fallback
@@ -33,7 +33,7 @@ def index(req: Request, ctx: Context) -> Response:
 
 def create(req: Request, ctx: Context) -> Response:
 	form = Form([
-		Field("title", [rules.required])
+		Field("title", parser.Required(parser.Str()))
 	])
 	input, errs = form.validate(req.input)
 	if errs:
@@ -88,19 +88,15 @@ def edit(req: Request, ctx: Context, id: UUID) -> Response:
 def update(req: Request, ctx: Context, id: UUID) -> Response:
 	board = find_owned(ctx, Board, id)
 	form = Form([
-		Field("title", [rules.required])
+		Field("title", parser.Required(parser.Str())),
+		Field("user_id", parser.List(parser.UUID())),
+		Field("return_to", parser.Optional(parser.Str())),
 	])
 	input, errs = form.validate(req.input)
 	if errs:
 		return Response.text("400 Bad Request", status = Status.BAD_REQUEST)
 
-	raw_user_ids = req.input["user_id"] if "user_id" in req.input else []
-	if isinstance(raw_user_ids, str):
-		raw_user_ids = [raw_user_ids]
-	try:
-		selected_user_ids = {UUID(raw_user_id) for raw_user_id in raw_user_ids}
-	except (AttributeError, TypeError, ValueError):
-		return Response.text("400 Bad Request", status = Status.BAD_REQUEST)
+	selected_user_ids = set(input["user_id"])
 
 	available_user_ids = {
 		user.id
@@ -120,8 +116,7 @@ def update(req: Request, ctx: Context, id: UUID) -> Response:
 
 	board.title = input["title"]
 
-	raw_return_to = req.input["return_to"] if "return_to" in req.input else None
-	return_to = _board_return_url(raw_return_to, board.id)
+	return_to = _board_return_url(input["return_to"], board.id)
 	return Response.redirect(return_to)
 
 def delete(req: Request, ctx: Context, id: UUID) -> Response:

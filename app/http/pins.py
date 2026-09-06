@@ -1,22 +1,22 @@
 from uuid import UUID
 
 from helios.app import Context
-from helios.forms import rules, Field, Form
+from helios.form import Field, Form, parser
 from helios.http import Request, Response, Status, URL
 
 from app.data import find_all_accessible_boards, find_accessible_board, find_owned, Board, Pin
 
 def create(req: Request, ctx: Context) -> Response:
 	form = Form([
-		Field("url", [rules.required]),
-		Field("title", [rules.required]),
-		Field("board_id", [rules.required]),
+		Field("url", parser.Required(parser.Str())),
+		Field("title", parser.Required(parser.Str())),
+		Field("board_id", parser.Required(parser.UUID())),
 	])
 	input, errs = form.validate(req.input)
 	if errs:
 		return Response.text("400 Bad Request", status = Status.BAD_REQUEST)
 
-	board = find_accessible_board(ctx, UUID(input["board_id"]))
+	board = find_accessible_board(ctx, input["board_id"])
 
 	ctx.store.create(
 		Pin,
@@ -46,15 +46,15 @@ def update(req: Request, ctx: Context, id: UUID) -> Response:
 	pin = find_owned(ctx, Pin, id)
 
 	form = Form([
-		Field("url", [rules.required]),
-		Field("title", [rules.required]),
-		Field("board_id", [rules.required]),
+		Field("url", parser.Required(parser.Str())),
+		Field("title", parser.Required(parser.Str())),
+		Field("board_id", parser.Required(parser.UUID())),
 	])
 	input, errs = form.validate(req.input)
 	if errs:
 		return Response.text("400 Bad Request", status = Status.BAD_REQUEST)
 
-	board = find_accessible_board(ctx, UUID(input["board_id"]))
+	board = find_accessible_board(ctx, input["board_id"])
 
 	pin.url = input["url"]
 	pin.title = input["title"]

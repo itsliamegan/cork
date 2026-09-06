@@ -1,7 +1,5 @@
-from uuid import UUID
-
 from helios.app import Context
-from helios.forms import rules, Field, Form
+from helios.form import Field, Form, parser
 from helios.http import Request, Response, Status, URL
 
 from app.data import User
@@ -14,12 +12,12 @@ def new(req: Request, ctx: Context) -> Response:
 
 def create(req: Request, ctx: Context) -> Response:
 	form = Form([
-		Field("user_id", [rules.required])
+		Field("user_id", parser.Required(parser.UUID()))
 	])
 	input, errs = form.validate(req.input)
 	if errs:
 		return Response.text("400 Bad Request", status = Status.BAD_REQUEST)
-	user = ctx.store.find_one(User, UUID(input["user_id"]))
+	user = ctx.store.find_one(User, input["user_id"])
 	ctx.auth.sign_in(user)
 	return Response.redirect(URL("/boards/"))
 
