@@ -6,6 +6,7 @@ export default class extends Stimulus.Controller {
 		this.draggedBoard = null
 		this.sourceList = null
 		this.dropIndicator = null
+		this.hasMovedAway = false
 		this.saving = false
 	}
 
@@ -31,6 +32,7 @@ export default class extends Stimulus.Controller {
 		this.draggedBoard = board
 		this.sourceList = list
 		this.originalNextSibling = board.nextElementSibling
+		this.hasMovedAway = false
 
 		event.dataTransfer.effectAllowed = "move"
 		event.dataTransfer.setData("text/plain", board.dataset.boardId)
@@ -65,6 +67,14 @@ export default class extends Stimulus.Controller {
 				return event.clientY < bounds.top + bounds.height / 2
 			})
 
+		let isOriginalPosition =
+			(followingBoard ?? null) === this.originalNextSibling
+		if (isOriginalPosition && !this.hasMovedAway) {
+			this.removeDropIndicator()
+			return
+		}
+
+		if (!isOriginalPosition) this.hasMovedAway = true
 		this.ensureDropIndicator()
 		this.sourceList.insertBefore(this.dropIndicator, followingBoard ?? null)
 	}
@@ -84,13 +94,17 @@ export default class extends Stimulus.Controller {
 		if (
 			this.saving ||
 			!this.draggedBoard ||
-			event.currentTarget !== this.sourceList ||
-			!this.dropIndicator
+			event.currentTarget !== this.sourceList
 		) {
 			return
 		}
 
 		event.preventDefault()
+		if (!this.dropIndicator) {
+			this.cleanupDrag()
+			return
+		}
+
 		let boardId = event.dataTransfer?.getData("text/plain")
 		if (boardId !== this.draggedBoard.dataset.boardId) {
 			this.cleanupDrag()
@@ -102,8 +116,11 @@ export default class extends Stimulus.Controller {
 		let originalNextSibling = this.originalNextSibling
 		this.dropIndicator.replaceWith(board)
 		this.dropIndicator = null
-		this.saving = true
+		let orderingChanged = board.nextElementSibling !== originalNextSibling
 		this.cleanupDrag()
+
+		if (!orderingChanged) return
+		this.saving = true
 		this.saveOrdering(board, originalList, originalNextSibling)
 	}
 
@@ -129,6 +146,7 @@ export default class extends Stimulus.Controller {
 		this.draggedBoard = null
 		this.sourceList = null
 		this.originalNextSibling = null
+		this.hasMovedAway = false
 	}
 
 	async saveOrdering(board, originalList, originalNextSibling) {
