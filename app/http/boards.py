@@ -7,12 +7,14 @@ from helios.http import Request, Response, Status, URL
 
 from app.data import (
 	Board,
+	Ordering,
 	Pin,
 	Share,
 	User,
 	find_accessible_board,
 	find_all_accessible_boards,
 	find_owned,
+	order_accessible_boards,
 )
 
 
@@ -44,7 +46,7 @@ def _sharing_people(
 
 
 def index(req: Request, ctx: Context) -> Response:
-	boards = find_all_accessible_boards(ctx)
+	boards = order_accessible_boards(ctx, find_all_accessible_boards(ctx))
 	shared_board_ids = {share.board_id for share in ctx.store.find_all(Share)}
 	private_boards = [
 		board
@@ -178,10 +180,13 @@ def delete(req: Request, ctx: Context, id: UUID) -> Response:
 	board = find_owned(ctx, Board, id)
 	pins = ctx.store.find_by(Pin, board_id=board.id)
 	shares = ctx.store.find_by(Share, board_id=board.id)
+	orderings = ctx.store.find_by(Ordering, board_id=board.id)
 	for pin in pins:
 		ctx.store.delete(Pin, pin.id)
 	for share in shares:
 		ctx.store.delete(Share, share.id)
+	for ordering in orderings:
+		ctx.store.delete(Ordering, ordering.id)
 	ctx.store.delete(Board, board.id)
 
 	return Response.redirect(URL("/boards/"))

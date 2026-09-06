@@ -2,8 +2,21 @@
 {% set active_nav = "boards" %}
 
 {% macro board_item(board, current_user) %}
-<li class="frame-item">
+<li
+	class="frame-item frame-item--reorderable"
+	data-board-order-target="board"
+	data-board-id="{{ board.id }}"
+>
 	<article class="board">
+		<button
+			class="board-reorder-handle"
+			type="button"
+			draggable="true"
+			title="Drag to reorder"
+			data-action="dragstart->board-order#dragStart dragend->board-order#dragEnd"
+		>
+			⠿
+		</button>
 		<section class="board-details">
 			<a class="board-link" href="/boards/{{ board.id }}">
 				<h3 class="board-title">{{ board.title }}</h3>
@@ -83,13 +96,21 @@
 	</section>
 </header>
 
-<section class="frame">
+<section
+	class="frame"
+	data-controller="board-order"
+	data-board-order-url-value="/orderings"
+>
 	<header class="frame-header">
 		<h3 class="frame-title">Private boards</h3>
 	</header>
 
-	<ol class="frame-items">
-		{% for board in private_boards | sort(attribute = "created_at", reverse = True) %}
+	<ol
+		class="frame-items"
+		data-board-order-target="list"
+		data-action="dragover->board-order#dragOver dragleave->board-order#dragLeave drop->board-order#drop"
+	>
+		{% for board in private_boards %}
 		{{ board_item(board, current_user) }}
 		{% else %}
 		<li class="frame-item frame-empty">No private boards.</li>
@@ -100,8 +121,12 @@
 		<h3 class="frame-title">Shared boards</h3>
 	</header>
 
-	<ol class="frame-items">
-		{% for board in shared_boards | sort(attribute = "created_at", reverse = True) %}
+	<ol
+		class="frame-items"
+		data-board-order-target="list"
+		data-action="dragover->board-order#dragOver dragleave->board-order#dragLeave drop->board-order#drop"
+	>
+		{% for board in shared_boards %}
 		{{ board_item(board, current_user) }}
 		{% else %}
 		<li class="frame-item frame-empty">No shared boards.</li>

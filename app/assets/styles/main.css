@@ -214,6 +214,25 @@ a {
 	& + .frame-item {
 		border-block-start: var(--rule-quiet) solid var(--color-border-quiet);
 	}
+
+	&.frame-item--reorderable {
+		&:hover .board-reorder-handle,
+		&:focus-within .board-reorder-handle {
+			opacity: 0.7;
+		}
+	}
+
+	&.frame-item--dragging {
+		background-color: var(--color-surface);
+		opacity: 0.82;
+
+		.board-reorder-handle {
+			cursor: grabbing;
+
+			color: var(--color-text);
+			opacity: 1;
+		}
+	}
 }
 
 .form-items {
@@ -642,6 +661,43 @@ a {
 	align-items: center;
 	gap: var(--space-6);
 	min-height: var(--height-row-compact);
+}
+
+.board-reorder-handle {
+	flex: none;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: var(--space-4);
+	margin-inline-end: calc(-1 * var(--space-3));
+	padding: 0;
+
+	border: 0;
+	appearance: none;
+
+	font-size: var(--font-size-meta);
+	line-height: 1;
+	cursor: grab;
+	-webkit-touch-callout: none;
+	-webkit-user-select: none;
+	user-select: none;
+
+	background: transparent;
+	color: var(--color-text-muted);
+	opacity: 0;
+}
+
+.board-drop-target {
+	height: var(--height-row-content);
+	pointer-events: none;
+
+	background-color: color-mix(in srgb, var(--color-action) 14%, transparent);
+}
+
+@media (hover: none) {
+	.board-reorder-handle {
+		opacity: 0.55;
+	}
 }
 
 .board-details {

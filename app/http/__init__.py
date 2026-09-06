@@ -1,7 +1,7 @@
 from helios.http import Method, Response
 from helios.routing import Group, Pattern, Route
 
-from app.http import auths, boards, home, pins, settings
+from app.http import auths, boards, home, orderings, pins, settings
 
 
 def ensure_signed_in(req, ctx, **params):
@@ -19,6 +19,7 @@ routes = [
 			Route(Method.GET, Pattern("/"), home.show),
 			Route(Method.GET, Pattern("/settings"), settings.show),
 			Route(Method.PUT, Pattern("/settings"), settings.update),
+			Route(Method.PUT, Pattern("/orderings"), orderings.update),
 			Group(
 				prefix="/boards",
 				routes=[

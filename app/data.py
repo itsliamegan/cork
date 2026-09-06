@@ -34,12 +34,21 @@ class Share(Model):
 	]
 
 
+class Ordering(Model):
+	attrs = [
+		Attribute("user_id", types.UUID()),
+		Attribute("board_id", types.UUID()),
+		Attribute("position", types.Int()),
+	]
+
+
 schema = Schema(
 	[
 		User,
 		Pin,
 		Board,
 		Share,
+		Ordering,
 	]
 )
 
@@ -88,3 +97,28 @@ def find_all_accessible_boards(ctx) -> list[Board]:
 		for board in ctx.store.find_all(Board)
 		if board.user_id == ctx.auth.user.id or board.id in shared_board_ids
 	]
+
+
+def order_accessible_boards(ctx, boards: list[Board]) -> list[Board]:
+	board_ids = {board.id for board in boards}
+	positions = {}
+	for ordering in ctx.store.find_by(Ordering, user_id=ctx.auth.user.id):
+		if ordering.board_id not in board_ids:
+			continue
+		position = positions.get(ordering.board_id)
+		if position is None or ordering.position < position:
+			positions[ordering.board_id] = ordering.position
+
+	unpositioned = sorted(
+		(board for board in boards if board.id not in positions),
+		key=lambda board: board.created_at,
+		reverse=True,
+	)
+	positioned = sorted(
+		(board for board in boards if board.id in positions),
+		key=lambda board: board.created_at,
+		reverse=True,
+	)
+	positioned.sort(key=lambda board: positions[board.id])
+
+	return [*unpositioned, *positioned]
