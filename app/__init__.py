@@ -5,30 +5,18 @@ import helios.flash
 import helios.session
 import helios.store
 import helios.views
+from helios.routing import Router
 from helios.wsgi import Application
 
 from app.data import schema, User
-from app.http import guards, routes
+from app.http import routes
 
-from helios.app import Component
-class Guards(Component):
-	def __init__(self, guards):
-		self.guards = guards
-
-	def __call__(self, req, ctx, next):
-		for guard in self.guards:
-			res = guard(req, ctx)
-			if res:
-				return res
-		return next(req, ctx)
-
-app = Application(routes, [
+app = Application(Router(routes), [
 	helios.store.Component(Path("data", "store.json"), schema),
 	helios.views.Component(Path("app", "views")),
 	helios.session.Component(Path("data", "sessions.json")),
 	helios.flash.Component(),
 	helios.auth.Component(User),
-	Guards(guards),
 ])
 app.boot()
 
