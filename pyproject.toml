@@ -2,6 +2,7 @@
 name = "cork"
 version = "0.1.0"
 dependencies = [
+    "gunicorn>=26.2.0",
     "helios",
     "ruff>=0.16.6",
 ]
