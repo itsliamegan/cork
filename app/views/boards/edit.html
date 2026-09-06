@@ -15,6 +15,7 @@
 
 <form class="frame" action="/boards/{{ board.id }}" method="POST" autocomplete="off">
 	<input type="text" name="_method" value="PUT" hidden>
+	<input type="hidden" name="return_to" value="{{ return_to }}">
 
 	<header class="frame-header">
 		<h3 class="frame-title">Details</h3>
@@ -59,7 +60,7 @@
 	</fieldset>
 
 	<footer class="frame-item form-actions">
-		<a class="button" href="/boards/{{ board.id }}">Cancel</a>
+		<a class="button" href="{{ return_to }}">Cancel</a>
 		<button class="button button--action" type="submit">Save</button>
 	</footer>
 </form>

@@ -4,7 +4,22 @@ from helios.app import Context
 from helios.forms import rules, Field, Form
 from helios.http import Request, Response, Status, URL
 
+from urllib.parse import urlsplit
 from uuid import UUID
+
+def _board_return_url(raw_url: str | list[str] | None, id: UUID) -> URL:
+	fallback = URL(f"/boards/{id}")
+	if not isinstance(raw_url, str):
+		return fallback
+
+	try:
+		path = urlsplit(raw_url).path
+	except ValueError:
+		return fallback
+
+	if path == "/boards/" or path == f"/boards/{id}":
+		return URL(path)
+	return fallback
 
 def index(req: Request, ctx: Context) -> Response:
 	boards = find_all_accessible_boards(ctx)
@@ -65,6 +80,7 @@ def edit(req: Request, ctx: Context, id: UUID) -> Response:
 		"board": board,
 		"owner": ctx.auth.user,
 		"people": people,
+		"return_to": _board_return_url(req.referrer, board.id),
 	})
 
 	return Response.html(html)
@@ -103,7 +119,10 @@ def update(req: Request, ctx: Context, id: UUID) -> Response:
 		ctx.store.create(Share, board_id = board.id, user_id = user_id)
 
 	board.title = input["title"]
-	return Response.redirect(URL("/boards/"))
+
+	raw_return_to = req.input["return_to"] if "return_to" in req.input else None
+	return_to = _board_return_url(raw_return_to, board.id)
+	return Response.redirect(return_to)
 
 def delete(req: Request, ctx: Context, id: UUID) -> Response:
 	board = find_owned(ctx, Board, id)
