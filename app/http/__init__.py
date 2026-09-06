@@ -36,6 +36,7 @@ routes = [
 				prefix="/pins",
 				routes=[
 					Route(Method.POST, Pattern("/"), pins.create),
+					Route(Method.GET, Pattern("/{id:uuid}"), pins.show),
 					Route(Method.GET, Pattern("/{id:uuid}/edit"), pins.edit),
 					Route(Method.PUT, Pattern("/{id:uuid}"), pins.update),
 					Route(Method.DELETE, Pattern("/{id:uuid}"), pins.delete),

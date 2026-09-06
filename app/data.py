@@ -14,6 +14,7 @@ class Pin(Model):
 	attrs = [
 		Attribute("url", types.Str()),
 		Attribute("title", types.Str()),
+		Attribute("note", types.Str(), default=""),
 		Attribute("board_id", types.UUID(), nullable=True),
 		Attribute("user_id", types.UUID()),
 	]
@@ -65,6 +66,17 @@ def find_accessible_board(ctx, id: Id) -> Board:
 	if not can_access_board(ctx, board):
 		raise NotFoundError(Board, id)
 	return board
+
+
+def find_accessible_pin(ctx, id: Id) -> Pin:
+	pin = ctx.store.find_one(Pin, id)
+	if pin.board_id is None:
+		raise NotFoundError(Pin, id)
+	try:
+		find_accessible_board(ctx, pin.board_id)
+	except NotFoundError as err:
+		raise NotFoundError(Pin, id) from err
+	return pin
 
 
 def find_all_accessible_boards(ctx) -> list[Board]:

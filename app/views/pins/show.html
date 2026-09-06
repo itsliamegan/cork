@@ -1,0 +1,51 @@
+{% extends "layouts.base" %}
+{% set active_nav = "boards" %}
+
+{% block title %}Cork - {{ pin.title }}{% endblock %}
+
+{% block content %}
+<header id="page-header">
+	<h2 id="page-title">{{ pin.title }}</h2>
+
+	<span id="page-context">
+		<span>Board:</span>
+		<a href="/boards/{{ board.id }}">{{ board.title }}</a>
+	</span>
+
+	{% if pin.user_id == current_user.id %}
+	<section id="page-actions">
+		<a class="button" href="/pins/{{ pin.id }}/edit">Edit</a>
+	</section>
+	{% endif %}
+</header>
+
+<section class="frame">
+	<header class="frame-header">
+		<h3 class="frame-title">Details</h3>
+	</header>
+
+	<section class="frame-item pin-detail">
+		<a
+			class="pin-detail-url"
+			href="{{ pin.url }}"
+			{% if open_in_new_tab %}target="_blank" rel="noopener noreferrer"{% endif %}
+		>
+			{{ pin.url }}
+		</a>
+		<p class="pin-detail-meta">
+			<span>Saved by {{ creator.name }}</span>
+			<time datetime="{{ pin.created_at }}">{{ pin.created_at | date }}</time>
+		</p>
+	</section>
+
+	<header class="frame-header">
+		<h3 class="frame-title">Note</h3>
+	</header>
+
+	{% if pin.note %}
+	<p class="frame-item pin-note">{{ pin.note }}</p>
+	{% else %}
+	<p class="frame-item frame-empty">No note.</p>
+	{% endif %}
+</section>
+{% endblock %}

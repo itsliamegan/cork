@@ -457,6 +457,7 @@ a {
 }
 
 #page {
+	container-type: inline-size;
 	display: flex;
 	flex-direction: column;
 
@@ -475,6 +476,7 @@ a {
 }
 
 #page-context {
+	flex: none;
 	display: flex;
 	align-items: baseline;
 	min-width: 0;
@@ -482,23 +484,21 @@ a {
 	gap: var(--space-3);
 	margin-inline-start: auto;
 
-	> span {
+	> * {
 		font-size: var(--font-size-label);
 	}
 
-	> span:nth-child(1) {
+	> :nth-child(1) {
 		flex: none;
 
 		color: var(--color-text-muted);
 	}
 
-	> span:nth-child(2) {
+	> :nth-child(2) {
 		min-width: 0;
-		overflow: hidden;
 
 		font-weight: bold;
-		text-overflow: ellipsis;
-		white-space: nowrap;
+		overflow-wrap: anywhere;
 	}
 }
 
@@ -513,8 +513,11 @@ a {
 }
 
 #page-title {
-	 font-size: var(--font-size-page-title);
-	 font-weight: bold;
+	min-width: 0;
+
+	font-size: var(--font-size-page-title);
+	font-weight: bold;
+	overflow-wrap: anywhere;
 }
 
 #page-actions {
@@ -522,6 +525,27 @@ a {
 	gap: var(--space-4);
 	align-items: center;
 	margin-inline-start: auto;
+}
+
+#page-context + #page-actions {
+	margin-inline-start: 0;
+}
+
+@container (max-width: 28rem) {
+	#page-header {
+		flex-direction: column;
+		align-items: flex-start;
+		gap: var(--space-5);
+	}
+
+	#page-context {
+		max-width: 100%;
+		margin-inline-start: 0;
+	}
+
+	#page-actions {
+		margin-inline-start: 0;
+	}
 }
 
 .pin {
@@ -560,18 +584,57 @@ a {
 	color: var(--color-text-muted);
 }
 
-.pin-date {
-	display: block;
+.pin-meta {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: baseline;
+	gap: var(--space-1) var(--space-4);
 	margin-block-start: var(--space-1);
+
+	font-size: var(--font-size-meta);
+}
+
+.pin-date {
+	color: var(--color-text-muted);
+}
+
+.pin-details-link {
+	white-space: nowrap;
+}
+
+.pin-actions {
+	display: flex;
+	margin-inline-start: auto;
+}
+
+.pin-detail {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: var(--space-3);
+}
+
+.pin-detail-url,
+.pin-note {
+	overflow-wrap: anywhere;
+}
+
+.pin-detail-meta {
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--space-3);
 
 	font-size: var(--font-size-meta);
 
 	color: var(--color-text-muted);
 }
 
-.pin-actions {
-	display: flex;
-	margin-inline-start: auto;
+.pin-note {
+	white-space: pre-wrap;
+}
+
+.pin-note-field {
+	resize: vertical;
 }
 
 .board {

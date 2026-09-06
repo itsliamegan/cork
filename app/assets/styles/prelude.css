@@ -22,7 +22,7 @@ h1, h2, h3, h4 {
 	font-weight: normal;
 }
 
-input, select, option, button {
+input, select, option, button, textarea {
 	font-family: inherit;
 	font-size: inherit;
 	color: inherit;

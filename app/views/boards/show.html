@@ -33,9 +33,12 @@
 						<h3 class="pin-title">{{ pin.title }}</h3>
 						<span class="pin-url">{{ pin.url }}</span>
 					</a>
-					<time class="pin-date" datetime="{{ pin.created_at }}">
-						{{ pin.created_at | date }}
-					</time>
+					<section class="pin-meta">
+						<time class="pin-date" datetime="{{ pin.created_at }}">
+							{{ pin.created_at | date }}
+						</time>
+						<a class="pin-details-link" href="/pins/{{ pin.id }}">Details</a>
+					</section>
 				</section>
 
 				{% if pin.user_id == current_user.id %}
