@@ -21,11 +21,36 @@ def _board_return_url(raw_url: str | None, id: UUID) -> URL:
 		return URL(path)
 	return fallback
 
+def _sharing_people(ctx: Context, owner_id: UUID, shared_user_ids: set[UUID] | None = None) -> list[dict]:
+	if shared_user_ids is None:
+		shared_user_ids = set()
+	users = [
+		user
+		for user in ctx.store.find_all(User)
+		if user.id != owner_id
+	]
+	users.sort(key = lambda user: user.name.casefold())
+	return [
+		{"user": user, "has_access": user.id in shared_user_ids}
+		for user in users
+	]
+
 def index(req: Request, ctx: Context) -> Response:
 	boards = find_all_accessible_boards(ctx)
+	shared_board_ids = {
+		share.board_id
+		for share in ctx.store.find_all(Share)
+	}
+	private_boards = [
+		board
+		for board in boards
+		if board.user_id == ctx.auth.user.id and board.id not in shared_board_ids
+	]
+	shared_boards = [board for board in boards if board.id in shared_board_ids]
 
 	html = ctx.views.render("boards.index", {
-		"boards": boards,
+		"private_boards": private_boards,
+		"shared_boards": shared_boards,
 		"current_user_id": ctx.auth.user.id,
 	})
 
@@ -33,18 +58,33 @@ def index(req: Request, ctx: Context) -> Response:
 
 def create(req: Request, ctx: Context) -> Response:
 	form = Form([
-		Field("title", parser.Required(parser.Str()))
+		Field("title", parser.Required(parser.Str())),
+		Field("user_id", parser.List(parser.UUID())),
 	])
 	input, errs = form.validate(req.input)
 	if errs:
 		return Response.text("400 Bad Request", status = Status.BAD_REQUEST)
 
+	selected_user_ids = set(input["user_id"])
+	available_user_ids = {
+		user.id
+		for user in ctx.store.find_all(User)
+		if user.id != ctx.auth.user.id
+	}
+	if not selected_user_ids <= available_user_ids:
+		return Response.text("400 Bad Request", status = Status.BAD_REQUEST)
+
 	board = ctx.store.create(Board, title = input["title"], user_id = ctx.auth.user.id)
+	for user_id in selected_user_ids:
+		ctx.store.create(Share, board_id = board.id, user_id = user_id)
 
 	return Response.redirect(URL(f"/boards/{board.id}"))
 
 def new(req: Request, ctx: Context) -> Response:
-	html = ctx.views.render("boards.new")
+	html = ctx.views.render("boards.new", {
+		"owner": ctx.auth.user,
+		"people": _sharing_people(ctx, ctx.auth.user.id),
+	})
 	return Response.html(html)
 
 def show(req: Request, ctx: Context, id: UUID) -> Response:
@@ -65,21 +105,11 @@ def edit(req: Request, ctx: Context, id: UUID) -> Response:
 		share.user_id
 		for share in ctx.store.find_by(Share, board_id = board.id)
 	}
-	users = [
-		user
-		for user in ctx.store.find_all(User)
-		if user.id != board.user_id
-	]
-	users.sort(key = lambda user: user.name.casefold())
-	people = [
-		{"user": user, "has_access": user.id in shared_user_ids}
-		for user in users
-	]
 
 	html = ctx.views.render("boards.edit", {
 		"board": board,
 		"owner": ctx.auth.user,
-		"people": people,
+		"people": _sharing_people(ctx, board.user_id, shared_user_ids),
 		"return_to": _board_return_url(req.referrer, board.id),
 	})
 

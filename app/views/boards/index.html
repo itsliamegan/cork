@@ -1,6 +1,77 @@
 {% extends "layouts.base" %}
 {% set active_nav = "boards" %}
 
+{% macro board_item(board, current_user_id) %}
+<li class="frame-item">
+	<article class="board">
+		<section class="board-details">
+			<a class="board-link" href="/boards/{{ board.id }}">
+				<h3 class="board-title">{{ board.title }}</h3>
+			</a>
+			<time class="board-date" datetime="{{ board.created_at }}">
+				{{ board.created_at | date }}
+			</time>
+		</section>
+		{% if board.user_id == current_user_id %}
+		<section class="board-actions">
+			<button
+				class="button button--icon"
+				command="toggle-popover"
+				commandfor="board-{{ board.id }}-actions"
+			>
+				&#8942;
+			</button>
+
+			<menu class="menu" id="board-{{ board.id }}-actions" popover>
+				<li><a class="menu-item" href="/boards/{{ board.id }}/edit">Edit</a></li>
+				<li><a class="menu-item" href="/boards/{{ board.id }}/edit#sharing">Sharing</a></li>
+				<li>
+					<button
+						class="menu-item menu-item--danger"
+						command="show-modal"
+						commandfor="board-{{ board.id }}-dialog"
+					>
+						Delete
+					</button>
+				</li>
+			</menu>
+
+			<dialog id="board-{{ board.id }}-dialog" class="dialog">
+				<section class="dialog-content">
+					<p>Are you sure you want to delete this board? This action cannot be undone.</p>
+				</section>
+				<footer class="dialog-actions">
+					<button
+						class="button"
+						command="close"
+						commandfor="board-{{ board.id }}-dialog"
+					>
+						Cancel
+					</button>
+					<button
+						class="button button--danger"
+						type="submit"
+						form="board-{{ board.id }}-delete-form"
+						autofocus
+					>
+						Delete
+					</button>
+					<form
+						id="board-{{ board.id }}-delete-form"
+						action="/boards/{{ board.id }}"
+						method="POST"
+						hidden
+					>
+						<input type="text" name="_method" value="DELETE" hidden>
+					</form>
+				</footer>
+			</dialog>
+		</section>
+		{% endif %}
+	</article>
+</li>
+{% endmacro %}
+
 {% block title %}Cork - Boards{% endblock %}
 
 {% block content %}
@@ -14,100 +85,24 @@
 
 <section class="frame">
 	<header class="frame-header">
-		<h3 class="frame-title">Your boards</h3>
+		<h3 class="frame-title">Private boards</h3>
 	</header>
 
 	<ol class="frame-items">
-		{% for board in boards | sort(attribute = "created_at", reverse = True) if board.user_id == current_user_id %}
-		<li class="frame-item">
-			<article class="board">
-				<section class="board-details">
-					<a class="board-link" href="/boards/{{ board.id }}">
-						<h3 class="board-title">{{ board.title }}</h3>
-					</a>
-					<time class="board-date" datetime="{{ board.created_at }}">
-						{{ board.created_at | date }}
-					</time>
-				</section>
-				<section class="board-actions">
-					<button
-						class="button button--icon"
-						command="toggle-popover"
-						commandfor="board-{{ board.id }}-actions"
-					>
-						&#8942;
-					</button>
-
-					<menu class="menu" id="board-{{ board.id }}-actions" popover>
-						<li><a class="menu-item" href="/boards/{{ board.id }}/edit">Edit</a></li>
-						<li><a class="menu-item" href="/boards/{{ board.id }}/edit#sharing">Sharing</a></li>
-						<li>
-							<button
-								class="menu-item menu-item--danger"
-								command="show-modal"
-								commandfor="board-{{ board.id }}-dialog"
-							>
-								Delete
-							</button>
-						</li>
-					</menu>
-
-					<dialog id="board-{{ board.id }}-dialog" class="dialog">
-						<section class="dialog-content">
-							<p>Are you sure you want to delete this board? This action cannot be undone.</p>
-						</section>
-						<footer class="dialog-actions">
-							<button
-								class="button"
-								command="close"
-								commandfor="board-{{ board.id }}-dialog"
-							>
-								Cancel
-							</button>
-							<button
-								class="button button--danger"
-								type="submit"
-								form="board-{{ board.id }}-delete-form"
-								autofocus
-							>
-								Delete
-							</button>
-							<form
-								id="board-{{ board.id }}-delete-form"
-								action="/boards/{{ board.id }}"
-								method="POST"
-								hidden
-							>
-								<input type="text" name="_method" value="DELETE" hidden>
-							</form>
-						</footer>
-					</dialog>
-				</section>
-			</article>
-		</li>
+		{% for board in private_boards | sort(attribute = "created_at", reverse = True) %}
+		{{ board_item(board, current_user_id) }}
 		{% else %}
-		<li class="frame-item frame-empty">No boards yet.</li>
+		<li class="frame-item frame-empty">No private boards.</li>
 		{% endfor %}
 	</ol>
 
 	<header class="frame-header">
-		<h3 class="frame-title">Shared with you</h3>
+		<h3 class="frame-title">Shared boards</h3>
 	</header>
 
 	<ol class="frame-items">
-		{% for board in boards | sort(attribute = "created_at", reverse = True) if board.user_id != current_user_id %}
-		<li class="frame-item">
-			<article class="board">
-				<section class="board-details">
-					<a class="board-link" href="/boards/{{ board.id }}">
-						<h3 class="board-title">{{ board.title }}</h3>
-					</a>
-					<time class="board-date" datetime="{{ board.created_at }}">
-						{{ board.created_at | date }}
-					</time>
-				</section>
-			</article>
-		</li>
+		{% for board in shared_boards | sort(attribute = "created_at", reverse = True) %}
+		{{ board_item(board, current_user_id) }}
 		{% else %}
 		<li class="frame-item frame-empty">No shared boards.</li>
 		{% endfor %}

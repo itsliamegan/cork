@@ -35,29 +35,7 @@
 		</label>
 	</section>
 
-	<header class="frame-header" id="sharing">
-		<h3 class="frame-title">Sharing</h3>
-	</header>
-
-	<fieldset class="sharing-items">
-		<label class="frame-item sharing-item sharing-item--owner">
-			<input class="sharing-checkbox" type="checkbox" checked disabled>
-			<span class="sharing-name">{{ owner.name }}</span>
-			<span class="sharing-role">Owner</span>
-		</label>
-		{% for person in people %}
-		<label class="frame-item sharing-item">
-			<input
-				class="sharing-checkbox"
-				type="checkbox"
-				name="user_id"
-				value="{{ person.user.id }}"
-				{% if person.has_access %}checked{% endif %}
-			>
-			<span class="sharing-name">{{ person.user.name }}</span>
-		</label>
-		{% endfor %}
-	</fieldset>
+	{% include "boards._sharing" %}
 
 	<footer class="frame-item form-actions">
 		<a class="button" href="{{ return_to }}">Cancel</a>
