@@ -31,6 +31,8 @@
 			</nav>
 
 			<section id="site-actions">
+				<span class="site-identity">{{ current_user.name }}</span>
+				<span class="site-action-separator">/</span>
 				<a
 					class="site-action {% if active_nav == "settings" %} site-action--active {% endif %}"
 					href="/settings"

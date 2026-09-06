@@ -8,7 +8,7 @@
 	<h2 id="page-title">{{ board.title }}</h2>
 
 	<section id="page-actions">
-		{% if board.user_id == current_user_id %}
+		{% if board.user_id == current_user.id %}
 		<a class="button" href="/boards/{{ board.id }}/edit">Edit</a>
 		{% endif %}
 		<a class="button button--action" href="/boards/{{ board.id }}/pins/new">New pin</a>
@@ -38,7 +38,7 @@
 					</time>
 				</section>
 
-				{% if pin.user_id == current_user_id %}
+				{% if pin.user_id == current_user.id %}
 				<section class="pin-actions">
 					<button
 						class="button button--icon"

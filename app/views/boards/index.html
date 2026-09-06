@@ -1,7 +1,7 @@
 {% extends "layouts.base" %}
 {% set active_nav = "boards" %}
 
-{% macro board_item(board, current_user_id) %}
+{% macro board_item(board, current_user) %}
 <li class="frame-item">
 	<article class="board">
 		<section class="board-details">
@@ -12,7 +12,7 @@
 				{{ board.created_at | date }}
 			</time>
 		</section>
-		{% if board.user_id == current_user_id %}
+		{% if board.user_id == current_user.id %}
 		<section class="board-actions">
 			<button
 				class="button button--icon"
@@ -90,7 +90,7 @@
 
 	<ol class="frame-items">
 		{% for board in private_boards | sort(attribute = "created_at", reverse = True) %}
-		{{ board_item(board, current_user_id) }}
+		{{ board_item(board, current_user) }}
 		{% else %}
 		<li class="frame-item frame-empty">No private boards.</li>
 		{% endfor %}
@@ -102,7 +102,7 @@
 
 	<ol class="frame-items">
 		{% for board in shared_boards | sort(attribute = "created_at", reverse = True) %}
-		{{ board_item(board, current_user_id) }}
+		{{ board_item(board, current_user) }}
 		{% else %}
 		<li class="frame-item frame-empty">No shared boards.</li>
 		{% endfor %}

@@ -15,7 +15,7 @@
 
 	<div class="frame-item setting-item">
 		<span class="setting-label">Signed in as</span>
-		<span class="setting-value">{{ user.name }}</span>
+		<span class="setting-value">{{ current_user.name }}</span>
 	</div>
 
 	<header class="frame-header">
@@ -34,12 +34,13 @@
 
 	<form action="/settings" method="POST">
 		<input type="text" name="_method" value="PUT" hidden>
+		<input type="hidden" name="return_to" value="{{ return_to }}">
 		<label class="frame-item setting-option">
 			<input
 				class="form-field"
 				type="checkbox"
 				name="open_in_new_tab"
-				{% if user.open_in_new_tab %}checked{% endif %}
+				{% if current_user.open_in_new_tab %}checked{% endif %}
 			>
 			<span class="setting-name">
 				<strong>Open pin links in a new tab</strong>

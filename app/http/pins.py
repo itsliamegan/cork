@@ -43,7 +43,13 @@ def new(req: Request, ctx: Context, id: UUID) -> Response:
 	board = find_accessible_board(ctx, board_id)
 	boards = find_all_accessible_boards(ctx)
 	html = ctx.views.render(
-		"pins.new", {"board": board, "board_id": board_id, "boards": boards}
+		"pins.new",
+		{
+			"board": board,
+			"board_id": board_id,
+			"boards": boards,
+			"current_user": ctx.auth.user,
+		},
 	)
 	return Response.html(html)
 
@@ -52,7 +58,15 @@ def edit(req: Request, ctx: Context, id: UUID) -> Response:
 	pin = find_owned(ctx, Pin, id)
 	board = ctx.store.find_one(Board, pin.board_id) if pin.board_id else None
 	boards = find_all_accessible_boards(ctx)
-	html = ctx.views.render("pins.edit", {"pin": pin, "board": board, "boards": boards})
+	html = ctx.views.render(
+		"pins.edit",
+		{
+			"pin": pin,
+			"board": board,
+			"boards": boards,
+			"current_user": ctx.auth.user,
+		},
+	)
 	return Response.html(html)
 
 
