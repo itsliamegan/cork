@@ -4,36 +4,49 @@ from helios.app import Context
 from helios.form import Field, Form, parser
 from helios.http import Request, Response, Status, URL
 
-from app.data import find_all_accessible_boards, find_accessible_board, find_owned, Board, Pin
+from app.data import (
+	Board,
+	Pin,
+	find_accessible_board,
+	find_all_accessible_boards,
+	find_owned,
+)
+
 
 def create(req: Request, ctx: Context) -> Response:
-	form = Form([
-		Field("url", parser.Required(parser.Str())),
-		Field("title", parser.Required(parser.Str())),
-		Field("board_id", parser.Required(parser.UUID())),
-	])
+	form = Form(
+		[
+			Field("url", parser.Required(parser.Str())),
+			Field("title", parser.Required(parser.Str())),
+			Field("board_id", parser.Required(parser.UUID())),
+		]
+	)
 	input, errs = form.validate(req.input)
 	if errs:
-		return Response.text("400 Bad Request", status = Status.BAD_REQUEST)
+		return Response.text("400 Bad Request", status=Status.BAD_REQUEST)
 
 	board = find_accessible_board(ctx, input["board_id"])
 
 	ctx.store.create(
 		Pin,
-		title = input["title"],
-		url = input["url"],
-		board_id = board.id,
-		user_id = ctx.auth.user.id
+		title=input["title"],
+		url=input["url"],
+		board_id=board.id,
+		user_id=ctx.auth.user.id,
 	)
 
 	return Response.redirect(URL(f"/boards/{board.id}"))
+
 
 def new(req: Request, ctx: Context, id: UUID) -> Response:
 	board_id = id
 	board = find_accessible_board(ctx, board_id)
 	boards = find_all_accessible_boards(ctx)
-	html = ctx.views.render("pins.new", {"board": board, "board_id": board_id, "boards": boards})
+	html = ctx.views.render(
+		"pins.new", {"board": board, "board_id": board_id, "boards": boards}
+	)
 	return Response.html(html)
+
 
 def edit(req: Request, ctx: Context, id: UUID) -> Response:
 	pin = find_owned(ctx, Pin, id)
@@ -42,17 +55,20 @@ def edit(req: Request, ctx: Context, id: UUID) -> Response:
 	html = ctx.views.render("pins.edit", {"pin": pin, "board": board, "boards": boards})
 	return Response.html(html)
 
+
 def update(req: Request, ctx: Context, id: UUID) -> Response:
 	pin = find_owned(ctx, Pin, id)
 
-	form = Form([
-		Field("url", parser.Required(parser.Str())),
-		Field("title", parser.Required(parser.Str())),
-		Field("board_id", parser.Required(parser.UUID())),
-	])
+	form = Form(
+		[
+			Field("url", parser.Required(parser.Str())),
+			Field("title", parser.Required(parser.Str())),
+			Field("board_id", parser.Required(parser.UUID())),
+		]
+	)
 	input, errs = form.validate(req.input)
 	if errs:
-		return Response.text("400 Bad Request", status = Status.BAD_REQUEST)
+		return Response.text("400 Bad Request", status=Status.BAD_REQUEST)
 
 	board = find_accessible_board(ctx, input["board_id"])
 
@@ -61,6 +77,7 @@ def update(req: Request, ctx: Context, id: UUID) -> Response:
 	pin.board_id = board.id
 
 	return Response.redirect(URL(f"/boards/{board.id}"))
+
 
 def delete(req: Request, ctx: Context, id: UUID) -> Response:
 	pin = find_owned(ctx, Pin, id)
