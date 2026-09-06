@@ -552,9 +552,14 @@ a {
 
 @container (max-width: 28rem) {
 	#page-header {
-		flex-direction: column;
-		align-items: flex-start;
+		flex-direction: row;
+		flex-wrap: wrap;
+		align-items: baseline;
 		gap: var(--space-5);
+	}
+
+	#page-header:has(#page-context) #page-title {
+		flex-basis: 100%;
 	}
 
 	#page-context {
@@ -563,7 +568,11 @@ a {
 	}
 
 	#page-actions {
-		margin-inline-start: 0;
+		margin-inline-start: auto;
+	}
+
+	#page-context + #page-actions {
+		margin-inline-start: auto;
 	}
 }
 
