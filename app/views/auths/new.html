@@ -1,37 +1,37 @@
-<!DOCTYPE html>
-<html lang="en">
-	<head>
-		<meta charset="utf-8">
-		<meta name="viewport" content="width=device-width,initial-scale=1">
-		<meta name="turbo-visit-control" content="reload">
+{% extends "layouts.base" %}
+{% set page_modifier = "page--sign-in" %}
 
-		<title>Cork</title>
+{% block metadata %}
+<meta name="turbo-visit-control" content="reload">
+{% endblock %}
 
-		<link rel="stylesheet" type="text/css" href="/static/styles/prelude.css">
-		<link rel="stylesheet" type="text/css" href="/static/styles/theme.css">
-		<link rel="stylesheet" type="text/css" href="/static/styles/main.css">
-		<link rel="stylesheet" type="text/css" href="/static/styles/sign-in.css">
-	</head>
+{% block title %}Cork - Sign in{% endblock %}
+{% block site_navigation %}{% endblock %}
 
-	<body>
-		<main>
-			<header class="records-header">
-				<h1>Cork <span>&#x1F4CC;&#xFE0E;</span>︎</h1>
-			</header>
-			<form class="record" method="POST" action="/sign-in">
-				<label class="record-field">
-					<span>User</span>
-					<select name="user_id" autofocus>
-						{% for user in users %}
-						<option value="{{ user.id }}">{{ user.name }}</option>
-						{% endfor %}
-					</select>
-				</label>
+{% block content %}
+<header id="page-header">
+	<h2 id="page-title">Welcome</h2>
+</header>
 
-				<footer class="record-actions">
-					<button class="button--primary" type="submit">Sign In</button>
-				</footer>
-			</form>
-		</main>
-	</body>
-</html>
+<form class="frame" action="/sign-in" method="POST">
+	<header class="frame-header">
+		<h3 class="frame-title">Sign in</h3>
+	</header>
+
+	<section class="form-items">
+		<label class="frame-item form-item">
+			<span class="form-label">User</span>
+			<select class="form-field" name="user_id" required autofocus>
+				<option value="" selected disabled></option>
+				{% for user in users %}
+				<option value="{{ user.id }}">{{ user.name }}</option>
+				{% endfor %}
+			</select>
+		</label>
+	</section>
+
+	<footer class="frame-item form-actions">
+		<button class="button button--action" type="submit">Sign in</button>
+	</footer>
+</form>
+{% endblock %}

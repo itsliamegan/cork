@@ -1,26 +1,28 @@
 {% extends "layouts.base" %}
+{% set active_nav = "boards" %}
+
+{% block title %}Cork - New board{% endblock %}
 
 {% block content %}
-<header class="records-header">
-	<h2 class="records-title"><a href="/boards/">Boards</a></h2>
-	<div class="records-actions">
-		<a href="/boards/new">
-			<button>+ New</button>
-		</a>
-	</div>
+<header id="page-header">
+	<h2 id="page-title">New board</h2>
 </header>
 
-<form class="record" action="/boards/" method="POST" autocomplete="off">
-	<label class="record-field">
-		<span>Title</span>
-		<input type="text" name="title" required autofocus>
-	</label>
+<form class="frame" action="/boards/" method="POST" autocomplete="off">
+	<header class="frame-header">
+		<h3 class="frame-title">Details</h3>
+	</header>
 
-	<footer class="record-actions">
-		<a class="action" href="/boards/">
-			<button type="button">Cancel</button>
-		</a>
-		<button class="button--primary" type="submit">Save</button>
+	<section class="form-items">
+		<label class="frame-item form-item">
+			<span class="form-label">Title</span>
+			<input class="form-field" type="text" name="title" required autofocus>
+		</label>
+	</section>
+
+	<footer class="frame-item form-actions">
+		<a class="button" href="/boards/">Cancel</a>
+		<button class="button button--action" type="submit">Save</button>
 	</footer>
 </form>
 {% endblock %}

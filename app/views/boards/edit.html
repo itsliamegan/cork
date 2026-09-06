@@ -1,34 +1,66 @@
 {% extends "layouts.base" %}
+{% set active_nav = "boards" %}
+
+{% block title %}Cork - Edit board{% endblock %}
 
 {% block content %}
-<header class="records-header">
-	<h2 class="records-title">
-		<a href="/boards/">Boards</a>
-	</h2>
-	<div class="records-actions">
-		<a href="/boards/new">
-			<button>+ New</button>
-		</a>
-	</div>
+<header id="page-header">
+	<h2 id="page-title">Edit</h2>
+
+	<span id="page-context">
+		<span>Board:</span>
+		<span>{{ board.title }}</span>
+	</span>
 </header>
 
-<form class="record" action="/boards/{{ board.id }}" method="POST" autocomplete="off">
+<form class="frame" action="/boards/{{ board.id }}" method="POST" autocomplete="off">
 	<input type="text" name="_method" value="PUT" hidden>
 
-	<label class="record-field">
-		<span>Title</span>
-		<input type="text" name="title" value="{{ board.title }}" required autofocus>
-	</label>
+	<header class="frame-header">
+		<h3 class="frame-title">Details</h3>
+	</header>
 
-	<footer class="record-actions">
-		<a href="/boards/">
-			<button type="button">Cancel</button>
-		</a>
-		<button class="button--primary" type="submit">Save</button>
+	<section class="form-items">
+		<label class="frame-item form-item">
+			<span class="form-label">Title</span>
+			<input
+				class="form-field"
+				type="text"
+				name="title"
+				value="{{ board.title }}"
+				required
+				autofocus
+			>
+		</label>
+	</section>
+
+	<header class="frame-header" id="sharing">
+		<h3 class="frame-title">Sharing</h3>
+	</header>
+
+	<fieldset class="sharing-items">
+		<label class="frame-item sharing-item sharing-item--owner">
+			<input class="sharing-checkbox" type="checkbox" checked disabled>
+			<span class="sharing-name">{{ owner.name }}</span>
+			<span class="sharing-role">Owner</span>
+		</label>
+		{% for person in people %}
+		<label class="frame-item sharing-item">
+			<input
+				class="sharing-checkbox"
+				type="checkbox"
+				name="user_id"
+				value="{{ person.user.id }}"
+				{% if person.has_access %}checked{% endif %}
+			>
+			<span class="sharing-name">{{ person.user.name }}</span>
+		</label>
+		{% endfor %}
+	</fieldset>
+
+	<footer class="frame-item form-actions">
+		<a class="button" href="/boards/{{ board.id }}">Cancel</a>
+		<button class="button button--action" type="submit">Save</button>
 	</footer>
-</form>
-
-<form id="delete-board" method="POST" action="/boards/{{ board.id }}" hidden>
-	<input type="text" name="_method" value="DELETE" hidden>
 </form>
 {% endblock %}

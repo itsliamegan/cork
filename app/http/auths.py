@@ -8,6 +8,7 @@ from app.data import User
 
 def new(req: Request, ctx: Context) -> Response:
 	users = ctx.store.find_all(User)
+	users.sort(key = lambda user: user.name.casefold())
 	html = ctx.views.render("auths.new", {"users": users})
 	return Response.html(html)
 

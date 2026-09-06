@@ -3,8 +3,9 @@
 	<head>
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width,initial-scale=1">
+		{% block metadata %}{% endblock %}
 
-		<title>Cork</title>
+		<title>{% block title %}Cork{% endblock %}</title>
 
 		<link rel="stylesheet" type="text/css" href="/static/styles/prelude.css">
 		<link rel="stylesheet" type="text/css" href="/static/styles/theme.css">
@@ -16,26 +17,31 @@
 	</head>
 
 	<body>
-		<header class="header">
-			<h1 class="header-title">Cork</h1>
-			<ul class="header-nav">
-				<li><a href="/boards/">Boards</a></li>
-			</ul>
-			<section class="header-actions">
-					<button command="toggle-popover" commandfor="header-menu">&equiv;</button>
-					<menu class="menu" id="header-menu" popover>
-						<li>
-							<a href="/settings">Settings</a>
-						</li>
-						<li>
-							<form method="POST" action="/sign-out">
-								<button type="submit">Sign Out</button>
-							</form>
-						</li>
-					</menu>
+		<header id="site-header">
+			<h1 id="site-title">Cork</h1>
+
+			{% block site_navigation %}
+			<nav id="site-nav">
+				<a
+					class="site-nav-link {% if active_nav == "boards" %} site-nav-link--active {% endif %}"
+					href="/boards/"
+				>
+					Boards
+				</a>
+			</nav>
+
+			<section id="site-actions">
+				<a
+					class="site-action {% if active_nav == "settings" %} site-action--active {% endif %}"
+					href="/settings"
+				>
+					Settings
+				</a>
 			</section>
+			{% endblock %}
 		</header>
-		<main>
+
+		<main id="page"{% if page_modifier %} class="{{ page_modifier }}"{% endif %}>
 			{% block content %}
 			{% endblock %}
 		</main>

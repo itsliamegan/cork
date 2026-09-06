@@ -1,5 +1,31 @@
 {% extends "layouts.base" %}
+{% set active_nav = "settings" %}
+
+{% block title %}Cork - Settings{% endblock %}
 
 {% block content %}
-<center><pre>TODO :)</pre></center>
+<header id="page-header">
+	<h2 id="page-title">Settings</h2>
+</header>
+
+<div class="frame">
+	<header class="frame-header">
+		<h3 class="frame-title">Account</h3>
+	</header>
+
+	<div class="frame-item setting-item">
+		<span class="setting-label">Signed in as</span>
+		<span class="setting-value">{{ user.name }}</span>
+	</div>
+
+	<header class="frame-header">
+		<h3 class="frame-title">Session</h3>
+	</header>
+
+	<form class="frame-item setting-item" action="/sign-out" method="POST" data-turbo="false">
+		<span class="setting-label">This browser</span>
+		<span class="setting-note">Return to the user chooser.</span>
+		<button class="button" type="submit">Sign out</button>
+	</form>
+</div>
 {% endblock %}

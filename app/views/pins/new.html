@@ -1,43 +1,48 @@
 {% extends "layouts.base" %}
+{% set active_nav = "boards" %}
+
+{% block title %}Cork - New pin{% endblock %}
 
 {% block content %}
-<header class="records-header">
-	<h2 class="records-title">
-		<a href="/boards/{{ board.id }}">{{ board.title }}</a>
-	</h2>
-	<div class="records-actions">
-		<a href="/boards/{{ board.id }}/pins/new">
-			<button>+ New</button>
-		</a>
-	</div>
+<header id="page-header">
+	<h2 id="page-title">New pin</h2>
+
+	<span id="page-context">
+		<span>Board:</span>
+		<span>{{ board.title }}</span>
+	</span>
 </header>
 
-<form class="record" method="POST" action="/pins/" autocomplete="off">
-	<label class="record-field">
-		<span>Title</span>
-		<input type="text" name="title" required autofocus>
-	</label>
+<form class="frame" method="POST" action="/pins/" autocomplete="off">
+	<header class="frame-header">
+		<h3 class="frame-title">Details</h3>
+	</header>
 
-	<label class="record-field">
-		<span>URL</span>
-		<input type="text" name="url" required>
-	</label>
+	<section class="form-items">
+		<label class="frame-item form-item">
+			<span class="form-label">Title</span>
+			<input class="form-field" type="text" name="title" required autofocus>
+		</label>
 
-	<label class="record-field">
-		<span>Board</span>
-		<select name="board_id" required>
-			{% for board in boards %}
-			{% set selected = board.id | string == board_id | string %}
-			<option {% if selected %} selected {% endif %} value="{{ board.id }}">{{ board.title }}</option>
-			{% endfor %}
-		</select>
-	</label>
+		<label class="frame-item form-item">
+			<span class="form-label">URL</span>
+			<input class="form-field" type="url" name="url" required>
+		</label>
 
-	<footer class="record-actions">
-		<a class="action" href="/boards/{{ board.id }}">
-			<button type="button">Cancel</button>
-		</a>
-		<button class="button--primary" type="submit">Save</button>
+		<label class="frame-item form-item">
+			<span class="form-label">Board</span>
+			<select class="form-field" name="board_id" required>
+				{% for board in boards %}
+				{% set selected = board.id | string == board_id | string %}
+				<option {% if selected %} selected {% endif %} value="{{ board.id }}">{{ board.title }}</option>
+				{% endfor %}
+			</select>
+		</label>
+	</section>
+
+	<footer class="frame-item form-actions">
+		<a class="button" href="/boards/{{ board.id }}">Cancel</a>
+		<button class="button button--action" type="submit">Save</button>
 	</footer>
 </form>
 {% endblock %}
