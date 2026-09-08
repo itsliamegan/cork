@@ -156,7 +156,7 @@ export default class extends Stimulus.Controller {
 		}
 
 		try {
-			let response = await fetch(this.urlValue, {
+			let response = await fetchWithCredentials(this.urlValue, {
 				method: "PUT",
 				body,
 			})
@@ -172,4 +172,30 @@ export default class extends Stimulus.Controller {
 			this.saving = false
 		}
 	}
+}
+
+function fetchWithCredentials(url, options) {
+	url = new URL(url, window.location.href)
+
+	if (url.username === "" && url.password === "") {
+		return fetch(url, options)
+	}
+
+	let username = decodeURIComponent(url.username)
+	let password = decodeURIComponent(url.password)
+
+	let urlWithoutCredentials = new URL(url)
+	urlWithoutCredentials.username = ""
+	urlWithoutCredentials.password = ""
+
+	let encodedCredentials = btoa(`${username}:${password}`)
+	let authorizationHeader = `Basic ${encodedCredentials}`
+
+	return fetch(urlWithoutCredentials, {
+		...options,
+		headers: {
+			...options?.headers,
+			"Authorization": authorizationHeader,
+		},
+	})
 }
