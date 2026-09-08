@@ -36,8 +36,9 @@ def _pin_return_url(raw_url: str | None, pin: Pin) -> URL:
 def create(req: Request, ctx: Context) -> Response:
 	form = Form(
 		[
-			Field("url", parser.Required(parser.Str())),
 			Field("title", parser.Required(parser.Str())),
+			Field("url", parser.Required(parser.Str())),
+			Field("note", parser.Str()),
 			Field("board_id", parser.Required(parser.UUID())),
 		]
 	)
@@ -51,6 +52,7 @@ def create(req: Request, ctx: Context) -> Response:
 		Pin,
 		title=input["title"],
 		url=input["url"],
+		note=input["note"],
 		board_id=board.id,
 		user_id=ctx.auth.user.id,
 	)
