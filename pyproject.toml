@@ -1,6 +1,7 @@
 [project]
 name = "cork"
 version = "0.1.0"
+requires-python = ">=3.14"
 dependencies = [
     "gunicorn>=26.2.0",
     "helios",
@@ -23,6 +24,7 @@ module-root = ""
 
 [tool.uv.sources]
 helios = { path = "../helios", editable = true }
+luna = { path = "../luna", editable = true }
 
 [tool.ruff]
 target-version = "py314"
@@ -42,3 +44,8 @@ case-sensitive = true
 known-first-party = ["app"]
 force-sort-within-sections = true
 order-by-type = false
+
+[dependency-groups]
+dev = [
+    "luna",
+]
