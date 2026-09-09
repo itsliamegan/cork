@@ -166,11 +166,12 @@ def update(req: Request, ctx: Context, id: UUID) -> Response:
 	shared_user_ids = {share.user_id for share in shares}
 	for share in shares:
 		if share.user_id not in selected_user_ids:
-			ctx.store.delete(Share, share.id)
+			ctx.store.delete(share.id)
 	for user_id in selected_user_ids - shared_user_ids:
 		ctx.store.create(Share, board_id=board.id, user_id=user_id)
 
 	board.title = input["title"]
+	ctx.store.save(board)
 
 	return_to = _board_return_url(input["return_to"], board.id)
 	return Response.redirect(return_to)
@@ -182,11 +183,11 @@ def delete(req: Request, ctx: Context, id: UUID) -> Response:
 	shares = ctx.store.find_by(Share, board_id=board.id)
 	orderings = ctx.store.find_by(Ordering, board_id=board.id)
 	for pin in pins:
-		ctx.store.delete(Pin, pin.id)
+		ctx.store.delete(pin.id)
 	for share in shares:
-		ctx.store.delete(Share, share.id)
+		ctx.store.delete(share.id)
 	for ordering in orderings:
-		ctx.store.delete(Ordering, ordering.id)
-	ctx.store.delete(Board, board.id)
+		ctx.store.delete(ordering.id)
+	ctx.store.delete(board.id)
 
 	return Response.redirect(URL("/boards/"))

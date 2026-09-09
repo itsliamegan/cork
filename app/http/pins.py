@@ -133,6 +133,7 @@ def update(req: Request, ctx: Context, id: UUID) -> Response:
 	pin.title = input["title"]
 	pin.board_id = board.id
 	pin.note = input["note"] or ""
+	ctx.store.save(pin)
 
 	return Response.redirect(return_to)
 
@@ -145,6 +146,6 @@ def delete(req: Request, ctx: Context, id: UUID) -> Response:
 	else:
 		board_url = URL(f"/boards/{pin.board_id}")
 
-	ctx.store.delete(Pin, pin.id)
+	ctx.store.delete(pin.id)
 
 	return Response.redirect(board_url)

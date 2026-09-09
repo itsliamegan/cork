@@ -43,5 +43,6 @@ def update(req: Request, ctx: Context) -> Response:
 		return Response.text("400 Bad Request", status=Status.BAD_REQUEST)
 
 	ctx.auth.user.open_in_new_tab = input["open_in_new_tab"]
+	ctx.store.save(ctx.auth.user)
 
 	return Response.redirect(_settings_return_url(input["return_to"]))

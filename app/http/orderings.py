@@ -20,7 +20,7 @@ def update(req: Request, ctx: Context) -> Response:
 		return Response.text("400 Bad Request", status=Status.BAD_REQUEST)
 
 	for ordering in ctx.store.find_by(Ordering, user_id=ctx.auth.user.id):
-		ctx.store.delete(Ordering, ordering.id)
+		ctx.store.delete(ordering.id)
 	for position, board_id in enumerate(board_ids):
 		ctx.store.create(
 			Ordering,
