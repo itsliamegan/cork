@@ -1,45 +1,36 @@
-from uuid import UUID as Id
+from datetime import datetime
+from uuid import UUID
 
-from helios.store import Attribute, Model, NotFoundError, Schema, types
+from helios.store import Model, NotFoundError, Schema, attr
 
 
 class User(Model):
-	attrs = [
-		Attribute("name", types.Str()),
-		Attribute("open_in_new_tab", types.Bool(), default=False),
-	]
+	name = attr(str)
+	open_in_new_tab = attr(bool, default=False)
 
 
 class Pin(Model):
-	attrs = [
-		Attribute("url", types.Str()),
-		Attribute("title", types.Str()),
-		Attribute("note", types.Str(), default=""),
-		Attribute("board_id", types.UUID(), nullable=True),
-		Attribute("user_id", types.UUID()),
-	]
+	url = attr(str)
+	title = attr(str)
+	note = attr(str, default="")
+	board_id = attr(UUID, nullable=True)
+	user_id = attr(UUID)
 
 
 class Board(Model):
-	attrs = [
-		Attribute("title", types.Str()),
-		Attribute("user_id", types.UUID()),
-	]
+	title = attr(str)
+	user_id = attr(UUID)
 
 
 class Share(Model):
-	attrs = [
-		Attribute("board_id", types.UUID()),
-		Attribute("user_id", types.UUID()),
-	]
+	board_id = attr(UUID)
+	user_id = attr(UUID)
 
 
 class Ordering(Model):
-	attrs = [
-		Attribute("user_id", types.UUID()),
-		Attribute("board_id", types.UUID()),
-		Attribute("position", types.Int()),
-	]
+	user_id = attr(UUID)
+	board_id = attr(UUID)
+	position = attr(int)
 
 
 schema = Schema(
@@ -53,7 +44,7 @@ schema = Schema(
 )
 
 
-def find_owned(ctx, model_type: type[Model], id: Id) -> Model:
+def find_owned(ctx, model_type: type[Model], id: UUID) -> Model:
 	model = ctx.store.find_one(model_type, id)
 	if model.user_id != ctx.auth.user.id:
 		raise NotFoundError(model_type, id)
@@ -70,14 +61,14 @@ def can_access_board(ctx, board: Board) -> bool:
 	return bool(ctx.store.find_by(Share, board_id=board.id, user_id=ctx.auth.user.id))
 
 
-def find_accessible_board(ctx, id: Id) -> Board:
+def find_accessible_board(ctx, id: UUID) -> Board:
 	board = ctx.store.find_one(Board, id)
 	if not can_access_board(ctx, board):
 		raise NotFoundError(Board, id)
 	return board
 
 
-def find_accessible_pin(ctx, id: Id) -> Pin:
+def find_accessible_pin(ctx, id: UUID) -> Pin:
 	pin = ctx.store.find_one(Pin, id)
 	if pin.board_id is None:
 		raise NotFoundError(Pin, id)
@@ -100,6 +91,11 @@ def find_all_accessible_boards(ctx) -> list[Board]:
 
 
 def order_accessible_boards(ctx, boards: list[Board]) -> list[Board]:
+	def created_at(board: Board) -> datetime:
+		if board.created_at is None:
+			raise ValueError("cannot order an unsaved board")
+		return board.created_at
+
 	board_ids = {board.id for board in boards}
 	positions = {}
 	for ordering in ctx.store.find_by(Ordering, user_id=ctx.auth.user.id):
@@ -111,12 +107,12 @@ def order_accessible_boards(ctx, boards: list[Board]) -> list[Board]:
 
 	unpositioned = sorted(
 		(board for board in boards if board.id not in positions),
-		key=lambda board: board.created_at,
+		key=created_at,
 		reverse=True,
 	)
 	positioned = sorted(
 		(board for board in boards if board.id in positions),
-		key=lambda board: board.created_at,
+		key=created_at,
 		reverse=True,
 	)
 	positioned.sort(key=lambda board: positions[board.id])
