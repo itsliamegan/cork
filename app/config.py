@@ -28,7 +28,7 @@ class Config:
 			persist=persist.Config(
 				Path(
 					environ.get(
-						"CORK_PERSIST_LOCK_FILE",
+						"APP_PERSIST_LOCK_FILE",
 						DEFAULT_CONFIG.persist.lock_file,
 					)
 				)
@@ -36,18 +36,18 @@ class Config:
 			data=data.Config(
 				Path(
 					environ.get(
-						"CORK_DATA_STORE_FILE",
+						"APP_DATA_STORE_FILE",
 						DEFAULT_CONFIG.data.store_file,
 					)
 				)
 			),
 			views=views.Config(
-				Path(environ.get("CORK_VIEWS_DIR", DEFAULT_CONFIG.views.dir))
+				Path(environ.get("APP_VIEWS_DIR", DEFAULT_CONFIG.views.dir))
 			),
 			session=session.Config(
 				Path(
 					environ.get(
-						"CORK_SESSION_STORE_FILE",
+						"APP_SESSION_STORE_FILE",
 						DEFAULT_CONFIG.session.store_file,
 					)
 				)
