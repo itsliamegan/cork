@@ -41,7 +41,7 @@ order-by-type = false
 
 [dependency-groups]
 backup = [
-    "cloudflare>=5.7.0",
+    "boto3>=1.35",
     "luna",
 ]
 dev = [

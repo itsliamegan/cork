@@ -5,7 +5,7 @@ from datetime import UTC, datetime
 import hashlib
 import sys
 
-from cloudflare import Cloudflare
+from boto3 import client
 from helios.config import ConfigError
 from helios.persist.files import Files
 from luna.cli import Option, Program
@@ -19,8 +19,9 @@ class Config(app.config.Config):
 	def __init__(self, values: dict[str, str]):
 		super().__init__(values)
 
-		self.api_token = self.require("CLOUDFLARE_API_TOKEN")
-		self.account_id = self.require("CLOUDFLARE_ACCOUNT_ID")
+		self.endpoint = self.require("APP_BACKUP_ENDPOINT")
+		self.access_key_id = self.require("APP_BACKUP_ACCESS_KEY_ID")
+		self.secret_access_key = self.require("APP_BACKUP_SECRET_ACCESS_KEY")
 		self.bucket = self.require("APP_BACKUP_BUCKET")
 		self.prefix = self.text("APP_BACKUP_PREFIX", "backups").strip("/")
 
@@ -51,12 +52,13 @@ def backup(dry: bool):
 		print("dry run: nothing uploaded")
 		return
 
-	Cloudflare(api_token=config.api_token).r2.buckets.objects.upload(
-		key,
-		body,
-		account_id=config.account_id,
-		bucket_name=config.bucket,
-	)
+	client(
+		"s3",
+		endpoint_url=config.endpoint,
+		aws_access_key_id=config.access_key_id,
+		aws_secret_access_key=config.secret_access_key,
+		region_name="auto",
+	).put_object(Bucket=config.bucket, Key=key, Body=body)
 	print(f"uploaded to {config.bucket}/{key}")
 
 
