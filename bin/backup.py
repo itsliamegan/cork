@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 
 from compression import zstd
-from datetime import UTC, datetime
+from datetime import UTC, date, datetime, timedelta
 import hashlib
+import re
 import sys
 
 from boto3 import client
@@ -13,6 +14,7 @@ from luna.cli import Option, Program
 import app.config
 
 ZSTD_LEVEL = 10
+KEEP_DAYS = 30
 
 
 class Config(app.config.Config):
@@ -26,14 +28,7 @@ class Config(app.config.Config):
 		self.prefix = self.text("APP_BACKUP_PREFIX", "backups").strip("/")
 
 
-def snapshot(config: Config) -> bytes:
-	"""Read the contents of the store file while holding the persistence lock."""
-
-	with Files(config.persist).lock():
-		return config.data.store_file.read_bytes()
-
-
-def backup(dry: bool):
+def main(dry: bool, keep: int):
 	"""Back up the data store to Cloudflare R2."""
 
 	try:
@@ -41,9 +36,25 @@ def backup(dry: bool):
 	except ConfigError as error:
 		raise SystemExit(f"backup: error: {error}") from None
 
+	s3 = client(
+		"s3",
+		endpoint_url=config.endpoint,
+		aws_access_key_id=config.access_key_id,
+		aws_secret_access_key=config.secret_access_key,
+		region_name="auto",
+	)
+	archive = Archive(config)
+
+	backup(s3, archive, config, dry)
+	prune(s3, archive, keep, dry)
+
+
+def backup(s3, archive: Archive, config: Config, dry: bool):
+	"""Upload a compressed snapshot of the data store."""
+
 	raw = snapshot(config)
 	body = zstd.compress(raw, level=ZSTD_LEVEL)
-	key = f"{config.prefix}/store-{datetime.now(UTC).date().isoformat()}.json.zst"
+	key = archive.key(datetime.now(UTC).date())
 
 	print(f"store  {len(raw)} bytes sha256:{hashlib.sha256(raw).hexdigest()}")
 	print(f"object {key} {len(body)} bytes")
@@ -52,27 +63,116 @@ def backup(dry: bool):
 		print("dry run: nothing uploaded")
 		return
 
-	client(
-		"s3",
-		endpoint_url=config.endpoint,
-		aws_access_key_id=config.access_key_id,
-		aws_secret_access_key=config.secret_access_key,
-		region_name="auto",
-	).put_object(Bucket=config.bucket, Key=key, Body=body)
-	print(f"uploaded to {config.bucket}/{key}")
+	s3.put_object(Bucket=archive.bucket, Key=key, Body=body)
+	print(f"uploaded to {archive.bucket}/{key}")
+
+
+def prune(s3, archive: Archive, keep: int, dry: bool):
+	"""Delete backup objects older than the retention window."""
+
+	cutoff = datetime.now(UTC).date() - timedelta(days=keep)
+	keys = expired(s3, archive, cutoff)
+
+	if not keys:
+		print(f"keep   nothing taken before {cutoff.isoformat()}")
+		return
+
+	for key in keys:
+		print(f"prune  {key}")
+
+	if dry:
+		print(f"dry run: nothing deleted ({len(keys)} would be)")
+		return
+
+	result = s3.delete_objects(
+		Bucket=archive.bucket,
+		Delete={"Objects": [{"Key": key} for key in keys]},
+	)
+
+	failures = 0
+	for error in result.get("Errors", []):
+		failures += 1
+		print(f"backup: error: {error["Key"]}: {error["Message"]}", file=sys.stderr)
+
+	print(f"deleted {len(keys) - failures} object(s) taken before {cutoff.isoformat()}")
+
+	if failures:
+		raise SystemExit(1)
+
+
+def snapshot(config: Config) -> bytes:
+	"""Read the contents of the store file while holding the persistence lock."""
+
+	with Files(config.persist).lock():
+		return config.data.store_file.read_bytes()
+
+
+def expired(s3, archive: Archive, cutoff: date) -> list[str]:
+	"""List the keys of backup objects taken before the cutoff date."""
+
+	pages = s3.get_paginator("list_objects_v2").paginate(
+		Bucket=archive.bucket,
+		Prefix=f"{archive.prefix}/",
+	)
+
+	keys = []
+	for page in pages:
+		for item in page.get("Contents", []):
+			taken = archive.taken(item["Key"])
+			if taken is not None and taken < cutoff:
+				keys.append(item["Key"])
+	return keys
+
+
+class Archive:
+	"""The dated backup objects held under a prefix in the bucket."""
+
+	# The name is written in one place and read back with a pattern derived
+	# from it, so the two directions cannot drift apart. Only names matching
+	# it exactly are ever eligible for deletion.
+	NAME = "store-{date}.json.zst"
+	PATTERN = re.compile(re.escape(NAME).replace(r"\{date\}", r"(\d{4}-\d{2}-\d{2})"))
+
+	def __init__(self, config: Config):
+		self.bucket = config.bucket
+		self.prefix = config.prefix
+
+	def key(self, taken: date) -> str:
+		"""Build the key of the backup object taken on a given date."""
+
+		return f"{self.prefix}/{self.NAME.format(date=taken.isoformat())}"
+
+	def taken(self, key: str) -> date | None:
+		"""Read the date out of an object key, or None if it isn't one of ours."""
+
+		match = self.PATTERN.fullmatch(key.removeprefix(f"{self.prefix}/"))
+		if match is None:
+			return None
+
+		try:
+			return date.fromisoformat(match.group(1))
+		except ValueError:
+			return None
 
 
 program = Program(
 	"backup",
-	backup,
-	description=backup.__doc__,
+	main,
+	description=main.__doc__,
 	options=[
 		Option(
 			"dry",
 			short="d",
 			type=bool,
-			help="snapshot and compress without uploading",
-		)
+			help="report what would be uploaded and deleted, without doing either",
+		),
+		Option(
+			"keep",
+			short="k",
+			type=int,
+			default=KEEP_DAYS,
+			help=f"days of backups to retain (default: {KEEP_DAYS})",
+		),
 	],
 )
 
