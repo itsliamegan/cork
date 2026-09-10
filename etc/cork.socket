@@ -1,0 +1,11 @@
+[Unit]
+Description=Cork application socket
+
+[Socket]
+ListenStream=/run/cork.sock
+SocketUser=www-data
+SocketGroup=www-data
+SocketMode=0660
+
+[Install]
+WantedBy=sockets.target
