@@ -1,10 +1,11 @@
 from pathlib import Path
 
 import helios.auth
+import helios.data
 import helios.flash
+import helios.persist
 from helios.routing import Router
 import helios.session
-import helios.store
 import helios.views
 from helios.wsgi import Application
 
@@ -14,6 +15,7 @@ from app.http import routes
 ROOT_DIR = Path(__file__).resolve().parent.parent
 STORE_FILE = ROOT_DIR.joinpath("data", "store.json")
 SESSIONS_FILE = ROOT_DIR.joinpath("data", "sessions.json")
+LOCK_FILE = ROOT_DIR.joinpath("data", "persistence.lock")
 VIEWS_DIR = ROOT_DIR.joinpath("app", "views")
 
 
@@ -22,14 +24,21 @@ class Application(Application):
 		self,
 		store_file: Path = STORE_FILE,
 		sessions_file: Path = SESSIONS_FILE,
+		lock_file: Path = LOCK_FILE,
 		views_dir: Path = VIEWS_DIR,
 	):
+		self.persistence = helios.persist.Files(lock_file)
+		self.store_data = self.persistence.json(store_file, helios.data.Format(schema))
+		self.sessions_data = self.persistence.json(
+			sessions_file, helios.session.Format()
+		)
 		super().__init__(
 			Router(routes),
 			[
-				helios.store.Component(store_file, schema),
+				helios.persist.Component(self.persistence),
+				helios.data.Component(self.store_data),
 				helios.views.Component(views_dir),
-				helios.session.Component(sessions_file),
+				helios.session.Component(self.sessions_data),
 				helios.flash.Component(),
 				helios.auth.Component(User),
 			],

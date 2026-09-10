@@ -1,12 +1,11 @@
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
-from helios.store import load, save
 from helios.wsgi import TestClient
 from luna.test.assertion import assert_eq
 
 from app import Application
-from app.data import User, schema
+from app.data import User
 
 
 class TestApplication(Application):
@@ -16,15 +15,18 @@ class TestApplication(Application):
 			self.dir = Path(self.temp_dir.name)
 			self.store_file = self.dir.joinpath("store.json")
 			self.sessions_file = self.dir.joinpath("sessions.json")
+			self.lock_file = self.dir.joinpath("persistence.lock")
 			self.store_file.write_text("[]")
 			self.sessions_file.write_text("{}")
 
 			super().__init__(
 				store_file=self.store_file,
 				sessions_file=self.sessions_file,
+				lock_file=self.lock_file,
 			)
 			self.boot()
-			self.store = load(self.store_file, schema)
+			with self.persistence.lock() as scope:
+				self.store = scope.open(self.store_data).load()
 			self.client = TestClient(self)
 		except Exception:
 			self.temp_dir.cleanup()
@@ -50,8 +52,11 @@ class TestClient(TestClient):
 		self.app = app
 
 	def request(self, *args, **kwargs):
-		save(self.app.store_file, self.app.store)
+		with self.app.persistence.lock() as scope:
+			scope.open(self.app.store_data).save(self.app.store)
+			self.app.store.pending.clear()
 		try:
 			return super().request(*args, **kwargs)
 		finally:
-			self.app.store = load(self.app.store_file, schema)
+			with self.app.persistence.lock() as scope:
+				self.app.store = scope.open(self.app.store_data).load()

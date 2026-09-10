@@ -1,3 +1,4 @@
+from helios.auth import Authenticator
 from helios.http import Method, Response
 from helios.routing import Group, Pattern, Route
 
@@ -5,7 +6,9 @@ from app.http import auths, boards, home, orderings, pins, settings
 
 
 def ensure_signed_in(req, ctx, **params):
-	if not ctx.auth.is_signed_in():
+	auth = ctx.get(Authenticator)
+
+	if not auth.is_signed_in():
 		return Response.redirect("/sign-in")
 
 

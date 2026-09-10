@@ -2,8 +2,11 @@ from urllib.parse import urlsplit
 from uuid import UUID
 
 from helios.app import Context
+from helios.auth import Authenticator
+from helios.data import Store
 from helios.form import Field, Form, parser
 from helios.http import Request, Response, Status, URL
+from helios.views import Views
 
 from app.data import (
 	Board,
@@ -34,6 +37,9 @@ def _pin_return_url(raw_url: str | None, pin: Pin) -> URL:
 
 
 def create(req: Request, ctx: Context) -> Response:
+	store = ctx.get(Store)
+	auth = ctx.get(Authenticator)
+
 	form = Form(
 		[
 			Field("title", parser.Required(parser.Str())),
@@ -48,62 +54,73 @@ def create(req: Request, ctx: Context) -> Response:
 
 	board = find_accessible_board(ctx, input["board_id"])
 
-	ctx.store.create(
+	store.create(
 		Pin,
 		title=input["title"],
 		url=input["url"],
 		note=input["note"],
 		board_id=board.id,
-		user_id=ctx.auth.user.id,
+		user_id=auth.user.id,
 	)
 
 	return Response.redirect(URL(f"/boards/{board.id}"))
 
 
 def new(req: Request, ctx: Context, id: UUID) -> Response:
+	auth = ctx.get(Authenticator)
+	views = ctx.get(Views)
+
 	board_id = id
 	board = find_accessible_board(ctx, board_id)
 	boards = find_all_accessible_boards(ctx)
-	html = ctx.views.render(
+	html = views.render(
 		"pins.new",
 		{
 			"board": board,
 			"board_id": board_id,
 			"boards": boards,
-			"current_user": ctx.auth.user,
+			"current_user": auth.user,
 		},
 	)
 	return Response.html(html)
 
 
 def show(req: Request, ctx: Context, id: UUID) -> Response:
+	store = ctx.get(Store)
+	auth = ctx.get(Authenticator)
+	views = ctx.get(Views)
+
 	pin = find_accessible_pin(ctx, id)
 	board = find_accessible_board(ctx, pin.board_id)
-	creator = ctx.store.find_one(User, pin.user_id)
-	html = ctx.views.render(
+	creator = store.find_one(User, pin.user_id)
+	html = views.render(
 		"pins.show",
 		{
 			"pin": pin,
 			"board": board,
 			"creator": creator,
-			"current_user": ctx.auth.user,
-			"open_in_new_tab": ctx.auth.user.open_in_new_tab,
+			"current_user": auth.user,
+			"open_in_new_tab": auth.user.open_in_new_tab,
 		},
 	)
 	return Response.html(html)
 
 
 def edit(req: Request, ctx: Context, id: UUID) -> Response:
+	store = ctx.get(Store)
+	auth = ctx.get(Authenticator)
+	views = ctx.get(Views)
+
 	pin = find_owned(ctx, Pin, id)
-	board = ctx.store.find_one(Board, pin.board_id) if pin.board_id else None
+	board = store.find_one(Board, pin.board_id) if pin.board_id else None
 	boards = find_all_accessible_boards(ctx)
-	html = ctx.views.render(
+	html = views.render(
 		"pins.edit",
 		{
 			"pin": pin,
 			"board": board,
 			"boards": boards,
-			"current_user": ctx.auth.user,
+			"current_user": auth.user,
 			"return_to": _pin_return_url(req.referrer, pin),
 		},
 	)
@@ -111,6 +128,8 @@ def edit(req: Request, ctx: Context, id: UUID) -> Response:
 
 
 def update(req: Request, ctx: Context, id: UUID) -> Response:
+	store = ctx.get(Store)
+
 	pin = find_owned(ctx, Pin, id)
 
 	form = Form(
@@ -133,12 +152,14 @@ def update(req: Request, ctx: Context, id: UUID) -> Response:
 	pin.title = input["title"]
 	pin.board_id = board.id
 	pin.note = input["note"] or ""
-	ctx.store.save(pin)
+	store.save(pin)
 
 	return Response.redirect(return_to)
 
 
 def delete(req: Request, ctx: Context, id: UUID) -> Response:
+	store = ctx.get(Store)
+
 	pin = find_owned(ctx, Pin, id)
 
 	if pin.board_id is None:
@@ -146,6 +167,6 @@ def delete(req: Request, ctx: Context, id: UUID) -> Response:
 	else:
 		board_url = URL(f"/boards/{pin.board_id}")
 
-	ctx.store.delete(pin.id)
+	store.delete(pin.id)
 
 	return Response.redirect(board_url)

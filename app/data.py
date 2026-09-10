@@ -1,7 +1,8 @@
 from datetime import datetime
 from uuid import UUID
 
-from helios.store import Model, NotFoundError, Schema, attr
+from helios.auth import Authenticator
+from helios.data import Model, NotFoundError, Schema, Store, attr
 
 
 class User(Model):
@@ -45,31 +46,34 @@ schema = Schema(
 
 
 def find_owned(ctx, model_type: type[Model], id: UUID) -> Model:
-	model = ctx.store.find_one(model_type, id)
-	if model.user_id != ctx.auth.user.id:
+	model = ctx.get(Store).find_one(model_type, id)
+	auth = ctx.get(Authenticator)
+	if model.user_id != auth.user.id:
 		raise NotFoundError(model_type, id)
 	return model
 
 
 def find_all_owned(ctx, model_type: type[Model], **attrs) -> list[Model]:
-	return ctx.store.find_by(model_type, user_id=ctx.auth.user.id, **attrs)
+	auth = ctx.get(Authenticator)
+	return ctx.get(Store).find_by(model_type, user_id=auth.user.id, **attrs)
 
 
 def can_access_board(ctx, board: Board) -> bool:
-	if board.user_id == ctx.auth.user.id:
+	auth = ctx.get(Authenticator)
+	if board.user_id == auth.user.id:
 		return True
-	return bool(ctx.store.find_by(Share, board_id=board.id, user_id=ctx.auth.user.id))
+	return bool(ctx.get(Store).find_by(Share, board_id=board.id, user_id=auth.user.id))
 
 
 def find_accessible_board(ctx, id: UUID) -> Board:
-	board = ctx.store.find_one(Board, id)
+	board = ctx.get(Store).find_one(Board, id)
 	if not can_access_board(ctx, board):
 		raise NotFoundError(Board, id)
 	return board
 
 
 def find_accessible_pin(ctx, id: UUID) -> Pin:
-	pin = ctx.store.find_one(Pin, id)
+	pin = ctx.get(Store).find_one(Pin, id)
 	if pin.board_id is None:
 		raise NotFoundError(Pin, id)
 	try:
@@ -80,13 +84,15 @@ def find_accessible_pin(ctx, id: UUID) -> Pin:
 
 
 def find_all_accessible_boards(ctx) -> list[Board]:
+	store = ctx.get(Store)
+	auth = ctx.get(Authenticator)
 	shared_board_ids = {
-		share.board_id for share in ctx.store.find_by(Share, user_id=ctx.auth.user.id)
+		share.board_id for share in store.find_by(Share, user_id=auth.user.id)
 	}
 	return [
 		board
-		for board in ctx.store.find_all(Board)
-		if board.user_id == ctx.auth.user.id or board.id in shared_board_ids
+		for board in store.find_all(Board)
+		if board.user_id == auth.user.id or board.id in shared_board_ids
 	]
 
 
@@ -98,7 +104,9 @@ def order_accessible_boards(ctx, boards: list[Board]) -> list[Board]:
 
 	board_ids = {board.id for board in boards}
 	positions = {}
-	for ordering in ctx.store.find_by(Ordering, user_id=ctx.auth.user.id):
+	store = ctx.get(Store)
+	auth = ctx.get(Authenticator)
+	for ordering in store.find_by(Ordering, user_id=auth.user.id):
 		if ordering.board_id not in board_ids:
 			continue
 		position = positions.get(ordering.board_id)

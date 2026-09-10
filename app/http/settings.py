@@ -1,8 +1,11 @@
 from urllib.parse import urlsplit
 
 from helios.app import Context
+from helios.auth import Authenticator
+from helios.data import Store
 from helios.form import Field, Form, parser
 from helios.http import Request, Response, Status, URL
+from helios.views import Views
 
 
 def _settings_return_url(raw_url: str | None) -> URL:
@@ -21,10 +24,13 @@ def _settings_return_url(raw_url: str | None) -> URL:
 
 
 def show(req: Request, ctx: Context) -> Response:
-	html = ctx.views.render(
+	auth = ctx.get(Authenticator)
+	views = ctx.get(Views)
+
+	html = views.render(
 		"settings.show",
 		{
-			"current_user": ctx.auth.user,
+			"current_user": auth.user,
 			"return_to": _settings_return_url(req.referrer),
 		},
 	)
@@ -32,6 +38,9 @@ def show(req: Request, ctx: Context) -> Response:
 
 
 def update(req: Request, ctx: Context) -> Response:
+	store = ctx.get(Store)
+	auth = ctx.get(Authenticator)
+
 	form = Form(
 		[
 			Field("open_in_new_tab", parser.Bool()),
@@ -42,7 +51,7 @@ def update(req: Request, ctx: Context) -> Response:
 	if errs:
 		return Response.text("400 Bad Request", status=Status.BAD_REQUEST)
 
-	ctx.auth.user.open_in_new_tab = input["open_in_new_tab"]
-	ctx.store.save(ctx.auth.user)
+	auth.user.open_in_new_tab = input["open_in_new_tab"]
+	store.save(auth.user)
 
 	return Response.redirect(_settings_return_url(input["return_to"]))
