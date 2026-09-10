@@ -9,7 +9,6 @@ source = { editable = "." }
 dependencies = [
     { name = "gunicorn" },
     { name = "helios" },
-    { name = "python-dotenv" },
 ]
 
 [package.dev-dependencies]
@@ -22,7 +21,6 @@ dev = [
 requires-dist = [
     { name = "gunicorn", specifier = ">=26.2.0" },
     { name = "helios", editable = "../helios" },
-    { name = "python-dotenv", specifier = ">=1.2.2" },
 ]
 
 [package.metadata.requires-dev]
@@ -46,6 +44,7 @@ version = "0.1"
 source = { editable = "../helios" }
 dependencies = [
     { name = "jinja2" },
+    { name = "python-dotenv" },
     { name = "ruff" },
     { name = "werkzeug" },
 ]
@@ -53,6 +52,7 @@ dependencies = [
 [package.metadata]
 requires-dist = [
     { name = "jinja2", specifier = "==3.1.*" },
+    { name = "python-dotenv", specifier = ">=1.2.2" },
     { name = "ruff", specifier = ">=0.16.6" },
     { name = "werkzeug", specifier = "==3.1.*" },
 ]

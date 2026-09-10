@@ -1,13 +1,14 @@
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
-from helios import data, persist, session
+from helios.data.store import Format
+from helios.persist.files import Files
 from helios.wsgi import TestClient
 from luna.test.assertion import assert_eq
 
-from app import Application
-from app.config import Config, DEFAULT_CONFIG
+from app.config import Config
 from app.data import User, schema
+from app.wsgi import Application
 
 
 class TestApplication(Application):
@@ -21,15 +22,16 @@ class TestApplication(Application):
 			self.store_file.write_text("[]")
 			self.sessions_file.write_text("{}")
 
-			config = Config(
-				persist=persist.Config(self.lock_file),
-				data=data.Config(self.store_file),
-				views=DEFAULT_CONFIG.views,
-				session=session.Config(self.sessions_file),
+			config = Config.load(
+				{
+					"APP_PERSIST_LOCK_FILE": str(self.lock_file),
+					"APP_DATA_STORE_FILE": str(self.store_file),
+					"APP_SESSION_STORE_FILE": str(self.sessions_file),
+				}
 			)
-			self.persistence = persist.Files(config.persist)
+			self.persistence = Files(config.persist)
 			self.store_data = self.persistence.json(
-				config.data.store_file, data.Format(schema)
+				config.data.store_file, Format(schema)
 			)
 			super().__init__(config)
 			self.boot()

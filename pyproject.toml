@@ -5,11 +5,10 @@ requires-python = ">=3.14"
 dependencies = [
     "gunicorn>=26.2.0",
     "helios",
-    "python-dotenv>=1.2.2",
 ]
 
 [project.scripts]
-serve = "app:main"
+serve = "app.main:main"
 
 [build-system]
 requires = ["uv_build"]

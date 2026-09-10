@@ -1,31 +1,35 @@
 from pathlib import Path
-from unittest.mock import patch
+import subprocess
+import sys
+from tempfile import TemporaryDirectory
 
 from luna.test.assertion import assert_eq
 
-from app.config import Config, DEFAULT_CONFIG, ROOT_DIR
+from app.config import Config, ROOT_DIR
 
 
 def test_declares_application_defaults():
+	config = Config.load({})
+
 	assert_eq(
-		DEFAULT_CONFIG.persist.lock_file,
+		config.persist.lock_file,
 		ROOT_DIR.joinpath("data", "persistence.lock"),
 	)
-	assert_eq(DEFAULT_CONFIG.data.store_file, ROOT_DIR.joinpath("data", "store.json"))
-	assert_eq(DEFAULT_CONFIG.views.dir, ROOT_DIR.joinpath("app", "views"))
+	assert_eq(config.data.store_file, ROOT_DIR.joinpath("data", "store.json"))
+	assert_eq(config.views.dir, ROOT_DIR.joinpath("app", "views"))
 	assert_eq(
-		DEFAULT_CONFIG.session.store_file,
+		config.session.store_file,
 		ROOT_DIR.joinpath("data", "sessions.json"),
 	)
 
 
 def test_loads_component_config_from_environment():
-	config = Config.from_env(
+	config = Config.load(
 		{
-			"CORK_PERSIST_LOCK_FILE": "/srv/cork/persistence.lock",
-			"CORK_DATA_STORE_FILE": "/srv/cork/store.json",
-			"CORK_VIEWS_DIR": "/srv/cork/views",
-			"CORK_SESSION_STORE_FILE": "/srv/cork/sessions.json",
+			"APP_PERSIST_LOCK_FILE": "/srv/cork/persistence.lock",
+			"APP_DATA_STORE_FILE": "/srv/cork/store.json",
+			"APP_VIEWS_DIR": "/srv/cork/views",
+			"APP_SESSION_STORE_FILE": "/srv/cork/sessions.json",
 		}
 	)
 
@@ -35,15 +39,30 @@ def test_loads_component_config_from_environment():
 	assert_eq(config.session.store_file, Path("/srv/cork/sessions.json"))
 
 
-def test_loads_dotenv_with_process_environment_precedence():
-	with patch(
-		"app.config.dotenv_values",
-		return_value={
-			"CORK_DATA_STORE_FILE": "/dotenv/store.json",
-			"CORK_SESSION_STORE_FILE": "/dotenv/sessions.json",
-		},
-	):
-		config = Config.load({"CORK_DATA_STORE_FILE": "/environment/store.json"})
+def test_loads_selected_dotenv_with_process_environment_precedence():
+	with TemporaryDirectory() as dir:
+		env_file = Path(dir, ".env")
+		env_file.write_text(
+			"APP_DATA_STORE_FILE=/dotenv/store.json\n"
+			"APP_SESSION_STORE_FILE=/dotenv/sessions.json\n"
+		)
+		config = Config.load(
+			{"APP_DATA_STORE_FILE": "/environment/store.json"}, env_file
+		)
 
 	assert_eq(config.data.store_file, Path("/environment/store.json"))
 	assert_eq(config.session.store_file, Path("/dotenv/sessions.json"))
+
+
+def test_importing_config_does_not_import_jinja():
+	result = subprocess.run(
+		[
+			sys.executable,
+			"-c",
+			"import sys; import app.config; assert not "
+			+ "any(name.startswith('jinja2') for name in sys.modules)",
+		],
+		check=False,
+	)
+
+	assert_eq(result.returncode, 0)

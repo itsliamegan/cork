@@ -1,75 +1,40 @@
-from collections.abc import Mapping
-import os
 from pathlib import Path
-from typing import Self
 
-from dotenv import dotenv_values
-from helios import data, persist, session, views
+from helios.config import Config
+import helios.data.config
+import helios.persist.config
+import helios.session.config
+import helios.views.config
 
 ROOT_DIR = Path(__file__).resolve().parent.parent
+ENV_FILE = Path(ROOT_DIR, ".env")
 
 
-class Config:
-	def __init__(
-		self,
-		persist: persist.Config,
-		data: data.Config,
-		views: views.Config,
-		session: session.Config,
-	):
-		self.persist = persist
-		self.data = data
-		self.views = views
-		self.session = session
+class Config(Config):
+	def __init__(self, values: dict[str, str]):
+		super().__init__(values)
 
-	@classmethod
-	def from_env(cls, environ: Mapping[str, str]) -> Self:
-		return cls(
-			persist=persist.Config(
-				Path(
-					environ.get(
-						"APP_PERSIST_LOCK_FILE",
-						DEFAULT_CONFIG.persist.lock_file,
-					)
-				)
-			),
-			data=data.Config(
-				Path(
-					environ.get(
-						"APP_DATA_STORE_FILE",
-						DEFAULT_CONFIG.data.store_file,
-					)
-				)
-			),
-			views=views.Config(
-				Path(environ.get("APP_VIEWS_DIR", DEFAULT_CONFIG.views.dir))
-			),
-			session=session.Config(
-				Path(
-					environ.get(
-						"APP_SESSION_STORE_FILE",
-						DEFAULT_CONFIG.session.store_file,
-					)
-				)
-			),
+		self.persist = helios.persist.config.Config(
+			self.path(
+				"APP_PERSIST_LOCK_FILE",
+				Path(ROOT_DIR, "data", "persistence.lock"),
+			)
 		)
-
-	@classmethod
-	def load(cls, environ: Mapping[str, str] | None = None) -> Self:
-		if environ is None:
-			environ = os.environ
-		values = {
-			name: value
-			for name, value in dotenv_values(ROOT_DIR.joinpath(".env")).items()
-			if value is not None
-		}
-		values.update(environ)
-		return cls.from_env(values)
-
-
-DEFAULT_CONFIG = Config(
-	persist=persist.Config(ROOT_DIR.joinpath("data", "persistence.lock")),
-	data=data.Config(ROOT_DIR.joinpath("data", "store.json")),
-	views=views.Config(ROOT_DIR.joinpath("app", "views")),
-	session=session.Config(ROOT_DIR.joinpath("data", "sessions.json")),
-)
+		self.data = helios.data.config.Config(
+			self.path(
+				"APP_DATA_STORE_FILE",
+				Path(ROOT_DIR, "data", "store.json"),
+			)
+		)
+		self.views = helios.views.config.Config(
+			self.path(
+				"APP_VIEWS_DIR",
+				Path(ROOT_DIR, "app", "views"),
+			)
+		)
+		self.session = helios.session.config.Config(
+			self.path(
+				"APP_SESSION_STORE_FILE",
+				Path(ROOT_DIR, "data", "sessions.json"),
+			)
+		)

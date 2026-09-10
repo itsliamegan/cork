@@ -2,7 +2,8 @@ from datetime import datetime
 from uuid import UUID
 
 from helios.auth import Authenticator
-from helios.data import Model, NotFoundError, Schema, Store, attr
+from helios.data.model import Model, attr
+from helios.data.store import NotFoundError, Schema, Store
 
 
 class User(Model):
