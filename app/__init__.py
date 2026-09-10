@@ -17,15 +17,13 @@ from app.http import routes
 class Application(Application):
 	def __init__(self, config: Config):
 		files = helios.persist.Files(config.persist)
-		store_data = files.json(config.data.store_file, helios.data.Format(schema))
-		sessions_data = files.json(config.session.store_file, helios.session.Format())
 		super().__init__(
 			Router(routes),
 			[
 				helios.persist.Component(files),
-				helios.data.Component(store_data),
+				helios.data.Component(config.data, files, schema),
 				helios.views.Component(config.views),
-				helios.session.Component(sessions_data),
+				helios.session.Component(config.session, files),
 				helios.flash.Component(),
 				helios.auth.Component(User),
 			],
