@@ -40,6 +40,10 @@ force-sort-within-sections = true
 order-by-type = false
 
 [dependency-groups]
+backup = [
+    "cloudflare>=5.7.0",
+    "luna",
+]
 dev = [
     "luna",
     "ruff>=0.16.6",
