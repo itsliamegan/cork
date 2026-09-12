@@ -1,3 +1,4 @@
+import helios.app
 import helios.auth
 import helios.data.component
 import helios.flash
@@ -17,12 +18,13 @@ class Application(Application):
 	def __init__(self, config: Config):
 		files = Files(config.persist)
 		super().__init__(
+			helios.app.Config(),
 			Router(routes),
 			[
 				helios.persist.component.Component(files),
+				helios.session.component.Component(config.session, files),
 				helios.data.component.Component(config.data, files, schema),
 				helios.views.component.Component(config.views),
-				helios.session.component.Component(config.session, files),
 				helios.flash.Component(),
 				helios.auth.Component(User),
 			],

@@ -3,6 +3,9 @@
 	<head>
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width,initial-scale=1">
+		{% block turbo_control %}
+		<meta name="turbo-visit-control" content="reload">
+		{% endblock %}
 		{% block metadata %}{% endblock %}
 
 		<title>{% block title %}Cork{% endblock %}</title>
@@ -11,41 +14,21 @@
 		<link rel="stylesheet" type="text/css" href="/static/styles/theme.css">
 		<link rel="stylesheet" type="text/css" href="/static/styles/main.css">
 
-		<script type="module" src="https://cdn.jsdelivr.net/npm/@hotwired/turbo@8.0"></script>
-		<script type="module" src="https://cdn.jsdelivr.net/npm/@hotwired/stimulus@3.2"></script>
-		<script type="module" src="/static/scripts/main.js"></script>
+		{% block scripts %}{% endblock %}
 	</head>
 
 	<body>
+		{% block header %}
 		<header id="site-header">
 			<h1 id="site-title">Cork</h1>
-
-			{% block site_navigation %}
-			<nav id="site-nav">
-				<a
-					class="site-nav-link {% if active_nav == "boards" %} site-nav-link--active {% endif %}"
-					href="/boards/"
-				>
-					Boards
-				</a>
-			</nav>
-
-			<section id="site-actions">
-				<span class="site-identity">{{ current_user.name }}</span>
-				<span class="site-action-separator">/</span>
-				<a
-					class="site-action {% if active_nav == "settings" %} site-action--active {% endif %}"
-					href="/settings"
-				>
-					Settings
-				</a>
-			</section>
-			{% endblock %}
 		</header>
+		{% endblock %}
 
-		<main id="page"{% if page_modifier %} class="{{ page_modifier }}"{% endif %}>
+		{% block page %}
+		<main id="auth-page">
 			{% block content %}
 			{% endblock %}
 		</main>
+		{% endblock %}
 	</body>
 </html>

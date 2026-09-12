@@ -1,0 +1,49 @@
+{% extends "layouts.base" %}
+
+{% block title %}Cork - {% if invite %}{% if invite.target_id %}New session{% else %}New account{% endif %}{% else %}Invite unavailable{% endif %}{% endblock %}
+
+{% block content %}
+{% if invite %}
+<header id="page-header">
+	<h2 id="page-title">{% if invite.target_id %}New session{% else %}New account{% endif %}</h2>
+</header>
+
+<form class="frame" action="/redemptions/" method="POST">
+	<input type="hidden" name="token" value="{{ token }}">
+	{% if invite.target_id %}
+	<header class="frame-header">
+		<h3 class="frame-title">Account</h3>
+	</header>
+	<div class="frame-item">
+		<strong>{{ target.name }}</strong>
+	</div>
+	<footer class="frame-item form-actions">
+		<button class="button button--action" type="submit">Sign in</button>
+	</footer>
+	{% else %}
+	<header class="frame-header">
+		<h3 class="frame-title">Invited by {{ creator.name }}</h3>
+	</header>
+	<section class="form-items">
+		<label class="frame-item form-item">
+			<span class="form-label">Name</span>
+			<input class="form-field{% if error %} form-field--invalid{% endif %}" type="text" name="name" value="{{ name }}" required autofocus>
+			{% if error %}<span class="form-field-error">{{ error }}</span>{% endif %}
+		</label>
+	</section>
+	<footer class="frame-item form-actions">
+		<button class="button button--action" type="submit">Create</button>
+	</footer>
+	{% endif %}
+</form>
+
+{% else %}
+<header id="page-header">
+	<h2 id="page-title">Invite unavailable</h2>
+</header>
+
+<section class="frame">
+	<div class="frame-item frame-empty">This link is invalid or expired.</div>
+</section>
+{% endif %}
+{% endblock %}

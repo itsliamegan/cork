@@ -1,0 +1,28 @@
+{% extends "layouts.app" %}
+{% set active_nav = "settings" %}
+
+{% block title %}Cork - New recovery{% endblock %}
+
+{% block content %}
+<header id="page-header">
+	<h2 id="page-title">New recovery</h2>
+</header>
+
+<section class="frame">
+	<header class="frame-header">
+		<h3 class="frame-title">Code</h3>
+	</header>
+	<p class="frame-item">
+		Save this code. It won't be shown again.
+	</p>
+	<div class="frame-item" data-controller="copy">
+		<div class="form-field-group">
+			<strong class="form-field form-field--output recovery-code" data-copy-target="source" data-action="click->copy#copy"><span>{{ recovery_code[:4] }}</span><span>{{ recovery_code[4:8] }}</span><span>{{ recovery_code[8:12] }}</span><span>{{ recovery_code[12:] }}</span></strong>
+			<button class="button button--action" type="button" data-copy-target="button" data-action="copy#copy">Copy</button>
+		</div>
+	</div>
+	<footer class="frame-item form-actions">
+		<a class="button" href="/boards/">Continue</a>
+	</footer>
+</section>
+{% endblock %}

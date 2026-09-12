@@ -1,7 +1,7 @@
-{% extends "layouts.base" %}
+{% extends "layouts.app" %}
 {% set active_nav = "settings" %}
 
-{% block title %}Cork - Settings{% endblock %}
+{% block title %}Settings{% endblock %}
 
 {% block content %}
 <header id="page-header">
@@ -19,12 +19,56 @@
 	</div>
 
 	<header class="frame-header">
+		<h3 class="frame-title">Access</h3>
+	</header>
+
+	{% if invite_error %}
+	<div class="frame-item form-field-error">{{ invite_error }}</div>
+	{% endif %}
+
+	<form class="frame-item setting-item" action="/invites/" method="POST">
+		<span class="setting-label">Invite someone</span>
+		<span class="setting-note">New account</span>
+		<button class="button" type="submit">Create link</button>
+	</form>
+
+	<form class="frame-item setting-item" action="/invites/" method="POST">
+		<input type="hidden" name="targeted" value="on">
+		<span class="setting-label">Link another device</span>
+		<span class="setting-note">Sign in as {{ current_user.name }}</span>
+		<button class="button" type="submit">Create link</button>
+	</form>
+
+	<div class="frame-item setting-item">
+		<span class="setting-label">Recovery code</span>
+		<span class="setting-note">Sign in without an active session or link</span>
+		{% if has_recovery %}
+		<button class="button" command="show-modal" commandfor="recovery-dialog">Generate code</button>
+		{% else %}
+		<button class="button" type="submit" form="recovery-form">Generate code</button>
+		{% endif %}
+	</div>
+
+	<dialog id="recovery-dialog" class="dialog">
+		<section class="dialog-content">
+			<p>Are you sure you want to replace your recovery code? Your current code will stop working.</p>
+		</section>
+		<footer class="dialog-actions">
+			<button class="button" command="close" commandfor="recovery-dialog">Cancel</button>
+			<button class="button button--danger" type="submit" form="recovery-form" autofocus>Replace</button>
+		</footer>
+	</dialog>
+
+	<form id="recovery-form" action="/recoveries/" method="POST" hidden></form>
+
+	<header class="frame-header">
 		<h3 class="frame-title">Session</h3>
 	</header>
 
-	<form class="frame-item setting-item" action="/sign-out" method="POST" data-turbo="false">
+	<form class="frame-item setting-item" action="/sessions/" method="POST" data-turbo="false">
+		<input type="hidden" name="_method" value="DELETE">
 		<span class="setting-label">This browser</span>
-		<span class="setting-note">Return to the user chooser.</span>
+		<span class="setting-note">Active</span>
 		<button class="button" type="submit">Sign out</button>
 	</form>
 
@@ -42,9 +86,9 @@
 				name="open_in_new_tab"
 				{% if current_user.open_in_new_tab %}checked{% endif %}
 			>
-			<span class="setting-name">
+			<span class="setting-details">
 				<strong>Open pin links in a new tab</strong>
-				<span class="setting-note">Open saved external URLs in a separate browser tab.</span>
+				<span class="setting-note">Opens external URLs in a new tab</span>
 			</span>
 		</label>
 		<footer class="frame-item form-actions">

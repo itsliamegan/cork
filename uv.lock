@@ -96,6 +96,7 @@ requires-dist = [
 [package.metadata.requires-dev]
 dev = [
     { name = "luna", editable = "../luna" },
+    { name = "time-machine", specifier = ">=3.5.1" },
     { name = "ty", specifier = ">=0.0.80" },
 ]
 

@@ -1,0 +1,33 @@
+{% extends "layouts.app" %}
+{% set active_nav = "settings" %}
+
+{% block title %}Cork - {% if invite.target_id %}New session{% else %}New invite{% endif %}{% endblock %}
+
+{% block content %}
+<header id="page-header">
+	<h2 id="page-title">{% if invite.target_id %}New session{% else %}New invite{% endif %}</h2>
+</header>
+
+<section class="frame">
+	<header class="frame-header">
+		<h3 class="frame-title">Link</h3>
+	</header>
+	<p class="frame-item">
+		{% if invite.target_id %}
+		Open on another device to sign in as {{ current_user.name }}.
+		{% else %}
+		Send to someone to let them create an account.
+		{% endif %}
+	</p>
+	<div class="frame-item invite-link" data-controller="copy">
+		<div class="form-field-group">
+			<output class="form-field form-field--output" data-copy-target="source" data-action="click->copy#copy">{{ invite_link }}</output>
+			<button class="button button--action" type="button" data-copy-target="button" data-action="copy#copy">Copy</button>
+		</div>
+		<span class="form-field-note">Expires {{ invite.expires_at|date }}</span>
+	</div>
+	<footer class="frame-item form-actions">
+		<a class="button" href="/settings">Back</a>
+	</footer>
+</section>
+{% endblock %}

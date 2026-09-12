@@ -1,0 +1,36 @@
+{% extends "layouts.base" %}
+
+{% block title %}Cork{% endblock %}
+
+{% block content %}
+<header id="page-header">
+	<h2 id="page-title">Nothing here</h2>
+</header>
+
+<section class="frame">
+	<div class="frame-item frame-empty">This page doesn't exist.</div>
+</section>
+
+<details class="recovery-prompt"{% if error %} open{% endif %}>
+	<summary>Have a recovery code?</summary>
+	<form class="frame" action="/sessions/" method="POST">
+		<section class="form-items">
+			<label class="frame-item form-item">
+				<span class="form-label">Code</span>
+				<input
+					class="form-field{% if error %} form-field--invalid{% endif %}"
+					type="text"
+					name="recovery_code"
+					autocomplete="off"
+					required
+					autofocus
+				>
+				{% if error %}<span class="form-field-error">{{ error }}</span>{% endif %}
+			</label>
+		</section>
+		<footer class="frame-item form-actions">
+			<button class="button button--action" type="submit">Sign in</button>
+		</footer>
+	</form>
+</details>
+{% endblock %}

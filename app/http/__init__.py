@@ -2,26 +2,67 @@ from helios.auth import Authenticator
 from helios.http import Method, Response
 from helios.routing import Group, Pattern, Route
 
-from app.http import auths, boards, home, orderings, pins, settings
+from app.http import (
+	boards,
+	home,
+	invites,
+	orderings,
+	pins,
+	recoveries,
+	redemptions,
+	sessions,
+	settings,
+)
 
 
 def ensure_signed_in(req, ctx, **params):
 	auth = ctx.get(Authenticator)
 
 	if not auth.is_signed_in():
-		return Response.redirect("/sign-in")
+		return Response.redirect("/sessions/new")
 
 
 routes = [
-	Route(Method.GET, Pattern("/sign-in"), auths.new),
-	Route(Method.POST, Pattern("/sign-in"), auths.create),
+	Group(
+		prefix="/sessions",
+		routes=[
+			Route(Method.POST, Pattern("/"), sessions.create),
+			Route(Method.GET, Pattern("/new"), sessions.new),
+			Route(
+				Method.DELETE,
+				Pattern("/"),
+				sessions.delete,
+				guards=[ensure_signed_in],
+			),
+		],
+	),
+	Group(
+		prefix="/redemptions",
+		routes=[
+			Route(Method.POST, Pattern("/"), redemptions.create),
+			Route(Method.GET, Pattern("/new"), redemptions.new),
+		],
+	),
 	Group(
 		guards=[ensure_signed_in],
 		routes=[
-			Route(Method.POST, Pattern("/sign-out"), auths.delete),
 			Route(Method.GET, Pattern("/"), home.show),
 			Route(Method.GET, Pattern("/settings"), settings.show),
 			Route(Method.PUT, Pattern("/settings"), settings.update),
+			Group(
+				prefix="/invites",
+				routes=[
+					Route(Method.POST, Pattern("/"), invites.create),
+					Route(Method.GET, Pattern("/{id:uuid}"), invites.show),
+				],
+			),
+			Group(
+				prefix="/recoveries",
+				routes=[
+					Route(Method.POST, Pattern("/"), recoveries.create),
+					Route(Method.GET, Pattern("/{id:uuid}"), recoveries.show),
+				],
+			),
 			Route(Method.PUT, Pattern("/orderings"), orderings.update),
 			Group(
 				prefix="/boards",

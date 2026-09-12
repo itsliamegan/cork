@@ -1,14 +1,184 @@
-from datetime import datetime
+from datetime import UTC, datetime, timedelta
+import secrets
 from uuid import UUID
 
 from helios.auth import Authenticator
+from helios.auth.password import Digest
 from helios.data.model import Model, attr
 from helios.data.store import NotFoundError, Schema, Store
+
+
+class InvalidInviteError(ValueError):
+	pass
 
 
 class User(Model):
 	name = attr(str)
 	open_in_new_tab = attr(bool, default=False)
+
+	@classmethod
+	def recover(cls, store: Store, code: str) -> tuple[User, Recovery] | None:
+		recovery = Recovery.find_by_code(store, code)
+		if recovery is None:
+			return None
+		try:
+			user = store.find_one(cls, recovery.user_id)
+		except NotFoundError:
+			return None
+		new_recovery = Recovery.create(store, user)
+		return user, new_recovery
+
+
+class Recovery(Model):
+	class Code:
+		ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
+		LENGTH = 16
+
+		def __init__(self, digest: Digest, plaintext: str | None = None):
+			self.digest = digest
+			self.plaintext = plaintext
+
+		@classmethod
+		def generate(cls) -> Recovery.Code:
+			plaintext = "".join(secrets.choice(cls.ALPHABET) for _ in range(cls.LENGTH))
+			return cls(Digest.generate(plaintext), plaintext)
+
+		def matches(self, candidate: str) -> bool:
+			return self.digest.matches(candidate)
+
+		@classmethod
+		def check(cls, val: object):
+			if not isinstance(val, cls):
+				raise TypeError(f"expected a Code, got {type(val).__name__}")
+
+		@classmethod
+		def encode(cls, val: Recovery.Code) -> str:
+			cls.check(val)
+			return val.digest.encode()
+
+		@classmethod
+		def decode(cls, val: object) -> Recovery.Code:
+			if not isinstance(val, str):
+				raise TypeError(f"expected a string, got {type(val).__name__}")
+			return cls(Digest.decode(val))
+
+	user_id = attr(UUID)
+	code = attr(Code)
+
+	@classmethod
+	def create(cls, store: Store, user: User) -> Recovery:
+		code = cls.Code.generate()
+		while cls.find_by_code(store, code.plaintext) is not None:
+			code = cls.Code.generate()
+		for recovery in store.find_by(cls, user_id=user.id):
+			store.delete(recovery.id)
+		return store.create(
+			cls,
+			user_id=user.id,
+			code=code,
+		)
+
+	@classmethod
+	def find_by_code(cls, store: Store, code: str) -> Recovery | None:
+		for recovery in store.find_all(cls):
+			if recovery.code.matches(code):
+				return recovery
+		return None
+
+	@classmethod
+	def find_owned(cls, store: Store, id: UUID, user: User) -> Recovery:
+		recovery = store.find_one(cls, id)
+		if recovery.user_id != user.id:
+			raise NotFoundError(cls, id)
+		return recovery
+
+	@classmethod
+	def exists_for(cls, store: Store, user: User) -> bool:
+		return bool(store.find_by(cls, user_id=user.id))
+
+
+class Invite(Model):
+	class Token:
+		def __init__(self, value: str):
+			self.value = value
+
+		@classmethod
+		def generate(cls) -> Invite.Token:
+			return cls(secrets.token_urlsafe(32))
+
+		@classmethod
+		def check(cls, val: object):
+			if not isinstance(val, cls):
+				raise TypeError(f"expected a Token, got {type(val).__name__}")
+
+		@classmethod
+		def encode(cls, val: Invite.Token) -> str:
+			cls.check(val)
+			return val.value
+
+		@classmethod
+		def decode(cls, val: object) -> Invite.Token:
+			if not isinstance(val, str):
+				raise TypeError(f"expected a string, got {type(val).__name__}")
+			return cls(val)
+
+	token = attr(Token)
+	creator_id = attr(UUID)
+	target_id = attr(UUID, nullable=True)
+	expires_at = attr(datetime)
+
+	@classmethod
+	def create(
+		cls,
+		store: Store,
+		creator: User,
+		*,
+		target: User | None = None,
+	) -> Invite:
+		token = cls.Token.generate()
+		duration = timedelta(hours=24) if target is not None else timedelta(days=7)
+		expires_at = datetime.now(UTC) + duration
+		return store.create(
+			cls,
+			token=token,
+			creator_id=creator.id,
+			target_id=target.id if target is not None else None,
+			expires_at=expires_at,
+		)
+
+	@classmethod
+	def find_valid(cls, store: Store, token: str) -> Invite | None:
+		for invite in store.find_all(cls):
+			if invite.token.value == token:
+				if invite.expires_at <= datetime.now(UTC):
+					return None
+				return invite
+		return None
+
+	@classmethod
+	def find_created_by(cls, store: Store, id: UUID, creator: User) -> Invite:
+		invite = store.find_one(cls, id)
+		if invite.creator_id != creator.id:
+			raise NotFoundError(cls, id)
+		return invite
+
+	def find_target(self, store: Store) -> User | None:
+		if self.target_id is None:
+			return None
+		try:
+			return store.find_one(User, self.target_id)
+		except NotFoundError as error:
+			raise InvalidInviteError from error
+
+	def redeem(self, store: Store, name: str) -> User:
+		target = self.find_target(store)
+		if target is not None:
+			store.delete(self.id)
+			return target
+
+		user = store.create(User, name=name)
+		store.delete(self.id)
+		return user
 
 
 class Pin(Model):
@@ -38,6 +208,8 @@ class Ordering(Model):
 schema = Schema(
 	[
 		User,
+		Recovery,
+		Invite,
 		Pin,
 		Board,
 		Share,

@@ -1,6 +1,9 @@
+import json
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from uuid import uuid4
 
+from helios.auth.password import Digest
 from helios.data.store import Format
 from helios.persist.files import Files
 from helios.wsgi import TestClient
@@ -9,6 +12,8 @@ from luna.test.assertion import assert_eq
 from app.config import Config
 from app.data import User, schema
 from app.wsgi import Application
+
+Digest.method = "pbkdf2:sha256:1"
 
 
 class TestApplication(Application):
@@ -49,11 +54,20 @@ class TestApplication(Application):
 		self.temp_dir.cleanup()
 
 	def sign_in(self, user: User):
-		res = self.client.post(
-			"/sign-in",
-			form={"user_id": str(user.id)},
+		session_id = uuid4()
+		self.sessions_file.write_text(
+			json.dumps(
+				{
+					str(session_id): {
+						"items": {"_user_id": str(user.id)},
+						"last_active_at": None,
+					}
+				}
+			)
 		)
-		assert_eq(res.status_code, 302)
+		self.client.set_cookie("session_id", str(session_id))
+		res = self.client.get("/boards/")
+		assert_eq(res.status_code, 200)
 
 
 class TestClient(TestClient):
