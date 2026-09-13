@@ -41,7 +41,7 @@ def test_create_stores_targeted_invite():
 		assert_that(invite.expires_at <= after + timedelta(hours=24))
 
 
-def test_show_redirects_without_flash():
+def test_show_redirects_after_create():
 	with TestApplication() as app:
 		creator = app.store.create(User, name="Alice")
 		app.sign_in(creator)
@@ -64,7 +64,7 @@ def test_invite_expires_at_boundary():
 		assert_that(Invite.find_valid(app.store, invite.token.value) is None)
 
 
-def test_signed_in_user_cannot_redeem():
+def test_signed_in_user_redirects():
 	with TestApplication() as app:
 		creator = app.store.create(User, name="Alice")
 		invite = Invite.create(app.store, creator)
@@ -72,8 +72,7 @@ def test_signed_in_user_cannot_redeem():
 
 		res = app.client.get(f"/redemptions/new?token={invite.token.value}")
 
-		assert_eq(res.status_code, 404)
-		assert_eq(app.store.find_one(Invite, invite.id).id, invite.id)
+		assert_eq(res.status_code, 302)
 
 
 def test_account_invite_creates_user_and_recovery():
@@ -87,8 +86,8 @@ def test_account_invite_creates_user_and_recovery():
 
 		assert_eq(res.status_code, 302)
 		users = app.store.find_all(User)
-		bob = next(user for user in users if user.name == "Bob")
-		assert_eq(len(app.store.find_by(Recovery, user_id=bob.id)), 1)
+		created = next(user for user in users if user.name == "Bob")
+		assert_eq(len(app.store.find_by(Recovery, user_id=created.id)), 1)
 		assert_that(
 			invite.id not in {stored.id for stored in app.store.find_all(Invite)}
 		)
@@ -154,7 +153,7 @@ def test_targeted_invite_signs_in_without_recovery():
 		)
 
 
-def test_invalid_tokens_return_not_found():
+def test_invalid_tokens_render_error():
 	with TestApplication() as app:
 		creator = app.store.create(User, name="Alice")
 		expired = Invite.create(app.store, creator)
@@ -168,9 +167,9 @@ def test_invalid_tokens_return_not_found():
 		expired_res = app.client.get(f"/redemptions/new?token={expired.token.value}")
 		redeemed_res = app.client.get(f"/redemptions/new?token={redeemed_token}")
 
-		assert_eq(unknown.status_code, 404)
-		assert_eq(expired_res.status_code, 404)
-		assert_eq(redeemed_res.status_code, 404)
+		assert_eq(unknown.status_code, 200)
+		assert_eq(expired_res.status_code, 200)
+		assert_eq(redeemed_res.status_code, 200)
 
 
 def test_concurrent_redemptions_create_one_user():

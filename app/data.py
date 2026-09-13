@@ -8,10 +8,6 @@ from helios.data.model import Model, attr
 from helios.data.store import NotFoundError, Schema, Store
 
 
-class InvalidInviteError(ValueError):
-	pass
-
-
 class User(Model):
 	name = attr(str)
 	open_in_new_tab = attr(bool, default=False)
@@ -165,18 +161,14 @@ class Invite(Model):
 	def find_target(self, store: Store) -> User | None:
 		if self.target_id is None:
 			return None
-		try:
+		else:
 			return store.find_one(User, self.target_id)
-		except NotFoundError as error:
-			raise InvalidInviteError from error
 
 	def redeem(self, store: Store, name: str) -> User:
-		target = self.find_target(store)
-		if target is not None:
-			store.delete(self.id)
-			return target
-
-		user = store.create(User, name=name)
+		if self.target_id is not None:
+			user = self.find_target(store)
+		else:
+			user = store.create(User, name=name)
 		store.delete(self.id)
 		return user
 
