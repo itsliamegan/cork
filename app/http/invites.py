@@ -7,6 +7,7 @@ from helios.data.store import Store
 from helios.flash import Flashes
 from helios.form import Field, Form, parser
 from helios.http import Request, Response, URL
+from helios.routing import URLs
 from helios.views.engine import Views
 
 from app.data import Invite, User
@@ -50,13 +51,16 @@ def show(req: Request, ctx: Context, id: UUID) -> Response:
 		return Response.redirect(URL("/settings"))
 
 	token = flash["invite_token"]
+	urls = ctx.get(URLs)
 	return Response.html(
 		views.render(
 			"invites.show",
 			{
 				"current_user": creator,
 				"invite": invite,
-				"invite_link": str(URL("/redemptions/new", {"token": token})),
+				"invite_link": str(
+					urls.route("redemptions.new", query={"token": token})
+				),
 			},
 		)
 	)

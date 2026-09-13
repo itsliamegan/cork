@@ -18,7 +18,7 @@ class Application(Application):
 	def __init__(self, config: Config):
 		files = Files(config.persist)
 		super().__init__(
-			helios.app.Config(),
+			helios.app.Config(base_url=config.base_url),
 			Router(routes),
 			[
 				helios.persist.component.Component(files),

@@ -2,6 +2,7 @@ from pathlib import Path
 
 from helios.config import Config
 import helios.data.config
+from helios.http import URL
 import helios.persist.config
 import helios.session.config
 import helios.views.config
@@ -14,6 +15,7 @@ class Config(Config):
 	def __init__(self, values: dict[str, str]):
 		super().__init__(values)
 
+		self.base_url = self.url("APP_BASE_URL", URL("http://localhost:4000"))
 		self.persist = helios.persist.config.Config(
 			self.path(
 				"APP_PERSIST_LOCK_FILE",

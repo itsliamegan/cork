@@ -40,7 +40,7 @@ routes = [
 		prefix="/redemptions",
 		routes=[
 			Route(Method.POST, Pattern("/"), redemptions.create),
-			Route(Method.GET, Pattern("/new"), redemptions.new),
+			Route(Method.GET, Pattern("/new"), redemptions.new, name="redemptions.new"),
 		],
 	),
 	Group(
