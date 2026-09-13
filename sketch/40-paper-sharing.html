@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>Cork — Paper Sharing</title>
+		<style>
+			:root {
+				--bg: #f6f4ef;
+				--panel: #fffdf9;
+				--fg: #1d1b17;
+				--muted: #797469;
+				--line: #ded7c9;
+				--line-strong: #c6bda9;
+				--accent: #9c4a22;
+				--danger: #97341f;
+				--mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+			}
+
+			* { box-sizing: border-box; }
+			body { margin: 0; color: var(--fg); background: var(--bg); font: 14px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; }
+			a { color: inherit; }
+			select, button { font: inherit; }
+
+			.site-header { border-bottom: 1px solid var(--line); background: var(--panel); }
+			.site-header-inner { display: flex; align-items: center; gap: 1.4rem; max-width: 40rem; height: 3rem; margin: auto; padding: 0 1rem; }
+			.brand { font-family: var(--mono); font-size: 0.95rem; font-weight: 700; letter-spacing: -0.03em; text-decoration: none; }
+			.brand span { color: var(--accent); }
+			.site-nav { display: flex; gap: 0.3rem; font-family: var(--mono); font-size: 0.8rem; }
+			.site-nav a { padding: 0.15rem 0.5rem; border: 1px solid transparent; border-radius: 5px; color: var(--muted); text-decoration: none; }
+			.site-nav a[aria-current] { border-color: var(--line-strong); color: var(--fg); background: var(--bg); }
+			.account { margin-left: auto; font-family: var(--mono); font-size: 0.78rem; color: var(--muted); text-decoration: none; }
+
+			main { max-width: 40rem; margin: 1.75rem auto 3rem; padding: 0 1rem; }
+			.path { margin-bottom: 0.4rem; font-family: var(--mono); font-size: 0.75rem; color: var(--muted); }
+			.path a { text-decoration: none; }
+			.page-header { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.9rem; }
+			h1 { margin: 0; font-size: 1.15rem; font-weight: 650; letter-spacing: -0.01em; }
+			.page-header .button { margin-left: auto; }
+
+			.button { padding: 0.28rem 0.7rem; border: 1px solid var(--line-strong); border-radius: 5px; color: var(--fg); background: var(--panel); font-family: var(--mono); font-size: 0.78rem; text-decoration: none; cursor: pointer; }
+			.button:hover { border-color: var(--muted); }
+			.button-primary { border-color: var(--accent); color: var(--panel); background: var(--accent); }
+			.button-primary:hover { border-color: var(--danger); background: var(--danger); }
+			.button-quiet { border-color: transparent; color: var(--muted); background: none; }
+			.button-quiet:hover { border-color: var(--danger); color: var(--danger); }
+
+			.group-label { display: flex; align-items: center; gap: 0.5rem; margin: 1.4rem 0 0.45rem; font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.05em; color: var(--muted); text-transform: uppercase; }
+			.group-label:first-of-type { margin-top: 0; }
+			.group-label::after { content: ""; flex: 1; border-top: 1px dashed var(--line-strong); }
+
+			.share-form { display: flex; gap: 0.4rem; padding: 0.6rem 0.75rem; border: 1px solid var(--line); border-radius: 6px; background: var(--panel); }
+			select { flex: 1; min-width: 0; padding: 0.35rem 0.5rem; border: 1px solid var(--line-strong); border-radius: 5px; color: var(--fg); background: var(--bg); }
+			select:focus { border-color: var(--accent); outline: 2px solid rgb(156 74 34 / 18%); }
+
+			ul { display: grid; gap: 0.4rem; margin: 0; padding: 0; list-style: none; }
+			.person { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 0.75rem; padding: 0.5rem 0.75rem; border: 1px solid var(--line); border-radius: 6px; background: var(--panel); }
+			.person:hover { border-color: var(--line-strong); }
+			.handle { font-family: var(--mono); font-size: 0.85rem; font-weight: 600; }
+			.handle::before { content: "@"; color: var(--line-strong); }
+			.person-meta { font-family: var(--mono); font-size: 0.7rem; color: var(--muted); }
+			.role { padding: 0.05rem 0.4rem; border: 1px solid var(--line-strong); border-radius: 999px; font-family: var(--mono); font-size: 0.68rem; color: var(--muted); }
+
+			.note { margin-top: 1rem; font-family: var(--mono); font-size: 0.72rem; color: var(--muted); }
+
+			@media (max-width: 30rem) { .account { display: none; } }
+		</style>
+	</head>
+	<body>
+		<header class="site-header">
+			<div class="site-header-inner">
+				<a class="brand" href="#">cork<span>.</span></a>
+				<nav class="site-nav" aria-label="Main navigation"><a href="#" aria-current="page">boards</a><a href="#">pins</a><a href="#">people</a></nav>
+				<a class="account" href="#">@liam</a>
+			</div>
+		</header>
+		<main>
+			<div class="path"><a href="#">boards</a> / <a href="#">personal-computing</a> / <strong>sharing</strong></div>
+			<header class="page-header">
+				<h1>Sharing</h1>
+				<a class="button" href="#">Done</a>
+			</header>
+
+			<h2 class="group-label" id="add">add someone</h2>
+			<form class="share-form" aria-labelledby="add">
+				<select id="user" name="user" aria-label="User"><option value="">choose a person…</option><option>sam</option><option>jules</option></select>
+				<button class="button button-primary" type="submit">Add</button>
+			</form>
+
+			<h2 class="group-label" id="access">access · 2</h2>
+			<ul aria-labelledby="access">
+				<li class="person"><div><span class="handle">liam</span><div class="person-meta">added this board</div></div><span class="role">owner</span></li>
+				<li class="person"><div><span class="handle">kathryn</span><div class="person-meta">added 12 days ago</div></div><button class="button button-quiet" type="button">Remove</button></li>
+			</ul>
+
+			<p class="note">members can add and remove pins. only the owner can share.</p>
+		</main>
+	</body>
+</html>

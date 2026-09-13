@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>Cork — Personal Computing</title>
+		<style>
+			:root {
+				--bg: #f6f4ef;
+				--panel: #fffdf9;
+				--sunk: #f1eee7;
+				--fg: #1d1b17;
+				--muted: #797469;
+				--line: #e4ded1;
+				--line-strong: #c6bda9;
+				--accent: #9c4a22;
+				--accent-dark: #843a17;
+			}
+
+			* { box-sizing: border-box; }
+			body { margin: 0; color: var(--fg); background: var(--bg); font: 14px/1.4 -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; font-variant-numeric: tabular-nums; }
+			a { color: inherit; }
+			input, select, button { font: inherit; font-variant-numeric: inherit; }
+
+			.site-header { border-bottom: 1px solid var(--line); background: var(--panel); }
+			.site-header-inner { display: flex; align-items: center; gap: 1.3rem; max-width: 40rem; height: 2.9rem; margin: auto; padding: 0 1rem; }
+			.brand { font-size: 1rem; font-weight: 700; letter-spacing: -0.02em; text-decoration: none; }
+			.brand span { color: var(--accent); }
+			.site-nav { display: flex; gap: 0.25rem; font-size: 0.8rem; }
+			.site-nav a { padding: 0.15rem 0.5rem; border: 1px solid transparent; border-radius: 5px; color: var(--muted); text-decoration: none; }
+			.site-nav a:hover { border-color: var(--line); color: var(--fg); }
+			.site-nav a[aria-current] { border-color: var(--line-strong); color: var(--fg); background: var(--bg); }
+			.account { margin-left: auto; color: var(--muted); font-size: 0.78rem; text-decoration: none; }
+			.account:hover { color: var(--fg); }
+
+			main { max-width: 40rem; margin: 1.6rem auto 3rem; padding: 0 1rem; }
+			.path { margin-bottom: 0.35rem; color: var(--muted); font-size: 0.75rem; }
+			.path a { text-decoration: none; }
+			.path a:hover { color: var(--accent); text-decoration: underline; }
+			.page-header { display: flex; align-items: center; gap: 0.55rem; margin-bottom: 0.9rem; }
+			h1 { margin: 0; font-size: 1.15rem; font-weight: 650; letter-spacing: -0.015em; }
+			.badge { padding: 0.05rem 0.4rem; border: 1px solid var(--line-strong); border-radius: 999px; color: var(--muted); font-size: 0.68rem; }
+			.actions { display: flex; gap: 0.4rem; margin-left: auto; }
+
+			.button { padding: 0.3rem 0.7rem; border: 1px solid var(--line-strong); border-radius: 5px; color: var(--fg); background: var(--panel); font-size: 0.8rem; font-weight: 500; text-decoration: none; cursor: pointer; }
+			.button:hover { border-color: var(--muted); }
+			.button:focus-visible { border-color: var(--accent); outline: 2px solid rgb(156 74 34 / 20%); }
+			.button-primary { border-color: var(--accent); color: var(--panel); background: var(--accent); }
+			.button-primary:hover { border-color: var(--accent-dark); background: var(--accent-dark); }
+			.button-quiet { border-color: transparent; color: var(--muted); background: none; }
+			.button-quiet:hover { border-color: var(--line-strong); color: var(--accent); }
+
+			.panel { overflow: hidden; border: 1px solid var(--line-strong); border-radius: 6px; background: var(--panel); }
+			.panel + .panel { margin-top: 1rem; }
+			.panel-header { display: flex; align-items: center; gap: 0.5rem; padding: 0.3rem 0.75rem; border-bottom: 1px solid var(--line-strong); background: var(--sunk); color: var(--muted); font-size: 0.7rem; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; }
+			.panel-header:not(:first-child) { border-top: 1px solid var(--line-strong); }
+			.panel-header-columns { display: grid; align-items: center; gap: 0.9rem; }
+			.panel-header .col { font-weight: 500; letter-spacing: 0.05em; text-align: right; }
+
+			.rows { margin: 0; padding: 0; list-style: none; }
+			.row { display: grid; align-items: center; gap: 0.9rem; padding: 0.5rem 0.75rem; }
+			.row + .row { border-top: 1px solid var(--line); }
+			.row:hover { background: var(--sunk); }
+			.title { font-weight: 600; text-decoration: none; }
+			.row:hover a.title { color: var(--accent); text-decoration: underline; text-underline-offset: 2px; }
+			.sub { overflow: hidden; margin-top: 0.05rem; color: var(--muted); font-size: 0.75rem; text-overflow: ellipsis; white-space: nowrap; }
+			.num { color: var(--muted); font-size: 0.78rem; text-align: right; white-space: nowrap; }
+			.num-recent { color: var(--accent); }
+
+			.field { display: grid; grid-template-columns: 5.5rem minmax(0, 1fr); align-items: center; gap: 0.75rem; padding: 0.45rem 0.75rem; }
+			.field + .field { border-top: 1px solid var(--line); }
+			.field label { color: var(--muted); font-size: 0.8rem; font-weight: 500; }
+			input, select { width: 100%; padding: 0.35rem 0.5rem; border: 1px solid var(--line-strong); border-radius: 5px; color: var(--fg); background: var(--bg); }
+			input:focus, select:focus { border-color: var(--accent); outline: 2px solid rgb(156 74 34 / 20%); }
+			.help { grid-column: 2; margin: 0; color: var(--muted); font-size: 0.72rem; }
+
+			.panel-actions { display: flex; align-items: center; gap: 0.4rem; padding: 0.5rem 0.75rem; border-top: 1px solid var(--line-strong); background: var(--sunk); }
+			.panel-actions .note { margin-right: auto; color: var(--muted); font-size: 0.72rem; }
+
+			.footnote { margin-top: 0.9rem; color: var(--muted); font-size: 0.75rem; }
+
+			@media (max-width: 30rem) {
+				.account { display: none; }
+				.field { grid-template-columns: 1fr; gap: 0.2rem; }
+				.help { grid-column: 1; }
+			}
+
+			.row, .panel-header-columns { grid-template-columns: 1.75rem minmax(0, 1fr) 5rem 1.5rem; }
+			.seq { color: var(--line-strong); font-size: 0.78rem; text-align: right; }
+			.row:hover .seq { color: var(--muted); }
+			.more { padding: 0 0.2rem; border: 1px solid transparent; border-radius: 4px; color: var(--line-strong); background: none; cursor: pointer; }
+			.row:hover .more { color: var(--muted); }
+			.more:hover { border-color: var(--line-strong); color: var(--accent); }
+			.empty { padding: 0.9rem 0.75rem; color: var(--muted); }
+			@media (max-width: 30rem) {
+				.row, .panel-header-columns { grid-template-columns: 1.75rem minmax(0, 1fr) 1.5rem; }
+				.added, .col-added { display: none; }
+			}
+		</style>
+	</head>
+	<body>
+		<header class="site-header">
+			<div class="site-header-inner">
+				<a class="brand" href="#">Cork<span>.</span></a>
+				<nav class="site-nav" aria-label="Main navigation"><a href="#" aria-current="page">Boards</a><a href="#">Pins</a><a href="#">People</a></nav>
+				<a class="account" href="#">Liam E.</a>
+			</div>
+		</header>
+		<main>
+			<div class="path"><a href="#">Boards</a> / <strong>Personal Computing</strong></div>
+			<header class="page-header">
+				<h1>Personal Computing</h1>
+				<span class="badge">Owner</span>
+				<div class="actions">
+					<a class="button" href="#">Sharing</a>
+					<a class="button button-primary" href="#">New pin</a>
+				</div>
+			</header>
+
+			<section class="panel">
+				<header class="panel-header panel-header-columns"><span></span><span>Pins · 3</span><span class="col col-added">Added</span><span></span></header>
+				<ol class="rows">
+					<li class="row">
+						<span class="seq">1</span>
+						<div><a class="title" href="#">Augmenting Human Intellect</a><div class="sub">dougengelbart.org/pubs/papers/AugmentingHumanIntellect.pdf</div></div>
+						<time class="num added">Sep 4</time>
+						<button class="more" type="button" aria-label="Actions">···</button>
+					</li>
+					<li class="row">
+						<span class="seq">2</span>
+						<div><a class="title" href="#">The Mother of All Demos</a><div class="sub">computerhistory.org/revolution/the-mother-of-all-demos</div></div>
+						<time class="num added">Aug 28</time>
+						<button class="more" type="button" aria-label="Actions">···</button>
+					</li>
+					<li class="row">
+						<span class="seq">3</span>
+						<div><a class="title" href="#">As We May Think</a><div class="sub">theatlantic.com/magazine/archive/1945/07/as-we-may-think</div></div>
+						<time class="num added">Aug 19</time>
+						<button class="more" type="button" aria-label="Actions">···</button>
+					</li>
+				</ol>
+			</section>
+		</main>
+	</body>
+</html>

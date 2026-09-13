@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>Cork - Invite and authentication settings</title>
+		<style>
+			:root {
+				--canvas: #fff;
+				--fg: #111;
+				--muted: #626262;
+				--surface: #f1f1f1;
+				--control: #fff;
+				--line: #999;
+				--line-dim: #d5d5d5;
+				--blue: #0f61a9;
+				--blue-border: #0b477c;
+				--focus: rgb(15 97 169 / 25%);
+			}
+
+			* { box-sizing: border-box; }
+			body { margin: 0; color: var(--fg); background: var(--canvas); font: 14px/1.35 "Helvetica Neue", Helvetica, Arial, sans-serif; }
+			a { color: var(--blue); text-underline-offset: 2px; }
+			button { font: inherit; }
+
+			.site-header { border-bottom: 1px solid var(--line-dim); background: var(--surface); }
+			.site-header-inner { display: flex; align-items: stretch; width: min(35rem, 93.5vw); height: 2.8rem; margin: auto; }
+			.brand, .site-nav a, .settings { display: flex; align-items: center; color: var(--fg); }
+			.brand { font-size: 1.15rem; font-weight: 700; text-decoration: none; }
+			.site-nav { display: flex; margin-left: 1.375rem; }
+			.site-nav a { font-weight: 700; text-decoration: none; }
+			.site-actions { display: flex; align-items: center; gap: 0.75rem; min-width: 0; margin-left: auto; }
+			.identity { overflow: hidden; color: var(--muted); font-size: 0.75rem; text-overflow: ellipsis; white-space: nowrap; }
+			.separator { color: var(--line); font-size: 0.75rem; }
+			.settings { height: 100%; border-top: 3px solid transparent; border-bottom: 3px solid var(--blue); font-size: 0.75rem; font-weight: 700; text-decoration: none; }
+
+			main { width: min(35rem, 93.5vw); margin: 1.35rem auto 2rem; }
+			.page-header { margin-bottom: 1rem; padding-bottom: 0.6rem; border-bottom: 3px solid var(--fg); }
+			h1 { margin: 0; font-size: 1.45rem; line-height: 1.15; }
+
+			.frame { overflow: hidden; border: 1px solid var(--line); border-radius: 3px; background: var(--canvas); }
+			.frame-header { display: flex; align-items: baseline; min-height: 2rem; padding: 0.35rem 0.65rem; border-bottom: 2px solid var(--fg); background: var(--surface); }
+			.frame-header:not(:first-child) { border-top: 1px solid var(--line); }
+			.frame-header h2 { margin: 0; font-size: 0.85rem; }
+			.frame-meta { margin-left: auto; color: var(--muted); font-size: 0.7rem; }
+			.setting-row { display: grid; grid-template-columns: 7.25rem minmax(0, 1fr) auto; align-items: center; gap: 0.65rem; min-height: 3.35rem; padding: 0.55rem 0.65rem; }
+			.setting-row + .setting-row { border-top: 1px solid var(--line-dim); }
+			.setting-label { font-size: 0.75rem; font-weight: 700; }
+			.setting-label-secondary { color: var(--muted); }
+			.setting-copy { display: grid; gap: 0.08rem; min-width: 0; }
+			.setting-value { font-weight: 700; }
+			.setting-note { color: var(--muted); font-size: 0.72rem; }
+			.preference { display: flex; align-items: flex-start; gap: 0.55rem; padding: 0.65rem; cursor: pointer; }
+			.preference input { width: 1rem; height: 1rem; margin: 0.1rem 0 0; accent-color: var(--blue); }
+			.preference-copy { display: grid; gap: 0.08rem; }
+			.preference-copy strong { font-size: 0.78rem; }
+			.preference-actions { display: flex; justify-content: flex-end; padding: 0.55rem 0.65rem; border-top: 1px solid var(--line-dim); }
+			.button { display: inline-flex; align-items: center; justify-content: center; padding: 0.34rem 0.65rem; border: 1px solid var(--line); border-radius: 3px; color: var(--fg); background: var(--control); font-weight: 600; text-decoration: none; white-space: nowrap; cursor: pointer; }
+			.button-primary { border-color: var(--blue-border); color: #fff; background: var(--blue); }
+			.button:hover { background: var(--surface); }
+			a:focus-visible, button:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+
+			@media (max-width: 28rem) {
+				.site-nav { margin-left: 0.75rem; }
+				.site-actions { gap: 0.5rem; }
+				.identity { max-width: 6rem; }
+				.setting-row { grid-template-columns: minmax(0, 1fr) auto; gap: 0.35rem 0.65rem; }
+				.setting-label { grid-column: 1 / -1; }
+			}
+
+			@media (prefers-color-scheme: dark) {
+				:root { --canvas:#151515; --fg:#f1f1f1; --muted:#aaa; --surface:#242424; --control:#1c1c1c; --line:#707070; --line-dim:#3e3e3e; --blue:#70afe4; --focus:rgb(112 175 228 / 30%); }
+			}
+		</style>
+	</head>
+	<body>
+		<header class="site-header">
+			<div class="site-header-inner">
+				<a class="brand" href="#">Cork</a>
+				<nav class="site-nav"><a href="#">Boards</a></nav>
+				<div class="site-actions">
+					<span class="identity">Liam E.</span>
+					<span class="separator">/</span>
+					<a class="settings" href="#" aria-current="page">Settings</a>
+				</div>
+			</div>
+		</header>
+
+		<main>
+			<header class="page-header"><h1>Settings</h1></header>
+
+			<div class="frame">
+				<header class="frame-header"><h2>Account</h2></header>
+				<div class="setting-row">
+					<span class="setting-label setting-label-secondary">Signed in as</span>
+					<span class="setting-value">Liam E.</span>
+				</div>
+
+				<header class="frame-header">
+					<h2>Access</h2>
+					<span class="frame-meta">Single-use links</span>
+				</header>
+				<form class="setting-row">
+					<span class="setting-label">Invite a person</span>
+					<span class="setting-copy">
+						<span>Set up a new Cork account</span>
+						<span class="setting-note">Link expires after 7 days</span>
+					</span>
+					<button class="button" type="submit">Create invite</button>
+				</form>
+				<form class="setting-row">
+					<span class="setting-label">Another device</span>
+					<span class="setting-copy">
+						<span>Sign in as Liam E.</span>
+						<span class="setting-note">Link expires after 24 hours</span>
+					</span>
+					<button class="button" type="submit">Create sign-in link</button>
+				</form>
+
+				<header class="frame-header"><h2>Recovery</h2></header>
+				<form class="setting-row">
+					<span class="setting-label">Recovery code</span>
+					<span class="setting-copy">
+						<span>Replace your current code</span>
+						<span class="setting-note">The current code will stop working</span>
+					</span>
+					<button class="button" type="submit">Replace code</button>
+				</form>
+
+				<header class="frame-header"><h2>Session</h2></header>
+				<form class="setting-row">
+					<span class="setting-label">This browser</span>
+					<span class="setting-note">Sign out of Cork on this browser</span>
+					<button class="button" type="submit">Sign out</button>
+				</form>
+
+				<header class="frame-header"><h2>Preferences</h2></header>
+				<form>
+					<label class="preference">
+						<input type="checkbox" checked>
+						<span class="preference-copy">
+							<strong>Open pin links in a new tab</strong>
+							<span class="setting-note">Open saved external URLs in a separate browser tab.</span>
+						</span>
+					</label>
+					<footer class="preference-actions"><button class="button button-primary" type="submit">Save</button></footer>
+				</form>
+			</div>
+		</main>
+	</body>
+</html>

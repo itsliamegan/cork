@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>Cork - Save recovery code</title>
+		<style>
+			:root{--canvas:#fff;--fg:#111;--muted:#626262;--surface:#f1f1f1;--control:#fff;--line:#999;--line-dim:#d5d5d5;--blue:#0f61a9;--blue-border:#0b477c;--focus:rgb(15 97 169 / 25%)}
+			*{box-sizing:border-box}body{margin:0;color:var(--fg);background:var(--canvas);font:14px/1.35 "Helvetica Neue",Helvetica,Arial,sans-serif}a{color:var(--blue);text-underline-offset:2px}button{font:inherit}
+			.site-header{border-bottom:1px solid var(--line-dim);background:var(--surface)}.site-header-inner{display:flex;align-items:stretch;width:min(35rem,93.5vw);height:2.8rem;margin:auto}.brand,.site-nav a,.settings{display:flex;align-items:center;color:var(--fg)}.brand{font-size:1.15rem;font-weight:700;text-decoration:none}.site-nav{display:flex;margin-left:1.375rem}.site-nav a{font-weight:700;text-decoration:none}.site-actions{display:flex;align-items:center;gap:.75rem;min-width:0;margin-left:auto}.identity{overflow:hidden;color:var(--muted);font-size:.75rem;text-overflow:ellipsis;white-space:nowrap}.separator{color:var(--line);font-size:.75rem}.settings{height:100%;font-size:.75rem;text-decoration:underline}
+			main{width:min(35rem,93.5vw);margin:1.35rem auto 2rem}.page-header{display:flex;align-items:baseline;gap:.75rem;margin-bottom:1rem;padding-bottom:.6rem;border-bottom:3px solid var(--fg)}h1{margin:0;font-size:1.45rem;line-height:1.15}.page-context{margin-left:auto;color:var(--muted);font-size:.75rem}
+			.frame{overflow:hidden;border:1px solid var(--line);border-radius:3px;background:var(--canvas)}.frame-header{display:flex;align-items:baseline;padding:.35rem .65rem;border-bottom:2px solid var(--fg);background:var(--surface)}.frame-header h2{margin:0;font-size:.85rem}.frame-meta{margin-left:auto;color:var(--muted);font-size:.7rem}
+			.notice{padding:.6rem .65rem;border-bottom:1px solid var(--line-dim)}.notice strong{display:block;margin-bottom:.12rem}.notice span{color:var(--muted);font-size:.75rem}
+			.code-region{display:grid;gap:.45rem;padding:.8rem .65rem}.code-label{font-size:.75rem;font-weight:700}.code-control{display:flex;align-items:stretch}.code{flex:1;padding:.7rem;border:1px solid var(--line);border-right:0;border-radius:3px 0 0 3px;background:var(--control);font-size:1.2rem;font-weight:700;letter-spacing:.14em;text-align:center}.code-note{color:var(--muted);font-size:.72rem}
+			.actions{display:flex;align-items:center;gap:.5rem;padding:.55rem .65rem;border-top:1px solid var(--line-dim)}.actions .button:first-child{margin-left:auto}.button{display:inline-flex;align-items:center;justify-content:center;padding:.34rem .65rem;border:1px solid var(--line);border-radius:3px;color:var(--fg);background:var(--control);font-weight:600;text-decoration:none;white-space:nowrap;cursor:pointer}.copy-button{border-color:var(--line);border-radius:0 3px 3px 0}.button-primary{border-color:var(--blue-border);color:#fff;background:var(--blue)}.button:hover{filter:brightness(.94)}a:focus-visible,button:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+			@media(max-width:28rem){.site-nav{margin-left:.75rem}.site-actions{gap:.5rem}.identity{max-width:5rem}.page-context{display:none}.code-control{display:grid;gap:.4rem}.code{border-right:1px solid var(--line);border-radius:3px;font-size:1.05rem}.copy-button{justify-self:start;border-radius:3px}.actions{justify-content:flex-end}.actions .button:first-child{margin-left:0}}
+			@media(prefers-color-scheme:dark){:root{--canvas:#151515;--fg:#f1f1f1;--muted:#aaa;--surface:#242424;--control:#1c1c1c;--line:#707070;--line-dim:#3e3e3e;--blue:#0f61a9;--blue-border:#397db8;--focus:rgb(112 175 228 / 30%)}}
+		</style>
+	</head>
+	<body>
+		<header class="site-header"><div class="site-header-inner"><a class="brand" href="#">Cork</a><nav class="site-nav"><a href="#">Boards</a></nav><div class="site-actions"><span class="identity">Liam E.</span><span class="separator">/</span><a class="settings" href="#">Settings</a></div></div></header>
+		<main>
+			<header class="page-header"><h1>Save your recovery code</h1><span class="page-context">Account security</span></header>
+			<section class="frame">
+				<header class="frame-header"><h2>Recovery code</h2><span class="frame-meta">Shown once</span></header>
+				<div class="notice"><strong>Store this code somewhere safe.</strong><span>It can sign in to your account if you lose access to Cork. Any previous code has stopped working.</span></div>
+				<div class="code-region">
+					<span class="code-label">Your new code</span>
+					<div class="code-control"><div class="code">R8KM-2QPX</div><button class="button copy-button" type="button">Copy code</button></div>
+					<span class="code-note">The code is single-use. Cork will give you a replacement after recovery.</span>
+				</div>
+				<footer class="actions"><a class="button" href="#">Back to settings</a><a class="button button-primary" href="#">I’ve saved it</a></footer>
+			</section>
+		</main>
+	</body>
+</html>

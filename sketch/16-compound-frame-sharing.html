@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>Cork — Sharing</title>
+		<style>
+			:root {
+				--bg: #fff;
+				--surface: #f3f3f3;
+				--fg: #111;
+				--muted: #626262;
+				--line: #999;
+				--line-dim: #d5d5d5;
+				--blue: #0f61a9;
+				--danger: #9b1c1c;
+			}
+
+			* { box-sizing: border-box; }
+			body { margin: 0; color: var(--fg); background: var(--bg); font: 14px/1.45 "Helvetica Neue", Helvetica, Arial, sans-serif; }
+			a { color: var(--blue); text-underline-offset: 2px; }
+			button, select { font: inherit; }
+
+			.site-header { color: #fff; background: var(--fg); }
+			.site-header-inner { display: flex; align-items: stretch; max-width: 42rem; height: 3.2rem; margin: auto; padding: 0 1rem; }
+			.brand, .site-nav a, .settings { display: flex; align-items: center; color: #fff; }
+			.brand { font-size: 1.25rem; font-weight: 700; text-decoration: none; }
+			.site-nav { display: flex; margin-left: 1.5rem; }
+			.site-nav a { padding: 0 0.8rem; border-bottom: 4px solid var(--blue); font-weight: 600; text-decoration: none; }
+			.settings { margin-left: auto; color: #ddd; font-size: 0.8rem; }
+
+			main { max-width: 42rem; margin: 2rem auto; padding: 0 1rem; }
+			.breadcrumb { margin-bottom: 0.75rem; color: var(--muted); font-size: 0.8rem; }
+			.page-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem; padding-bottom: 0.9rem; border-bottom: 3px solid var(--fg); }
+			h1 { margin: 0; font-size: 1.7rem; line-height: 1.15; }
+			.page-header .button { margin-left: auto; }
+
+			.frame { overflow: hidden; border: 1px solid var(--line); border-radius: 4px; }
+			.frame-section { padding: 0.9rem; }
+			.frame-section h2, .frame-heading h2 { margin: 0; font-size: 1rem; }
+			.frame-section-add { background: var(--surface); }
+			.frame-section-add h2 { margin-bottom: 0.65rem; }
+			.frame-heading { display: flex; align-items: baseline; padding: 0.65rem 0.9rem; border-top: 2px solid var(--fg); border-bottom: 1px solid var(--line); background: #fff; }
+			.frame-meta { margin-left: auto; color: var(--muted); font-size: 0.75rem; }
+
+			.share-form { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: end; gap: 0.6rem; }
+			.field { display: grid; gap: 0.25rem; }
+			.field label { font-size: 0.78rem; font-weight: 600; }
+			select { width: 100%; padding: 0.5rem 0.6rem; border: 1px solid #888; border-radius: 3px; color: var(--fg); background: #fff; }
+			select:focus { outline: 3px solid rgb(15 97 169 / 25%); border-color: var(--blue); }
+
+			.button { display: inline-block; padding: 0.42rem 0.75rem; border: 1px solid #888; border-radius: 3px; color: var(--fg); background: #fff; font-weight: 600; text-decoration: none; cursor: pointer; }
+			.button-primary { border-color: #0b477c; color: #fff; background: var(--blue); }
+			.button-danger { border-color: #aaa; color: var(--danger); background: #fff; }
+
+			.people { margin: 0; padding: 0; list-style: none; }
+			.person { display: grid; grid-template-columns: minmax(0, 1fr) 7rem; align-items: center; min-height: 3.6rem; padding: 0.65rem 0.9rem; }
+			.person + .person { border-top: 1px solid var(--line-dim); }
+			.person-name { font-weight: 600; }
+			.person-role { color: var(--muted); font-size: 0.75rem; text-align: right; }
+			.person-action { justify-self: end; }
+
+			@media (max-width: 30rem) {
+				.settings { display: none; }
+				.share-form { grid-template-columns: 1fr; align-items: stretch; }
+			}
+		</style>
+	</head>
+	<body>
+		<header class="site-header">
+			<div class="site-header-inner">
+				<a class="brand" href="#">Cork</a>
+				<nav class="site-nav" aria-label="Main navigation"><a href="#" aria-current="page">Boards</a></nav>
+				<a class="settings" href="#">Settings</a>
+			</div>
+		</header>
+		<main>
+			<div class="breadcrumb"><a href="#">Boards</a> / <a href="#">Personal Computing</a> / Sharing</div>
+			<header class="page-header">
+				<h1>Sharing</h1>
+				<a class="button" href="#">Done</a>
+			</header>
+
+			<div class="frame">
+				<section class="frame-section frame-section-add" aria-labelledby="add-heading">
+					<h2 id="add-heading">Add person</h2>
+					<form class="share-form">
+						<div class="field">
+							<label for="user">User</label>
+							<select id="user" name="user">
+								<option value=""></option>
+								<option>Sam</option>
+							</select>
+						</div>
+						<button class="button button-primary" type="submit">Add</button>
+					</form>
+				</section>
+
+				<section aria-labelledby="access-heading">
+					<header class="frame-heading">
+						<h2 id="access-heading">Access</h2>
+						<span class="frame-meta">2 people</span>
+					</header>
+					<ul class="people">
+						<li class="person">
+							<span class="person-name">Liam E.</span>
+							<span class="person-role">Owner</span>
+						</li>
+						<li class="person">
+							<span class="person-name">Kathryn</span>
+							<button class="button button-danger person-action" type="button">Remove</button>
+						</li>
+					</ul>
+				</section>
+			</div>
+		</main>
+	</body>
+</html>

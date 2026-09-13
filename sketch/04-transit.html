@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>Cork — Transit</title>
+		<style>
+			:root {
+				--bg: #fff;
+				--fg: #111;
+				--muted: #666;
+				--line: #aaa;
+				--link: #1261a0;
+			}
+
+			* { box-sizing: border-box; }
+			body { margin: 0; color: var(--fg); background: var(--bg); font: 16px/1.35 "Helvetica Neue", Helvetica, Arial, sans-serif; }
+			a { color: var(--link); text-underline-offset: 2px; }
+			button { font: inherit; }
+
+			.site-header { color: #fff; background: #111; }
+			.site-header div { display: flex; align-items: center; max-width: 38rem; height: 3rem; margin: auto; padding: 0 0.75rem; }
+			.brand { color: #fff; font-size: 1.2rem; font-weight: 700; text-decoration: none; }
+			.site-header nav { margin-left: 1.5rem; }
+			.site-header nav a { color: #fff; font-size: 0.9rem; }
+			.settings { margin-left: auto; color: #fff; font-size: 0.8rem; }
+
+			main { max-width: 38rem; margin: 2rem auto; padding: 0 0.75rem; }
+			.back { display: inline-block; margin-bottom: 1rem; font-size: 0.85rem; }
+			.page-header { display: flex; align-items: end; gap: 1rem; padding-bottom: 1rem; border-bottom: 4px solid var(--fg); }
+			h1 { margin: 0; font-size: 1.8rem; line-height: 1.1; }
+			.actions { display: flex; align-items: center; gap: 0.8rem; margin-left: auto; }
+			.actions a { font-size: 0.85rem; }
+			.button { padding: 0.45rem 0.7rem; border: 2px solid var(--fg); color: #fff; background: var(--fg); font-weight: 700; text-decoration: none; }
+
+			.list-header { display: flex; padding: 0.65rem 0; border-bottom: 1px solid var(--line); color: var(--muted); font-size: 0.75rem; font-weight: 700; text-transform: uppercase; }
+			.list-header span:last-child { margin-left: auto; }
+			ol { margin: 0; padding: 0; list-style: none; }
+			li { display: flex; gap: 1rem; padding: 0.9rem 0; border-bottom: 1px solid #ccc; }
+			.pin { min-width: 0; }
+			.pin-title { color: var(--fg); font-weight: 700; }
+			.pin-url { overflow: hidden; margin-top: 0.15rem; color: var(--muted); font-size: 0.78rem; text-overflow: ellipsis; white-space: nowrap; }
+			.pin-date { margin-top: 0.25rem; color: var(--muted); font-size: 0.72rem; }
+			.more { align-self: center; margin-left: auto; padding: 0.2rem 0.5rem; border: 1px solid var(--line); background: #fff; cursor: pointer; }
+
+			@media (max-width: 30rem) {
+				.settings { display: none; }
+				.page-header { align-items: start; flex-direction: column; }
+				.actions { margin-left: 0; }
+			}
+		</style>
+	</head>
+	<body>
+		<header class="site-header">
+			<div>
+				<a class="brand" href="#">Cork</a>
+				<nav aria-label="Main navigation"><a href="#">Boards</a></nav>
+				<a class="settings" href="#">Settings</a>
+			</div>
+		</header>
+		<main>
+			<a class="back" href="#">← All boards</a>
+			<header class="page-header">
+				<h1>Personal Computing</h1>
+				<div class="actions">
+					<a href="#">Sharing</a>
+					<a class="button" href="#">New pin</a>
+				</div>
+			</header>
+			<div class="list-header"><span>Pins</span><span>3 total</span></div>
+			<ol>
+				<li>
+					<div class="pin"><a class="pin-title" href="#">Augmenting Human Intellect</a><div class="pin-url">dougengelbart.org/pubs/papers/AugmentingHumanIntellect.pdf</div><div class="pin-date">September 4, 2026</div></div>
+					<button class="more" type="button" aria-label="Actions for Augmenting Human Intellect">•••</button>
+				</li>
+				<li>
+					<div class="pin"><a class="pin-title" href="#">The Mother of All Demos</a><div class="pin-url">computerhistory.org/revolution/the-mother-of-all-demos</div><div class="pin-date">August 28, 2026</div></div>
+					<button class="more" type="button" aria-label="Actions for The Mother of All Demos">•••</button>
+				</li>
+				<li>
+					<div class="pin"><a class="pin-title" href="#">As We May Think</a><div class="pin-url">theatlantic.com/magazine/archive/1945/07/as-we-may-think</div><div class="pin-date">August 19, 2026</div></div>
+					<button class="more" type="button" aria-label="Actions for As We May Think">•••</button>
+				</li>
+			</ol>
+		</main>
+	</body>
+</html>

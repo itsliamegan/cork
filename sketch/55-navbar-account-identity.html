@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>Cork — Navbar account identity</title>
+		<style>
+			:root {
+				--fg: #111;
+				--muted: #626262;
+				--surface: #f1f1f1;
+				--line: #d5d5d5;
+				--blue: #0f61a9;
+			}
+
+			* { box-sizing: border-box; }
+			body { margin: 0; color: var(--fg); background: #fff; font: 14px/1.35 "Helvetica Neue", Helvetica, Arial, sans-serif; }
+			a { color: var(--blue); text-underline-offset: 2px; }
+
+			.spike { display: grid; gap: 2rem; padding: 2rem 0; }
+			.example { display: grid; gap: 0.4rem; }
+			.example-label { width: min(35rem, 93.5vw); margin: auto; color: var(--muted); font-size: 0.72rem; font-weight: 600; }
+
+			.site-header { border-block: 1px solid var(--line); background: var(--surface); }
+			.site-header-inner { display: flex; align-items: stretch; width: min(35rem, 93.5vw); height: 2.8rem; margin: auto; }
+			.brand, .site-nav a, .settings { display: flex; align-items: center; color: var(--fg); }
+			.brand { font-size: 1.15rem; font-weight: 700; text-decoration: none; }
+			.site-nav { display: flex; margin-left: 1.375rem; }
+			.site-nav a { border-block-start: 3px solid transparent; border-block-end: 3px solid var(--blue); font-weight: 700; text-decoration: none; }
+			.site-actions { display: flex; align-items: center; gap: 0.75rem; min-width: 0; margin-left: auto; }
+			.identity { overflow: hidden; color: var(--muted); font-size: 0.8rem; text-overflow: ellipsis; white-space: nowrap; }
+			.identity strong { color: var(--fg); font-weight: 600; }
+			.identity--quiet { color: var(--muted); font-weight: 400; }
+			.settings { height: 100%; color: var(--muted); font-size: 0.8rem; }
+			.separator { color: #999; font-size: 0.8rem; }
+
+			.identity-label-short { display: none; }
+			.initials { display: inline-grid; place-items: center; width: 1.65rem; height: 1.65rem; border: 1px solid #999; border-radius: 50%; color: var(--fg); background: #fff; font-size: 0.68rem; font-weight: 700; }
+			.account-cluster { display: flex; align-items: center; gap: 0.45rem; min-width: 0; }
+			.account-copy { display: grid; line-height: 1.05; }
+			.account-copy .identity { font-size: 0.72rem; }
+			.account-copy .settings { font-size: 0.72rem; }
+
+			@media (max-width: 27rem) {
+				.site-nav { margin-left: 0.75rem; }
+				.site-actions { gap: 0.5rem; }
+				.identity-label-long { display: none; }
+				.identity-label-short { display: inline; }
+				.example-explicit .identity { max-width: 7.5rem; }
+			}
+
+			@media (prefers-color-scheme: dark) {
+				:root { --fg: #f1f1f1; --muted: #aaa; --surface: #242424; --line: #3e3e3e; --blue: #70afe4; }
+				body { background: #151515; }
+				.initials { border-color: #707070; background: #151515; }
+				.separator { color: #707070; }
+			}
+		</style>
+	</head>
+	<body>
+		<main class="spike">
+			<section class="example example-explicit">
+				<p class="example-label">A — Explicit; abbreviated to “As” on narrow screens</p>
+				<header class="site-header">
+					<div class="site-header-inner">
+						<a class="brand" href="#">Cork</a>
+						<nav class="site-nav" aria-label="Main navigation"><a href="#" aria-current="page">Boards</a></nav>
+						<div class="site-actions">
+							<span class="identity"><span class="identity-label-long">Signed in as </span><span class="identity-label-short">As </span><strong>Liam E.</strong></span>
+							<a class="settings" href="#">Settings</a>
+						</div>
+					</div>
+				</header>
+			</section>
+
+			<section class="example">
+				<p class="example-label">B — Short label with separator</p>
+				<header class="site-header">
+					<div class="site-header-inner">
+						<a class="brand" href="#">Cork</a>
+						<nav class="site-nav" aria-label="Main navigation"><a href="#" aria-current="page">Boards</a></nav>
+						<div class="site-actions">
+							<span class="identity">User: <strong>Liam E.</strong></span>
+							<span class="separator" aria-hidden="true">·</span>
+							<a class="settings" href="#">Settings</a>
+						</div>
+					</div>
+				</header>
+			</section>
+
+			<section class="example">
+				<p class="example-label">C — Name only; Settings remains an independent link</p>
+				<header class="site-header">
+					<div class="site-header-inner">
+						<a class="brand" href="#">Cork</a>
+						<nav class="site-nav" aria-label="Main navigation"><a href="#" aria-current="page">Boards</a></nav>
+						<div class="site-actions">
+							<span class="identity"><strong>Liam E.</strong></span>
+							<span class="separator" aria-hidden="true">/</span>
+							<a class="settings" href="#">Settings</a>
+						</div>
+					</div>
+				</header>
+			</section>
+
+			<section class="example">
+				<p class="example-label">D — Quiet name and slash; emphasis stays on navigation</p>
+				<header class="site-header">
+					<div class="site-header-inner">
+						<a class="brand" href="#">Cork</a>
+						<nav class="site-nav" aria-label="Main navigation"><a href="#" aria-current="page">Boards</a></nav>
+						<div class="site-actions">
+							<span class="identity identity--quiet">Liam E.</span>
+							<span class="separator" aria-hidden="true">/</span>
+							<a class="settings" href="#">Settings</a>
+						</div>
+					</div>
+				</header>
+			</section>
+
+			<section class="example">
+				<p class="example-label">E — Initials badge plus full name</p>
+				<header class="site-header">
+					<div class="site-header-inner">
+						<a class="brand" href="#">Cork</a>
+						<nav class="site-nav" aria-label="Main navigation"><a href="#" aria-current="page">Boards</a></nav>
+						<div class="site-actions">
+							<span class="initials" aria-hidden="true">LE</span>
+							<span class="identity"><strong>Liam E.</strong></span>
+							<a class="settings" href="#">Settings</a>
+						</div>
+					</div>
+				</header>
+			</section>
+
+			<section class="example">
+				<p class="example-label">F — Compact account cluster</p>
+				<header class="site-header">
+					<div class="site-header-inner">
+						<a class="brand" href="#">Cork</a>
+						<nav class="site-nav" aria-label="Main navigation"><a href="#" aria-current="page">Boards</a></nav>
+						<div class="site-actions">
+							<div class="account-cluster">
+								<span class="initials" aria-hidden="true">LE</span>
+								<span class="account-copy">
+									<span class="identity"><strong>Liam E.</strong></span>
+									<a class="settings" href="#">Settings</a>
+								</span>
+							</div>
+						</div>
+					</div>
+				</header>
+			</section>
+		</main>
+	</body>
+</html>

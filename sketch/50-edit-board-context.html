@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>Cork — Edit board</title>
+		<style>
+			:root { --fg:#111; --muted:#626262; --surface:#f1f1f1; --line:#999; --line-dim:#d5d5d5; --blue:#0f61a9; --danger:#9b1c1c; --focus:rgb(15 97 169 / 25%); }
+			* { box-sizing:border-box; }
+			body { margin:0; color:var(--fg); background:#fff; font:14px/1.35 "Helvetica Neue",Helvetica,Arial,sans-serif; }
+			a { color:var(--blue); text-underline-offset:2px; }
+			button,input,select { font:inherit; }
+			.site-header { border-bottom:1px solid var(--line); background:var(--surface); }
+			.site-header-inner { display:flex; align-items:stretch; max-width:35rem; height:2.8rem; margin:auto; padding:0 .6rem; }
+			.brand,.site-nav a,.settings-link { display:flex; align-items:center; color:var(--fg); }
+			.brand { font-size:1.15rem; font-weight:700; text-decoration:none; }
+			.site-nav { display:flex; margin-left:1.2rem; }
+			.site-nav a { padding:0 .65rem; border-bottom:3px solid var(--blue); font-weight:600; text-decoration:none; }
+			.settings-link { margin-left:auto; color:var(--muted); font-size:.78rem; }
+			main { max-width:35rem; margin:1.35rem auto; padding:0 .6rem; }
+			.context { margin-bottom:.28rem; color:var(--muted); font-size:.75rem; }
+			.context-label { margin-right:.35rem; }
+			.context-name { color:var(--fg); font-weight:600; }
+			.page-header { display:flex; align-items:center; gap:.75rem; margin-bottom:1rem; padding-bottom:.6rem; border-bottom:3px solid var(--fg); }
+			h1 { margin:0; font-size:1.45rem; line-height:1.15; }
+			.page-header .button { margin-left:auto; }
+			.frame { overflow:hidden; border:1px solid var(--line); border-radius:3px; background:#fff; }
+			.frame-header { display:flex; align-items:baseline; min-height:2rem; padding:.35rem .65rem; border-bottom:2px solid var(--fg); background:var(--surface); }
+			.frame-header:not(:first-child) { border-top:1px solid var(--line); }
+			.frame-header h2 { margin:0; font-size:.85rem; }
+			.frame-header-action { border-left:3px solid var(--blue); }
+			.frame-meta { margin-left:auto; color:var(--muted); font-size:.7rem; }
+			.field-row { display:grid; grid-template-columns:5.5rem minmax(0,1fr); align-items:center; gap:.65rem; padding:.65rem; }
+			.field-row label,.share-field label { font-size:.75rem; font-weight:600; }
+			input,select { width:100%; padding:.4rem .5rem; border:1px solid #888; border-radius:3px; color:var(--fg); background:#fff; }
+			input:focus,select:focus { border-color:var(--blue); outline:3px solid var(--focus); }
+			.form-actions { display:flex; justify-content:flex-end; gap:.5rem; padding:.55rem .65rem; border-top:1px solid var(--line-dim); }
+			.share-form { display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:end; gap:.5rem; padding:.65rem; }
+			.share-field { display:grid; grid-template-columns:5.5rem minmax(0,1fr); align-items:center; gap:.65rem; }
+			.button { display:inline-block; padding:.34rem .65rem; border:1px solid #888; border-radius:3px; color:var(--fg); background:#fff; font-weight:600; text-decoration:none; cursor:pointer; }
+			.button-primary { border-color:#0b477c; color:#fff; background:var(--blue); }
+			.button-danger { border-color:#aaa; color:var(--danger); }
+			.people { margin:0; padding:0; list-style:none; }
+			.person { display:grid; grid-template-columns:minmax(0,1fr) 6rem; align-items:center; min-height:3rem; padding:.5rem .65rem; }
+			.person + .person { border-top:1px solid var(--line-dim); }
+			.person-name { font-weight:600; }
+			.person-role { color:var(--muted); font-size:.72rem; text-align:right; }
+			.person-action { justify-self:end; }
+			a:focus-visible,.button:focus-visible { outline:3px solid var(--focus); outline-offset:2px; }
+			@media(max-width:27rem) {
+				.settings-link { display:none; }
+				.site-nav { margin-left:.7rem; }
+				.field-row,.share-field,.share-form { grid-template-columns:1fr; }
+				.field-row,.share-field { gap:.25rem; }
+			}
+		</style>
+	</head>
+	<body>
+		<header class="site-header">
+			<div class="site-header-inner">
+				<a class="brand" href="#">Cork</a>
+				<nav class="site-nav" aria-label="Main navigation"><a href="48-board-index-edit-links.html" aria-current="page">Boards</a><a href="#">Inbox</a></nav>
+				<a class="settings-link" href="#">Settings</a>
+			</div>
+		</header>
+		<main>
+			<div class="context"><span class="context-label">Board:</span><span class="context-name">Personal Computing</span></div>
+			<header class="page-header"><h1>Edit</h1><a class="button" href="26-compact-headered-list.html">Done</a></header>
+			<div class="frame">
+				<section aria-labelledby="details-heading">
+					<header class="frame-header"><h2 id="details-heading">Details</h2></header>
+					<form>
+						<div class="field-row"><label for="title">Title</label><input id="title" name="title" value="Personal Computing" required></div>
+						<footer class="form-actions"><button class="button button-primary" type="submit">Save changes</button></footer>
+					</form>
+				</section>
+				<section aria-labelledby="add-heading">
+					<header class="frame-header frame-header-action"><h2 id="add-heading">Add person</h2></header>
+					<form class="share-form">
+						<div class="share-field"><label for="user">User</label><select id="user" name="user"><option value=""></option><option>Sam</option></select></div>
+						<button class="button button-primary" type="submit">Add</button>
+					</form>
+				</section>
+				<section aria-labelledby="access-heading">
+					<header class="frame-header"><h2 id="access-heading">Access</h2><span class="frame-meta">2 people</span></header>
+					<ul class="people">
+						<li class="person"><span class="person-name">Liam E.</span><span class="person-role">Owner</span></li>
+						<li class="person"><span class="person-name">Kathryn</span><button class="button button-danger person-action" type="button">Remove</button></li>
+					</ul>
+				</section>
+			</div>
+		</main>
+	</body>
+</html>

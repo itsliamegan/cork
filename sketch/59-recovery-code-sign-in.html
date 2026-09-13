@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>Cork - Recovery code sign in</title>
+		<style>
+			:root { --canvas:#fff;--fg:#111;--muted:#626262;--surface:#f1f1f1;--control:#fff;--line:#999;--line-dim:#d5d5d5;--blue:#0f61a9;--blue-border:#0b477c;--danger:#9b1c1c;--focus:rgb(15 97 169 / 25%); }
+			*{box-sizing:border-box} body{margin:0;color:var(--fg);background:var(--canvas);font:14px/1.35 "Helvetica Neue",Helvetica,Arial,sans-serif} button,input{font:inherit}
+			.site-header{border-bottom:1px solid var(--line-dim);background:var(--surface)} .site-header-inner{display:flex;align-items:center;width:min(35rem,93.5vw);height:2.8rem;margin:auto}.brand{color:var(--fg);font-size:1.15rem;font-weight:700;text-decoration:none}
+			main{width:min(22rem,93.5vw);margin:6rem auto 2rem}.page-header{margin-bottom:1rem;padding-bottom:.6rem;border-bottom:3px solid var(--fg)} h1{margin:0;font-size:1.45rem;line-height:1.15}
+			.frame{overflow:hidden;border:1px solid var(--line);border-radius:3px;background:var(--canvas)}.frame-header{padding:.35rem .65rem;border-bottom:2px solid var(--fg);background:var(--surface)}.frame-header h2{margin:0;font-size:.85rem}
+			.intro{padding:.55rem .65rem;border-bottom:1px solid var(--line-dim);color:var(--muted);font-size:.75rem}
+			.field{display:grid;grid-template-columns:6.4rem minmax(0,1fr);align-items:center;gap:.35rem .65rem;padding:.65rem}.field label{font-size:.75rem;font-weight:700}.field input{width:100%;min-width:0;padding:.4rem .5rem;border:1px solid var(--danger);border-radius:3px;color:var(--fg);background:var(--control);letter-spacing:.04em}.field input:focus{border-color:var(--blue);outline:3px solid var(--focus)}
+			.error{grid-column:2;color:var(--danger);font-size:.72rem}.actions{display:flex;justify-content:flex-end;padding:.55rem .65rem;border-top:1px solid var(--line-dim)}.button{padding:.34rem .65rem;border:1px solid var(--blue-border);border-radius:3px;color:#fff;background:var(--blue);font-weight:600;cursor:pointer}.button:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+			@media(max-width:24rem){main{margin-top:3.5rem}.field{grid-template-columns:1fr;gap:.25rem}.error{grid-column:1}}
+			@media(prefers-color-scheme:dark){:root{--canvas:#151515;--fg:#f1f1f1;--muted:#aaa;--surface:#242424;--control:#1c1c1c;--line:#707070;--line-dim:#3e3e3e;--blue:#0f61a9;--blue-border:#397db8;--danger:#ef9999;--focus:rgb(112 175 228 / 30%)}}
+		</style>
+	</head>
+	<body>
+		<header class="site-header"><div class="site-header-inner"><a class="brand" href="#">Cork</a></div></header>
+		<main>
+			<header class="page-header"><h1>Sign in</h1></header>
+			<form class="frame">
+				<header class="frame-header"><h2>Recovery code</h2></header>
+				<div class="intro">Enter your recovery code. Cork will replace it after you sign in.</div>
+				<div class="field">
+					<label for="recovery-code">Recovery code</label>
+					<input id="recovery-code" name="recovery_code" value="R8KM-2QPX" autocomplete="off" autofocus>
+					<span class="error">That recovery code isn’t valid.</span>
+				</div>
+				<footer class="actions"><button class="button" type="submit">Sign in</button></footer>
+			</form>
+		</main>
+	</body>
+</html>

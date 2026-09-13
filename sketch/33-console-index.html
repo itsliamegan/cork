@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>Cork — Console Boards</title>
+		<style>
+			:root {
+				--bg: #0b0b0c;
+				--panel: #101012;
+				--fg: #dcdcd8;
+				--muted: #76767e;
+				--line: #24242a;
+				--line-strong: #34343c;
+				--accent: #e0a33e;
+				--danger: #d97070;
+			}
+
+			* { box-sizing: border-box; }
+			body { margin: 0; color: var(--fg); background: var(--bg); font: 13px/1.5 ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace; }
+			a { color: inherit; text-decoration: none; }
+
+			.site-header { border-bottom: 1px solid var(--line); }
+			.site-header-inner { display: flex; align-items: center; gap: 1.5rem; max-width: 44rem; height: 2.6rem; margin: auto; padding: 0 1rem; }
+			.brand { font-weight: 700; letter-spacing: -0.02em; }
+			.brand::after { content: "_"; color: var(--accent); }
+			.site-nav { display: flex; gap: 1.1rem; font-size: 0.85rem; color: var(--muted); }
+			.site-nav a[aria-current] { color: var(--fg); }
+			.site-nav a[aria-current]::before { content: "› "; color: var(--accent); }
+			.settings { margin-left: auto; color: var(--muted); font-size: 0.85rem; }
+			.settings:hover, .site-nav a:hover { color: var(--fg); }
+
+			main { max-width: 44rem; margin: 2rem auto; padding: 0 1rem; }
+			.page-header { display: flex; align-items: baseline; gap: 0.8rem; margin-bottom: 1.1rem; }
+			h1 { margin: 0; font-size: 0.95rem; font-weight: 700; }
+			h1::before { content: "/"; margin-right: 0.15rem; color: var(--accent); }
+			.page-header .count { color: var(--muted); font-size: 0.8rem; }
+			.page-header .action { margin-left: auto; }
+
+			.action { padding: 0.2rem 0.55rem; border: 1px solid var(--line-strong); border-radius: 2px; color: var(--muted); font-size: 0.8rem; cursor: pointer; }
+			.action:hover { border-color: var(--accent); color: var(--accent); }
+			.action .key { margin-left: 0.5rem; opacity: 0.55; }
+
+			.panel { border: 1px solid var(--line); border-radius: 3px; background: var(--panel); }
+			.panel + .panel { margin-top: 1.1rem; }
+			.panel-header { display: flex; align-items: center; padding: 0.35rem 0.75rem; border-bottom: 1px solid var(--line); color: var(--muted); font-size: 0.75rem; letter-spacing: 0.06em; text-transform: uppercase; }
+			.panel-header .meta { margin-left: auto; letter-spacing: 0; text-transform: none; }
+
+			ol { margin: 0; padding: 0; list-style: none; }
+			.row { display: grid; grid-template-columns: minmax(0, 1fr) 5rem 6rem; align-items: center; gap: 1rem; padding: 0.5rem 0.75rem; }
+			.row + .row { border-top: 1px solid var(--line); }
+			.row:hover { background: #16161a; }
+			.row:hover .name::before { color: var(--accent); }
+			.name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+			.name::before { content: "▸ "; color: var(--line-strong); }
+			.pins { color: var(--muted); font-size: 0.8rem; text-align: right; }
+			.updated { color: var(--muted); font-size: 0.8rem; text-align: right; }
+			.updated-recent { color: var(--accent); }
+
+			.hint { margin-top: 1.1rem; color: var(--muted); font-size: 0.75rem; }
+			.hint kbd { padding: 0.05rem 0.3rem; border: 1px solid var(--line-strong); border-radius: 2px; font: inherit; }
+
+			@media (max-width: 30rem) {
+				.settings { display: none; }
+				.row { grid-template-columns: minmax(0, 1fr) 5rem; }
+				.pins { display: none; }
+			}
+		</style>
+	</head>
+	<body>
+		<header class="site-header">
+			<div class="site-header-inner">
+				<a class="brand" href="#">cork</a>
+				<nav class="site-nav" aria-label="Main navigation"><a href="#" aria-current="page">boards</a><a href="#">pins</a></nav>
+				<a class="settings" href="#">liam@cork</a>
+			</div>
+		</header>
+		<main>
+			<header class="page-header">
+				<h1>boards</h1>
+				<span class="count">5 total</span>
+				<button class="action" type="button">new board<span class="key">c</span></button>
+			</header>
+
+			<section class="panel" aria-labelledby="own">
+				<header class="panel-header"><span id="own">owned</span><span class="meta">updated</span></header>
+				<ol>
+					<li class="row"><a class="name" href="#">personal-computing</a><span class="pins">3 pins</span><time class="updated updated-recent">2h ago</time></li>
+					<li class="row"><a class="name" href="#">recipes</a><span class="pins">18 pins</span><time class="updated">4d ago</time></li>
+					<li class="row"><a class="name" href="#">places-to-go</a><span class="pins">7 pins</span><time class="updated">23d ago</time></li>
+				</ol>
+			</section>
+
+			<section class="panel" aria-labelledby="shared">
+				<header class="panel-header"><span id="shared">shared with you</span><span class="meta">updated</span></header>
+				<ol>
+					<li class="row"><a class="name" href="#">labor-history</a><span class="pins">4 pins</span><time class="updated updated-recent">1d ago</time></li>
+					<li class="row"><a class="name" href="#">movie-night</a><span class="pins">12 pins</span><time class="updated">8d ago</time></li>
+				</ol>
+			</section>
+
+			<p class="hint"><kbd>j</kbd> <kbd>k</kbd> move · <kbd>↵</kbd> open · <kbd>c</kbd> new board</p>
+		</main>
+	</body>
+</html>

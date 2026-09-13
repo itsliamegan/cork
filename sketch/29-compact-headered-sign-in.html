@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>Cork — Sign In</title>
+		<style>
+			:root { --fg:#111; --muted:#626262; --surface:#f1f1f1; --line:#999; --blue:#0f61a9; }
+			* { box-sizing:border-box; } body { margin:0; color:var(--fg); background:#fff; font:14px/1.35 "Helvetica Neue",Helvetica,Arial,sans-serif; } button,select { font:inherit; }
+			.site-header { border-bottom:1px solid var(--line); background:var(--surface); } .site-header-inner { display:flex; align-items:center; max-width:35rem; height:2.8rem; margin:auto; padding:0 .6rem; } .brand { color:var(--fg); font-size:1.15rem; font-weight:700; text-decoration:none; }
+			main { width:min(22rem,calc(100% - 1.2rem)); margin:6rem auto 2rem; } .page-header { margin-bottom:1rem; padding-bottom:.6rem; border-bottom:3px solid var(--fg); } h1 { margin:0; font-size:1.45rem; }
+			.frame { overflow:hidden; border:1px solid var(--line); border-radius:3px; } .frame-header { padding:.35rem .65rem; border-bottom:2px solid var(--fg); background:var(--surface); } .frame-header h2 { margin:0; font-size:.85rem; } .field { display:grid; grid-template-columns:3rem minmax(0,1fr); align-items:center; gap:.6rem; padding:.65rem; } .field label { font-size:.78rem; font-weight:600; } select { width:100%; padding:.4rem .5rem; border:1px solid #888; border-radius:3px; color:var(--fg); background:#fff; } select:focus { outline:3px solid rgb(15 97 169 / 25%); border-color:var(--blue); } .actions { display:flex; justify-content:flex-end; padding:.55rem .65rem; border-top:1px solid var(--line); } .button { padding:.34rem .65rem; border:1px solid #0b477c; border-radius:3px; color:#fff; background:var(--blue); font-weight:600; cursor:pointer; }
+		</style>
+	</head>
+	<body>
+		<header class="site-header"><div class="site-header-inner"><a class="brand" href="#">Cork</a></div></header>
+		<main>
+			<header class="page-header"><h1>Welcome</h1></header>
+			<form class="frame">
+				<header class="frame-header"><h2>Sign in</h2></header>
+				<div class="field"><label for="user">User</label><select id="user" name="user" autofocus><option>Liam E.</option><option>Kathryn</option></select></div>
+				<footer class="actions"><button class="button" type="submit">Sign in</button></footer>
+			</form>
+		</main>
+	</body>
+</html>

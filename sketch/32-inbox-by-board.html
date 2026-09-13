@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>Cork — Inbox by Board</title>
+		<style>
+			:root { --fg:#111; --muted:#626262; --surface:#f1f1f1; --line:#999; --line-dim:#d5d5d5; --blue:#0f61a9; }
+			* { box-sizing:border-box; } body { margin:0; color:var(--fg); background:#fff; font:14px/1.35 "Helvetica Neue",Helvetica,Arial,sans-serif; } a { color:var(--blue); text-underline-offset:2px; } button { font:inherit; }
+			.site-header { border-bottom:1px solid var(--line); background:var(--surface); } .site-header-inner { display:flex; align-items:stretch; max-width:35rem; height:2.8rem; margin:auto; padding:0 .6rem; } .brand,.site-nav a,.settings { display:flex; align-items:center; color:var(--fg); } .brand { font-size:1.15rem; font-weight:700; text-decoration:none; } .site-nav { display:flex; margin-left:1.2rem; } .site-nav a { padding:0 .65rem; font-weight:600; text-decoration:none; } .site-nav a[aria-current="page"] { border-bottom:3px solid var(--blue); } .settings { margin-left:auto; color:var(--muted); font-size:.78rem; }
+			main { max-width:35rem; margin:1.35rem auto; padding:0 .6rem; } .page-header { display:flex; align-items:center; gap:.75rem; margin-bottom:1rem; padding-bottom:.6rem; border-bottom:3px solid var(--fg); } h1 { margin:0; font-size:1.45rem; } .page-header .button { margin-left:auto; } .button { padding:.34rem .65rem; border:1px solid #888; border-radius:3px; color:var(--fg); background:#fff; font-weight:600; text-decoration:none; cursor:pointer; }
+			.frame { overflow:hidden; border:1px solid var(--line); border-radius:3px; } .board-header { display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:center; min-height:2.15rem; padding:.35rem .65rem; border-bottom:2px solid var(--fg); background:var(--surface); } .board-header:not(:first-child) { border-top:1px solid var(--line); } .board-header h2 { margin:0; font-size:.85rem; } .board-header h2 a { color:var(--fg); } .board-actions { display:flex; align-items:center; gap:.6rem; } .count { color:var(--muted); font-size:.7rem; } .seen { padding:0; border:0; color:var(--blue); background:transparent; font-size:.7rem; text-decoration:underline; cursor:pointer; }
+			.pins { margin:0; padding:0; list-style:none; } .pin { display:grid; grid-template-columns:.55rem minmax(0,1fr) auto; align-items:center; gap:.5rem; min-height:3.1rem; padding:.45rem .65rem; } .pin + .pin { border-top:1px solid var(--line-dim); } .marker { width:.45rem; height:.45rem; border-radius:50%; background:var(--blue); } .pin-title { color:var(--fg); font-weight:600; } .pin-meta,.time { color:var(--muted); font-size:.68rem; } .pin-meta { margin-top:.1rem; } .time { white-space:nowrap; }
+			@media(max-width:27rem){.settings{display:none}.site-nav{margin-left:.7rem}.time{display:none}}
+		</style>
+	</head>
+	<body>
+		<header class="site-header"><div class="site-header-inner"><a class="brand" href="#">Cork</a><nav class="site-nav" aria-label="Main navigation"><a href="#">Boards</a><a href="#" aria-current="page">Inbox</a></nav><a class="settings" href="#">Settings</a></div></header>
+		<main>
+			<header class="page-header"><h1>Inbox</h1><button class="button" type="button">Mark all seen</button></header>
+			<div class="frame">
+				<section aria-labelledby="labor"><header class="board-header"><h2 id="labor"><a href="#">Labor History</a></h2><div class="board-actions"><span class="count">2 new</span><button class="seen">Mark seen</button></div></header><ol class="pins">
+					<li class="pin"><span class="marker"></span><div><a class="pin-title" href="#">The Battle of Blair Mountain</a><div class="pin-meta">Kathryn</div></div><time class="time">20 min</time></li>
+					<li class="pin"><span class="marker"></span><div><a class="pin-title" href="#">A People's History of the United States</a><div class="pin-meta">Kathryn</div></div><time class="time">Yesterday</time></li>
+				</ol></section>
+				<section aria-labelledby="movies"><header class="board-header"><h2 id="movies"><a href="#">Movie Night</a></h2><div class="board-actions"><span class="count">2 new</span><button class="seen">Mark seen</button></div></header><ol class="pins">
+					<li class="pin"><span class="marker"></span><div><a class="pin-title" href="#">The Apartment</a><div class="pin-meta">Sam</div></div><time class="time">2 hr</time></li>
+					<li class="pin"><span class="marker"></span><div><a class="pin-title" href="#">Tampopo</a><div class="pin-meta">Sam</div></div><time class="time">Yesterday</time></li>
+				</ol></section>
+				<section aria-labelledby="computing"><header class="board-header"><h2 id="computing"><a href="#">Personal Computing</a></h2><div class="board-actions"><span class="count">1 new</span><button class="seen">Mark seen</button></div></header><ol class="pins">
+					<li class="pin"><span class="marker"></span><div><a class="pin-title" href="#">The Whole Earth Catalog</a><div class="pin-meta">Liam E.</div></div><time class="time">Aug 31</time></li>
+				</ol></section>
+			</div>
+		</main>
+	</body>
+</html>

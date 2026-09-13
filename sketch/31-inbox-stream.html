@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>Cork — Inbox</title>
+		<style>
+			:root { --fg:#111; --muted:#626262; --surface:#f1f1f1; --line:#999; --line-dim:#d5d5d5; --blue:#0f61a9; }
+			* { box-sizing:border-box; } body { margin:0; color:var(--fg); background:#fff; font:14px/1.35 "Helvetica Neue",Helvetica,Arial,sans-serif; } a { color:var(--blue); text-underline-offset:2px; } button { font:inherit; }
+			.site-header { border-bottom:1px solid var(--line); background:var(--surface); } .site-header-inner { display:flex; align-items:stretch; max-width:35rem; height:2.8rem; margin:auto; padding:0 .6rem; } .brand,.site-nav a,.settings { display:flex; align-items:center; color:var(--fg); } .brand { font-size:1.15rem; font-weight:700; text-decoration:none; } .site-nav { display:flex; margin-left:1.2rem; } .site-nav a { padding:0 .65rem; font-weight:600; text-decoration:none; } .site-nav a[aria-current="page"] { border-bottom:3px solid var(--blue); } .settings { margin-left:auto; color:var(--muted); font-size:.78rem; }
+			main { max-width:35rem; margin:1.35rem auto; padding:0 .6rem; } .page-header { display:flex; align-items:center; gap:.75rem; margin-bottom:1rem; padding-bottom:.6rem; border-bottom:3px solid var(--fg); } h1 { margin:0; font-size:1.45rem; } .page-header .button { margin-left:auto; } .button { padding:.34rem .65rem; border:1px solid #888; border-radius:3px; color:var(--fg); background:#fff; font-weight:600; text-decoration:none; cursor:pointer; }
+			.frame { overflow:hidden; border:1px solid var(--line); border-radius:3px; } .frame-header { display:flex; align-items:baseline; min-height:2rem; padding:.35rem .65rem; border-bottom:2px solid var(--fg); background:var(--surface); } .frame-header h2 { margin:0; font-size:.85rem; } .frame-meta { margin-left:auto; color:var(--muted); font-size:.7rem; } ol { margin:0; padding:0; list-style:none; } .item { position:relative; display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:center; gap:.75rem; min-height:3.8rem; padding:.55rem .65rem .55rem .85rem; } .item::before { position:absolute; inset:.55rem auto .55rem 0; width:3px; background:var(--blue); content:""; } .item + .item { border-top:1px solid var(--line-dim); } .item-title { color:var(--fg); font-weight:600; } .item-context { margin-top:.15rem; color:var(--muted); font-size:.72rem; } .board { color:var(--blue); } .time { color:var(--muted); font-size:.68rem; white-space:nowrap; } .more { padding:.15rem .4rem; border:1px solid transparent; border-radius:3px; color:var(--muted); background:transparent; cursor:pointer; }
+			@media(max-width:27rem){.settings{display:none}.site-nav{margin-left:.7rem}.time{display:none}}
+		</style>
+	</head>
+	<body>
+		<header class="site-header"><div class="site-header-inner"><a class="brand" href="#">Cork</a><nav class="site-nav" aria-label="Main navigation"><a href="#">Boards</a><a href="#" aria-current="page">Inbox</a></nav><a class="settings" href="#">Settings</a></div></header>
+		<main>
+			<header class="page-header"><h1>Inbox</h1><button class="button" type="button">Mark all seen</button></header>
+			<section class="frame" aria-labelledby="unseen-heading"><header class="frame-header"><h2 id="unseen-heading">Unseen pins</h2><span class="frame-meta">5</span></header><ol>
+				<li class="item"><div><a class="item-title" href="#">The Battle of Blair Mountain</a><div class="item-context"><a class="board" href="#">Labor History</a> · Kathryn</div></div><time class="time">20 min</time></li>
+				<li class="item"><div><a class="item-title" href="#">The Apartment</a><div class="item-context"><a class="board" href="#">Movie Night</a> · Sam</div></div><time class="time">2 hr</time></li>
+				<li class="item"><div><a class="item-title" href="#">A People's History of the United States</a><div class="item-context"><a class="board" href="#">Labor History</a> · Kathryn</div></div><time class="time">Yesterday</time></li>
+				<li class="item"><div><a class="item-title" href="#">Tampopo</a><div class="item-context"><a class="board" href="#">Movie Night</a> · Sam</div></div><time class="time">Yesterday</time></li>
+				<li class="item"><div><a class="item-title" href="#">The Whole Earth Catalog</a><div class="item-context"><a class="board" href="#">Personal Computing</a> · Liam E.</div></div><time class="time">Aug 31</time></li>
+			</ol></section>
+		</main>
+	</body>
+</html>

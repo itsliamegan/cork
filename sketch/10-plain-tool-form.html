@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>Cork — New Pin</title>
+		<style>
+			:root {
+				--bg: #fff;
+				--surface: #f5f5f5;
+				--fg: #111;
+				--muted: #626262;
+				--line: #b8b8b8;
+				--line-dim: #d5d5d5;
+				--blue: #0f61a9;
+				--radius: 4px;
+			}
+
+			* { box-sizing: border-box; }
+			body { margin: 0; color: var(--fg); background: var(--bg); font: 14px/1.45 "Helvetica Neue", Helvetica, Arial, sans-serif; }
+			a { color: var(--blue); text-underline-offset: 2px; }
+			button, input, select { font: inherit; }
+
+			.site-header { color: #fff; background: var(--fg); }
+			.site-header-inner { display: flex; align-items: stretch; max-width: 42rem; height: 3.2rem; margin: auto; padding: 0 1rem; }
+			.brand, .site-nav a, .settings { display: flex; align-items: center; color: #fff; }
+			.brand { font-size: 1.25rem; font-weight: 700; text-decoration: none; }
+			.site-nav { display: flex; margin-left: 1.5rem; }
+			.site-nav a { padding: 0 0.8rem; border-bottom: 4px solid var(--blue); font-weight: 600; text-decoration: none; }
+			.settings { margin-left: auto; color: #ddd; font-size: 0.8rem; }
+
+			main { max-width: 42rem; margin: 2rem auto; padding: 0 1rem; }
+			.breadcrumb { margin-bottom: 0.75rem; color: var(--muted); font-size: 0.8rem; }
+			.page-header { margin-bottom: 1.5rem; padding-bottom: 0.9rem; border-bottom: 3px solid var(--fg); }
+			h1 { margin: 0; font-size: 1.7rem; line-height: 1.15; }
+			.page-description { margin: 0.35rem 0 0; color: var(--muted); }
+
+			.panel { overflow: hidden; border: 1px solid var(--line); border-radius: var(--radius); }
+			.panel-header { padding: 0.65rem 0.8rem; border-bottom: 1px solid var(--line); background: var(--surface); }
+			.panel-header h2 { margin: 0; font-size: 0.9rem; }
+			.form-body { display: grid; gap: 1.1rem; padding: 1rem; }
+			.field { display: grid; gap: 0.3rem; }
+			.field label { font-weight: 600; }
+			.field-hint { margin: -0.1rem 0 0; color: var(--muted); font-size: 0.75rem; }
+			input, select { width: 100%; padding: 0.5rem 0.6rem; border: 1px solid #888; border-radius: 3px; color: var(--fg); background: #fff; }
+			input:focus, select:focus { outline: 3px solid rgb(15 97 169 / 25%); border-color: var(--blue); }
+			.form-actions { display: flex; align-items: center; justify-content: flex-end; gap: 0.6rem; padding: 0.75rem 1rem; border-top: 1px solid var(--line-dim); background: var(--surface); }
+			.button { display: inline-block; padding: 0.42rem 0.75rem; border: 1px solid #888; border-radius: 3px; color: var(--fg); background: #fff; font-weight: 600; text-decoration: none; cursor: pointer; }
+			.button-primary { border-color: #0b477c; color: #fff; background: var(--blue); }
+
+			@media (max-width: 30rem) {
+				.settings { display: none; }
+			}
+		</style>
+	</head>
+	<body>
+		<header class="site-header">
+			<div class="site-header-inner">
+				<a class="brand" href="#">Cork</a>
+				<nav class="site-nav" aria-label="Main navigation"><a href="#" aria-current="page">Boards</a></nav>
+				<a class="settings" href="#">Settings</a>
+			</div>
+		</header>
+		<main>
+			<div class="breadcrumb"><a href="#">Boards</a> / <a href="#">Personal Computing</a> / New pin</div>
+			<header class="page-header">
+				<h1>New pin</h1>
+				<p class="page-description">Add a link to Personal Computing.</p>
+			</header>
+
+			<form class="panel">
+				<header class="panel-header"><h2>Pin details</h2></header>
+				<div class="form-body">
+					<div class="field">
+						<label for="title">Title</label>
+						<input id="title" name="title" type="text" value="Augmenting Human Intellect" autofocus>
+					</div>
+					<div class="field">
+						<label for="url">URL</label>
+						<p class="field-hint" id="url-hint">Include http:// or https://</p>
+						<input id="url" name="url" type="url" aria-describedby="url-hint" value="https://www.dougengelbart.org/">
+					</div>
+					<div class="field">
+						<label for="board">Board</label>
+						<select id="board" name="board">
+							<option selected>Personal Computing</option>
+							<option>Labor History</option>
+						</select>
+					</div>
+				</div>
+				<footer class="form-actions">
+					<a class="button" href="#">Cancel</a>
+					<button class="button button-primary" type="submit">Save pin</button>
+				</footer>
+			</form>
+		</main>
+	</body>
+</html>

@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>Cork — Boards</title>
+		<style>
+			:root { --fg:#111; --muted:#626262; --surface:#f1f1f1; --line:#999; --line-dim:#d5d5d5; --blue:#0f61a9; }
+			* { box-sizing:border-box; } body { margin:0; color:var(--fg); background:#fff; font:14px/1.35 "Helvetica Neue",Helvetica,Arial,sans-serif; } a { color:var(--blue); text-underline-offset:2px; } button { font:inherit; }
+			.site-header { border-bottom:1px solid var(--line); background:var(--surface); } .site-header-inner { display:flex; align-items:stretch; max-width:35rem; height:2.8rem; margin:auto; padding:0 .6rem; } .brand,.site-nav a,.settings { display:flex; align-items:center; color:var(--fg); } .brand { font-size:1.15rem; font-weight:700; text-decoration:none; } .site-nav { display:flex; margin-left:1.2rem; } .site-nav a { padding:0 .65rem; font-weight:600; text-decoration:none; } .site-nav a[aria-current="page"] { border-bottom:3px solid var(--blue); } .settings { margin-left:auto; color:var(--muted); font-size:.78rem; }
+			main { max-width:35rem; margin:1.35rem auto; padding:0 .6rem; } .page-header { display:flex; align-items:center; gap:.75rem; margin-bottom:1rem; padding-bottom:.6rem; border-bottom:3px solid var(--fg); } h1 { margin:0; font-size:1.45rem; } .page-header .button { margin-left:auto; } .button { padding:.34rem .65rem; border:1px solid #888; border-radius:3px; color:var(--fg); background:#fff; font-weight:600; text-decoration:none; cursor:pointer; } .button-primary { border-color:#0b477c; color:#fff; background:var(--blue); }
+			.frame { overflow:hidden; border:1px solid var(--line); border-radius:3px; } .frame-header { display:grid; grid-template-columns:minmax(0,1fr) 7rem; align-items:baseline; min-height:2rem; padding:.35rem .65rem; border-bottom:2px solid var(--fg); background:var(--surface); } .frame-header:not(:first-child) { border-top:1px solid var(--line); } .frame-header h2 { margin:0; font-size:.85rem; } .column-label { color:var(--muted); font-size:.68rem; text-align:right; text-transform:uppercase; }
+			.boards { margin:0; padding:0; list-style:none; } .board { display:grid; grid-template-columns:minmax(0,1fr) 7rem; align-items:center; gap:.75rem; min-height:3.25rem; padding:.5rem .65rem; } .board + .board { border-top:1px solid var(--line-dim); } .board-title { color:var(--fg); font-weight:600; } .board-meta { margin-top:.1rem; color:var(--muted); font-size:.72rem; } .updated { color:var(--muted); font-size:.72rem; text-align:right; } .updated-recent::before { display:inline-block; width:.45rem; height:.45rem; margin-right:.35rem; border-radius:50%; background:var(--blue); content:""; vertical-align:.05rem; }
+			@media(max-width:27rem){.settings{display:none}.site-nav{margin-left:.7rem}.board,.frame-header{grid-template-columns:minmax(0,1fr) 5.5rem}}
+		</style>
+	</head>
+	<body>
+		<header class="site-header"><div class="site-header-inner"><a class="brand" href="#">Cork</a><nav class="site-nav" aria-label="Main navigation"><a href="#" aria-current="page">Boards</a><a href="#">Inbox</a></nav><a class="settings" href="#">Settings</a></div></header>
+		<main>
+			<header class="page-header"><h1>Boards</h1><a class="button button-primary" href="#">New board</a></header>
+			<div class="frame">
+				<section aria-labelledby="your-boards"><header class="frame-header"><h2 id="your-boards">Your boards</h2><span class="column-label">Updated</span></header><ol class="boards">
+					<li class="board"><div><a class="board-title" href="#">Personal Computing</a><div class="board-meta">3 pins</div></div><time class="updated updated-recent">Today, 09:42</time></li>
+					<li class="board"><div><a class="board-title" href="#">Recipes</a><div class="board-meta">18 pins</div></div><time class="updated">Aug 31</time></li>
+					<li class="board"><div><a class="board-title" href="#">Places to Go</a><div class="board-meta">7 pins</div></div><time class="updated">Aug 12</time></li>
+				</ol></section>
+				<section aria-labelledby="shared-boards"><header class="frame-header"><h2 id="shared-boards">Shared with you</h2><span class="column-label">Updated</span></header><ol class="boards">
+					<li class="board"><div><a class="board-title" href="#">Labor History</a><div class="board-meta">Kathryn · 4 pins</div></div><time class="updated updated-recent">Yesterday</time></li>
+					<li class="board"><div><a class="board-title" href="#">Movie Night</a><div class="board-meta">Sam · 12 pins</div></div><time class="updated">Aug 27</time></li>
+				</ol></section>
+			</div>
+		</main>
+	</body>
+</html>

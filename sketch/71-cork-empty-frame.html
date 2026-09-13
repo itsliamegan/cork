@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>Nothing to see here...</title>
+		<style>
+			:root {
+				color-scheme: light dark;
+				--canvas: #fff;
+				--surface: #f1f1f1;
+				--text: #111;
+				--quiet: #d5d5d5;
+				--strong: #111;
+				--blue: #0f61a9;
+			}
+
+			* { box-sizing: border-box; }
+			html, body { min-height: 100%; }
+			body { margin: 0; color: var(--text); background: var(--canvas); font: clamp(1rem, calc(0.95rem + 0.35vw), 1.125rem)/1.35 "Helvetica Neue", Helvetica, Arial, sans-serif; }
+			main { width: min(35rem, 93.5vw); min-height: 100vh; margin: 0 auto; padding: 1.375rem 0; }
+			.frame { display: grid; min-height: calc(100vh - 2.75rem); overflow: hidden; border: 1px solid #999; border-radius: 3px; grid-template-rows: 2.8rem 1fr; }
+			.frame::before { content: ""; border-bottom: 2px solid var(--strong); background: var(--surface); }
+			h1 { display: flex; align-items: flex-end; margin: 0; padding: clamp(1.375rem, 6vw, 3.5rem); border-bottom: 3px solid var(--strong); font-size: clamp(3.5rem, 12vw, 6.5rem); font-weight: bold; letter-spacing: -0.06em; line-height: 0.86; }
+			.dots { color: var(--blue); }
+
+			@media (prefers-color-scheme: dark) {
+				:root { --canvas: #151515; --surface: #242424; --text: #f1f1f1; --quiet: #3e3e3e; --strong: #707070; --blue: #70afe4; }
+			}
+		</style>
+	</head>
+	<body>
+		<main>
+			<section class="frame" aria-labelledby="page-title">
+				<h1 id="page-title">Nothing to see here<span class="dots">...</span></h1>
+			</section>
+		</main>
+	</body>
+</html>

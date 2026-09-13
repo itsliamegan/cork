@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>Cork — Boards Workbench</title>
+		<style>
+			:root {
+				--fg: #111;
+				--muted: #626262;
+				--surface: #f1f1f1;
+				--line: #999;
+				--line-dim: #d5d5d5;
+				--blue: #0f61a9;
+			}
+
+			* { box-sizing: border-box; }
+			body { margin: 0; color: var(--fg); background: #fff; font: 14px/1.35 "Helvetica Neue", Helvetica, Arial, sans-serif; }
+			a { color: var(--blue); text-underline-offset: 2px; }
+			button, input { font: inherit; }
+
+			.site-header { border-bottom: 1px solid var(--line); background: var(--surface); }
+			.site-header-inner { display: flex; align-items: stretch; max-width: 42rem; height: 2.8rem; margin: auto; padding: 0 0.6rem; }
+			.brand, .site-nav a, .settings { display: flex; align-items: center; color: var(--fg); }
+			.brand { font-size: 1.15rem; font-weight: 700; text-decoration: none; }
+			.site-nav { display: flex; margin-left: 1.2rem; }
+			.site-nav a { padding: 0 0.65rem; border-bottom: 3px solid var(--blue); font-weight: 600; text-decoration: none; }
+			.settings { margin-left: auto; color: var(--muted); font-size: 0.78rem; }
+
+			main { max-width: 42rem; margin: 1.35rem auto; padding: 0 0.6rem; }
+			.page-header { display: flex; align-items: baseline; gap: 0.5rem; margin-bottom: 1rem; padding-bottom: 0.6rem; border-bottom: 3px solid var(--fg); }
+			h1 { margin: 0; font-size: 1.45rem; line-height: 1.15; }
+			.page-meta { color: var(--muted); font-size: 0.7rem; }
+
+			.workbench { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(15rem, 1fr); overflow: hidden; border: 1px solid var(--line); border-radius: 3px; }
+			.pane + .pane { border-left: 1px solid var(--line); }
+			.pane-header { display: flex; align-items: baseline; min-height: 2rem; padding: 0.35rem 0.65rem; border-bottom: 2px solid var(--fg); background: var(--surface); }
+			.pane-form .pane-header { border-left: 3px solid var(--blue); }
+			.pane-header h2 { margin: 0; font-size: 0.85rem; }
+			.pane-meta { margin-left: auto; color: var(--muted); font-size: 0.7rem; }
+
+			.boards { margin: 0; padding: 0; list-style: none; }
+			.board { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 0.65rem; min-height: 3.35rem; padding: 0.5rem 0.65rem; }
+			.board + .board { border-top: 1px solid var(--line-dim); }
+			.board-title { color: var(--fg); font-weight: 600; }
+			.board-meta, .board-count { color: var(--muted); font-size: 0.7rem; }
+			.board-meta { margin-top: 0.1rem; }
+			.board-count { text-align: right; white-space: nowrap; }
+
+			.field { padding: 0.65rem; }
+			.field label { display: block; margin-bottom: 0.25rem; font-size: 0.75rem; font-weight: 600; }
+			input { width: 100%; padding: 0.4rem 0.5rem; border: 1px solid #888; border-radius: 3px; color: var(--fg); background: #fff; }
+			input:focus { border-color: var(--blue); outline: 3px solid rgb(15 97 169 / 25%); }
+			.form-actions { display: flex; justify-content: flex-end; padding: 0.55rem 0.65rem; border-top: 1px solid var(--line-dim); }
+			.button { padding: 0.34rem 0.65rem; border: 1px solid #0b477c; border-radius: 3px; color: #fff; background: var(--blue); font-weight: 600; cursor: pointer; }
+			.button:focus-visible { outline: 3px solid rgb(15 97 169 / 25%); outline-offset: 1px; }
+
+			@media (max-width: 36rem) {
+				.settings { display: none; }
+				.workbench { grid-template-columns: 1fr; }
+				.pane + .pane { border-top: 1px solid var(--line); border-left: 0; }
+				.pane-form { grid-row: 1; }
+			}
+		</style>
+	</head>
+	<body>
+		<header class="site-header">
+			<div class="site-header-inner">
+				<a class="brand" href="#">Cork</a>
+				<nav class="site-nav" aria-label="Main navigation"><a href="#" aria-current="page">Boards</a></nav>
+				<a class="settings" href="#">Settings</a>
+			</div>
+		</header>
+		<main>
+			<header class="page-header"><h1>Boards</h1><span class="page-meta">5 total</span></header>
+
+			<div class="workbench">
+				<section class="pane" aria-labelledby="boards-heading">
+					<header class="pane-header"><h2 id="boards-heading">Your boards</h2><span class="pane-meta">3</span></header>
+					<ol class="boards">
+						<li class="board"><div><a class="board-title" href="#">Personal Computing</a><div class="board-meta">Updated today</div></div><span class="board-count">3 pins</span></li>
+						<li class="board"><div><a class="board-title" href="#">Recipes</a><div class="board-meta">Updated Aug 31</div></div><span class="board-count">18 pins</span></li>
+						<li class="board"><div><a class="board-title" href="#">Places to Go</a><div class="board-meta">Updated Aug 12</div></div><span class="board-count">7 pins</span></li>
+					</ol>
+					<header class="pane-header"><h2>Shared with you</h2><span class="pane-meta">2</span></header>
+					<ol class="boards">
+						<li class="board"><div><a class="board-title" href="#">Labor History</a><div class="board-meta">Kathryn</div></div><span class="board-count">4 pins</span></li>
+						<li class="board"><div><a class="board-title" href="#">Movie Night</a><div class="board-meta">Sam</div></div><span class="board-count">12 pins</span></li>
+					</ol>
+				</section>
+
+				<form class="pane pane-form">
+					<header class="pane-header"><h2>New board</h2></header>
+					<div class="field">
+						<label for="title">Title</label>
+						<input id="title" name="title" type="text" value="Field Notes" autofocus>
+					</div>
+					<footer class="form-actions"><button class="button" type="submit">Create board</button></footer>
+				</form>
+			</div>
+		</main>
+	</body>
+</html>

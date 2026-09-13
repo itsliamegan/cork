@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>Cork — List</title>
+		<style>
+			:root { --fg:#111; --muted:#626262; --surface:#f3f3f3; --line:#999; --line-dim:#d5d5d5; --blue:#0f61a9; }
+			* { box-sizing:border-box; } body { margin:0; color:var(--fg); font:14px/1.45 "Helvetica Neue",Helvetica,Arial,sans-serif; } a { color:var(--blue); text-underline-offset:2px; } button { font:inherit; }
+			.site-header { color:#fff; background:var(--fg); } .site-header-inner { display:flex; align-items:stretch; max-width:42rem; height:3.2rem; margin:auto; padding:0 1rem; } .brand,.site-nav a,.settings { display:flex; align-items:center; color:#fff; } .brand { font-size:1.25rem; font-weight:700; text-decoration:none; } .site-nav { display:flex; margin-left:1.5rem; } .site-nav a { padding:0 .8rem; border-bottom:4px solid var(--blue); font-weight:600; text-decoration:none; } .settings { margin-left:auto; color:#ddd; font-size:.8rem; }
+			main { max-width:42rem; margin:2rem auto; padding:0 1rem; } .breadcrumb { margin-bottom:.75rem; color:var(--muted); font-size:.8rem; } .page-header { display:flex; align-items:center; gap:1rem; margin-bottom:1.5rem; padding-bottom:.9rem; border-bottom:3px solid var(--fg); } h1 { margin:0; font-size:1.7rem; line-height:1.15; } .actions { display:flex; gap:.6rem; margin-left:auto; } .button { padding:.42rem .75rem; border:1px solid #888; border-radius:3px; color:var(--fg); background:#fff; font-weight:600; text-decoration:none; } .button-primary { border-color:#0b477c; color:#fff; background:var(--blue); }
+			.frame { overflow:hidden; border:1px solid var(--line); border-radius:4px; } .frame-heading { display:flex; align-items:baseline; padding:.6rem .8rem; border-bottom:2px solid var(--fg); background:var(--surface); } .frame-heading h2 { margin:0; font-size:.95rem; } .frame-meta { margin-left:auto; color:var(--muted); font-size:.75rem; } ol { margin:0; padding:0; list-style:none; } .row { display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:center; gap:1rem; padding:.8rem; } .row + .row { border-top:1px solid var(--line-dim); } .pin-title { color:var(--fg); font-size:.95rem; font-weight:600; } .pin-url { overflow:hidden; margin-top:.15rem; color:var(--muted); font-size:.78rem; text-overflow:ellipsis; white-space:nowrap; } .pin-date { margin-top:.2rem; color:var(--muted); font-size:.72rem; } .more { padding:.2rem .45rem; border:1px solid transparent; border-radius:3px; color:var(--muted); background:transparent; cursor:pointer; } .more:hover { border-color:var(--line); background:var(--surface); }
+			@media(max-width:30rem){.settings{display:none}.page-header{align-items:start;flex-direction:column}.actions{margin-left:0}}
+		</style>
+	</head>
+	<body>
+		<header class="site-header"><div class="site-header-inner"><a class="brand" href="#">Cork</a><nav class="site-nav"><a href="#">Boards</a></nav><a class="settings" href="#">Settings</a></div></header>
+		<main>
+			<div class="breadcrumb"><a href="#">Boards</a> / Personal Computing</div>
+			<header class="page-header"><h1>Personal Computing</h1><div class="actions"><a class="button" href="#">Sharing</a><a class="button button-primary" href="#">New pin</a></div></header>
+			<section class="frame" aria-labelledby="pins-heading">
+				<header class="frame-heading"><h2 id="pins-heading">Pins</h2><span class="frame-meta">3</span></header>
+				<ol>
+					<li class="row"><div><a class="pin-title" href="#">Augmenting Human Intellect</a><div class="pin-url">dougengelbart.org/pubs/papers/AugmentingHumanIntellect.pdf</div><div class="pin-date">Sep 4, 2026</div></div><button class="more" aria-label="Actions">•••</button></li>
+					<li class="row"><div><a class="pin-title" href="#">The Mother of All Demos</a><div class="pin-url">computerhistory.org/revolution/the-mother-of-all-demos</div><div class="pin-date">Aug 28, 2026</div></div><button class="more" aria-label="Actions">•••</button></li>
+					<li class="row"><div><a class="pin-title" href="#">As We May Think</a><div class="pin-url">theatlantic.com/magazine/archive/1945/07/as-we-may-think</div><div class="pin-date">Aug 19, 2026</div></div><button class="more" aria-label="Actions">•••</button></li>
+				</ol>
+			</section>
+		</main>
+	</body>
+</html>

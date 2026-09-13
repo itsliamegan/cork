@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>Cork — Dialog</title>
+		<style>
+			:root { --fg:#111; --muted:#626262; --surface:#f3f3f3; --line:#999; --line-dim:#d5d5d5; --blue:#0f61a9; --danger:#9b1c1c; }
+			* { box-sizing:border-box; } body { margin:0; color:var(--fg); font:14px/1.45 "Helvetica Neue",Helvetica,Arial,sans-serif; } a { color:var(--blue); } button { font:inherit; }
+			.site-header { color:#fff; background:var(--fg); } .site-header-inner { display:flex; align-items:center; max-width:42rem; height:3.2rem; margin:auto; padding:0 1rem; } .brand { color:#fff; font-size:1.25rem; font-weight:700; text-decoration:none; } .site-header a + a { margin-left:1.5rem; color:#fff; }
+			main { max-width:42rem; margin:2rem auto; padding:0 1rem; } .breadcrumb { margin-bottom:.75rem; color:var(--muted); font-size:.8rem; } .page-header { margin-bottom:1.5rem; padding-bottom:.9rem; border-bottom:3px solid var(--fg); } h1 { margin:0; font-size:1.7rem; } .frame { border:1px solid var(--line); border-radius:4px; } .frame-heading { padding:.6rem .8rem; border-bottom:2px solid var(--fg); background:var(--surface); } .frame-heading h2 { margin:0; font-size:.95rem; } .row { display:flex; align-items:center; padding:.8rem; } .pin-title { color:var(--fg); font-weight:600; } .row button { margin-left:auto; }
+			.button { padding:.42rem .75rem; border:1px solid #888; border-radius:3px; color:var(--fg); background:#fff; font-weight:600; cursor:pointer; } .button-danger { border-color:#751616; color:#fff; background:var(--danger); }
+			dialog { width:min(24rem,calc(100% - 2rem)); padding:0; border:1px solid #666; border-radius:4px; color:var(--fg); background:#fff; box-shadow:0 8px 24px rgb(0 0 0 / 30%); } dialog::backdrop { background:rgb(0 0 0 / 35%); } .dialog-heading { padding:.7rem .85rem; border-bottom:2px solid var(--fg); background:var(--surface); } .dialog-heading h2 { margin:0; font-size:1rem; } .dialog-body { padding:1rem .85rem; } .dialog-body p { margin:0; } .dialog-footer { display:flex; justify-content:flex-end; gap:.6rem; padding:.7rem .85rem; border-top:1px solid var(--line); background:var(--surface); }
+		</style>
+	</head>
+	<body>
+		<header class="site-header"><div class="site-header-inner"><a class="brand" href="#">Cork</a><a href="#">Boards</a></div></header>
+		<main><div class="breadcrumb"><a href="#">Boards</a> / Personal Computing</div><header class="page-header"><h1>Personal Computing</h1></header><section class="frame"><header class="frame-heading"><h2>Pins</h2></header><div class="row"><a class="pin-title" href="#">Augmenting Human Intellect</a><button class="button">•••</button></div></section></main>
+		<dialog aria-labelledby="dialog-title">
+			<header class="dialog-heading"><h2 id="dialog-title">Delete pin?</h2></header>
+			<div class="dialog-body"><p>Augmenting Human Intellect will be permanently removed.</p></div>
+			<footer class="dialog-footer"><button class="button" type="button">Cancel</button><button class="button button-danger" type="button">Delete pin</button></footer>
+		</dialog>
+		<script>document.querySelector("dialog").showModal()</script>
+	</body>
+</html>

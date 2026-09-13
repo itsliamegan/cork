@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>Cork — Transit Blocks</title>
+		<style>
+			:root {
+				--bg: #f4f4f4;
+				--fg: #111;
+				--muted: #595959;
+				--blue: #2878d0;
+				--blue-pale: #cfe2f6;
+				--green-pale: #cce8d5;
+			}
+
+			* { box-sizing: border-box; }
+			body { margin: 0; color: var(--fg); background: var(--bg); font: 16px/1.35 "Helvetica Neue", Helvetica, Arial, sans-serif; }
+			a { color: #064f91; text-underline-offset: 2px; }
+			button { font: inherit; }
+
+			.site-header { color: #fff; background: var(--fg); }
+			.site-header div { display: flex; align-items: center; max-width: 40rem; height: 3rem; margin: auto; padding: 0 0.75rem; }
+			.brand { color: #fff; font-size: 1.2rem; font-weight: 700; text-decoration: none; }
+			.site-header nav { margin-left: 1.5rem; }
+			.site-header nav a, .settings { color: #fff; font-size: 0.85rem; }
+			.settings { margin-left: auto; }
+
+			main { max-width: 40rem; margin: 2rem auto; padding: 0 0.75rem; }
+			.back { display: inline-block; margin-bottom: 1rem; font-size: 0.85rem; }
+			.title-block { padding: 1rem; border: 2px solid var(--fg); background: var(--blue-pale); box-shadow: 6px 6px 0 var(--fg); }
+			.title-block h1 { margin: 0; font-size: 1.9rem; line-height: 1.1; }
+			.title-block p { margin: 0.35rem 0 0; font-size: 0.8rem; }
+			.actions { display: flex; align-items: center; gap: 0.8rem; margin: 1.5rem 0; }
+			.button { display: inline-block; padding: 0.45rem 0.75rem; border: 2px solid var(--fg); color: #fff; background: var(--blue); box-shadow: 3px 3px 0 var(--fg); font-weight: 700; text-decoration: none; }
+			.button:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 var(--fg); }
+			.actions a:not(.button) { font-size: 0.85rem; }
+
+			.list-block { border: 2px solid var(--fg); background: #fff; box-shadow: 6px 6px 0 var(--fg); }
+			.list-header { display: flex; padding: 0.6rem 0.75rem; border-bottom: 2px solid var(--fg); background: var(--green-pale); font-size: 0.75rem; font-weight: 700; text-transform: uppercase; }
+			.list-header span:last-child { margin-left: auto; }
+			ol { margin: 0; padding: 0; list-style: none; }
+			li { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 1rem; padding: 0.85rem 0.75rem; }
+			li + li { border-top: 1px solid #aaa; }
+			.pin-title { color: var(--fg); font-weight: 700; }
+			.pin-url { overflow: hidden; margin-top: 0.15rem; color: var(--muted); font-size: 0.78rem; text-overflow: ellipsis; white-space: nowrap; }
+			.pin-date { margin-top: 0.25rem; color: var(--muted); font-size: 0.72rem; }
+			.more { padding: 0.2rem 0.45rem; border: 1px solid var(--fg); color: var(--fg); background: #fff; cursor: pointer; }
+
+			@media (max-width: 30rem) {
+				.settings { display: none; }
+				.title-block, .list-block { box-shadow: 4px 4px 0 var(--fg); }
+			}
+		</style>
+	</head>
+	<body>
+		<header class="site-header">
+			<div>
+				<a class="brand" href="#">Cork</a>
+				<nav aria-label="Main navigation"><a href="#">Boards</a></nav>
+				<a class="settings" href="#">Settings</a>
+			</div>
+		</header>
+		<main>
+			<a class="back" href="#">← All boards</a>
+			<header class="title-block">
+				<h1>Personal Computing</h1>
+				<p>3 saved links · Private board</p>
+			</header>
+			<div class="actions">
+				<a class="button" href="#">New pin</a>
+				<a href="#">Manage sharing</a>
+			</div>
+
+			<section class="list-block" aria-labelledby="pins-heading">
+				<header class="list-header"><span id="pins-heading">Pins</span><span>Newest first</span></header>
+				<ol>
+					<li>
+						<div><a class="pin-title" href="#">Augmenting Human Intellect</a><div class="pin-url">dougengelbart.org/pubs/papers/AugmentingHumanIntellect.pdf</div><div class="pin-date">September 4, 2026</div></div>
+						<button class="more" type="button" aria-label="Actions for Augmenting Human Intellect">•••</button>
+					</li>
+					<li>
+						<div><a class="pin-title" href="#">The Mother of All Demos</a><div class="pin-url">computerhistory.org/revolution/the-mother-of-all-demos</div><div class="pin-date">August 28, 2026</div></div>
+						<button class="more" type="button" aria-label="Actions for The Mother of All Demos">•••</button>
+					</li>
+					<li>
+						<div><a class="pin-title" href="#">As We May Think</a><div class="pin-url">theatlantic.com/magazine/archive/1945/07/as-we-may-think</div><div class="pin-date">August 19, 2026</div></div>
+						<button class="more" type="button" aria-label="Actions for As We May Think">•••</button>
+					</li>
+				</ol>
+			</section>
+		</main>
+	</body>
+</html>

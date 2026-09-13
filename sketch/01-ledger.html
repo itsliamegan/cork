@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>Cork — Ledger</title>
+		<style>
+			:root {
+				--paper: #f7f3e8;
+				--paper-deep: #eee7d6;
+				--ink: #26231e;
+				--muted: #746d60;
+				--rule: #b9ad98;
+				--accent: #245b87;
+			}
+
+			* { box-sizing: border-box; }
+			body { margin: 0; color: var(--ink); background: var(--paper); font: 16px/1.45 Georgia, serif; }
+			a { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 0.15em; }
+			button { font: inherit; }
+
+			.site-header {
+				display: flex;
+				align-items: baseline;
+				gap: 1.5rem;
+				max-width: 46rem;
+				margin: auto;
+				padding: 1.25rem 1rem 0.7rem;
+				border-bottom: 2px solid var(--ink);
+			}
+			.brand { color: var(--ink); font-size: 1.35rem; font-weight: bold; text-decoration: none; }
+			.site-nav { display: flex; gap: 1rem; font: 0.85rem Arial, sans-serif; }
+			.account { margin-left: auto; color: var(--muted); font: 0.8rem Arial, sans-serif; }
+
+			main { max-width: 46rem; margin: auto; padding: 2.25rem 1rem 4rem; }
+			.eyebrow { margin: 0 0 0.35rem; color: var(--muted); font: bold 0.7rem Arial, sans-serif; letter-spacing: 0.12em; text-transform: uppercase; }
+			.page-header { display: flex; align-items: end; gap: 1rem; margin-bottom: 1.75rem; }
+			.page-header h1 { margin: 0; font-size: clamp(1.7rem, 6vw, 2.4rem); line-height: 1.05; }
+			.page-actions { display: flex; gap: 0.5rem; margin-left: auto; }
+			.button {
+				display: inline-block;
+				padding: 0.42rem 0.72rem;
+				border: 1px solid var(--ink);
+				color: var(--ink);
+				background: transparent;
+				font: bold 0.78rem Arial, sans-serif;
+				text-decoration: none;
+			}
+			.button-primary { color: var(--paper); background: var(--ink); }
+
+			.panel { border-top: 1px solid var(--rule); border-bottom: 1px solid var(--rule); }
+			.panel-header {
+				display: flex;
+				padding: 0.55rem 0;
+				color: var(--muted);
+				font: bold 0.68rem Arial, sans-serif;
+				letter-spacing: 0.08em;
+				text-transform: uppercase;
+			}
+			.panel-header span:last-child { margin-left: auto; }
+			.pin-list { margin: 0; padding: 0; list-style: none; }
+			.pin { display: grid; grid-template-columns: 1fr auto; gap: 1rem; padding: 1rem 0; border-top: 1px dotted var(--rule); }
+			.pin-title { color: var(--ink); font-size: 1.08rem; font-weight: bold; }
+			.pin-url { overflow: hidden; margin-top: 0.15rem; color: var(--accent); font: 0.78rem Arial, sans-serif; text-overflow: ellipsis; white-space: nowrap; }
+			.pin-meta { margin-top: 0.35rem; color: var(--muted); font: 0.72rem Arial, sans-serif; }
+			.icon-button { align-self: center; padding: 0.25rem 0.5rem; border: 0; color: var(--muted); background: transparent; cursor: pointer; font-size: 1.2rem; }
+
+			.note { margin: 1rem 0 0; color: var(--muted); font-size: 0.85rem; font-style: italic; }
+			@media (max-width: 32rem) {
+				.account { display: none; }
+				.page-header { align-items: start; flex-direction: column; }
+				.page-actions { margin-left: 0; }
+			}
+		</style>
+	</head>
+	<body>
+		<header class="site-header">
+			<a class="brand" href="#">Cork</a>
+			<nav class="site-nav" aria-label="Main navigation"><a href="#">Boards</a></nav>
+			<span class="account">Liam E. · Settings</span>
+		</header>
+
+		<main>
+			<p class="eyebrow">Board</p>
+			<header class="page-header">
+				<h1>Personal Computing</h1>
+				<div class="page-actions">
+					<a class="button" href="#">Sharing</a>
+					<a class="button button-primary" href="#">New pin</a>
+				</div>
+			</header>
+
+			<section class="panel" aria-labelledby="pins-heading">
+				<header class="panel-header">
+					<span id="pins-heading">Saved links</span>
+					<span>3 pins</span>
+				</header>
+				<ol class="pin-list">
+					<li class="pin">
+						<div>
+							<a class="pin-title" href="#">Augmenting Human Intellect</a>
+							<div class="pin-url">dougengelbart.org/pubs/papers/AugmentingHumanIntellect.pdf</div>
+							<div class="pin-meta">Saved September 4, 2026</div>
+						</div>
+						<button class="icon-button" type="button" aria-label="Actions for Augmenting Human Intellect">⋮</button>
+					</li>
+					<li class="pin">
+						<div>
+							<a class="pin-title" href="#">The Mother of All Demos</a>
+							<div class="pin-url">computerhistory.org/revolution/the-mother-of-all-demos</div>
+							<div class="pin-meta">Saved August 28, 2026</div>
+						</div>
+						<button class="icon-button" type="button" aria-label="Actions for The Mother of All Demos">⋮</button>
+					</li>
+					<li class="pin">
+						<div>
+							<a class="pin-title" href="#">As We May Think</a>
+							<div class="pin-url">theatlantic.com/magazine/archive/1945/07/as-we-may-think</div>
+							<div class="pin-meta">Saved August 19, 2026</div>
+						</div>
+						<button class="icon-button" type="button" aria-label="Actions for As We May Think">⋮</button>
+					</li>
+				</ol>
+			</section>
+			<p class="note">A quiet, editorial treatment based on rules and typography.</p>
+		</main>
+	</body>
+</html>

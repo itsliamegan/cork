@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>Cork — Paper Board</title>
+		<style>
+			:root {
+				--bg: #f6f4ef;
+				--panel: #fffdf9;
+				--fg: #1d1b17;
+				--muted: #797469;
+				--line: #ded7c9;
+				--line-strong: #c6bda9;
+				--accent: #9c4a22;
+				--danger: #97341f;
+				--mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+			}
+
+			* { box-sizing: border-box; }
+			body { margin: 0; color: var(--fg); background: var(--bg); font: 14px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; }
+			a { color: inherit; }
+
+			.site-header { border-bottom: 1px solid var(--line); background: var(--panel); }
+			.site-header-inner { display: flex; align-items: center; gap: 1.4rem; max-width: 40rem; height: 3rem; margin: auto; padding: 0 1rem; }
+			.brand { font-family: var(--mono); font-size: 0.95rem; font-weight: 700; letter-spacing: -0.03em; text-decoration: none; }
+			.brand span { color: var(--accent); }
+			.site-nav { display: flex; gap: 0.3rem; font-family: var(--mono); font-size: 0.8rem; }
+			.site-nav a { padding: 0.15rem 0.5rem; border: 1px solid transparent; border-radius: 5px; color: var(--muted); text-decoration: none; }
+			.site-nav a[aria-current] { border-color: var(--line-strong); color: var(--fg); background: var(--bg); }
+			.account { margin-left: auto; font-family: var(--mono); font-size: 0.78rem; color: var(--muted); text-decoration: none; }
+
+			main { max-width: 40rem; margin: 1.75rem auto 3rem; padding: 0 1rem; }
+			.path { margin-bottom: 0.4rem; font-family: var(--mono); font-size: 0.75rem; color: var(--muted); }
+			.path a { text-decoration: none; }
+			.path a:hover { color: var(--accent); text-decoration: underline; }
+			.page-header { display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.9rem; }
+			h1 { margin: 0; font-size: 1.15rem; font-weight: 650; letter-spacing: -0.01em; }
+			.badge { padding: 0.05rem 0.4rem; border: 1px solid var(--line-strong); border-radius: 999px; font-family: var(--mono); font-size: 0.68rem; color: var(--muted); }
+			.actions { display: flex; gap: 0.4rem; margin-left: auto; }
+
+			.button { padding: 0.28rem 0.7rem; border: 1px solid var(--line-strong); border-radius: 5px; color: var(--fg); background: var(--panel); font-family: var(--mono); font-size: 0.78rem; text-decoration: none; cursor: pointer; }
+			.button:hover { border-color: var(--muted); }
+			.button-primary { border-color: var(--accent); color: var(--panel); background: var(--accent); }
+			.button-primary:hover { border-color: var(--danger); background: var(--danger); }
+
+			.group-label { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.45rem; font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.05em; color: var(--muted); text-transform: uppercase; }
+			.group-label::after { content: ""; flex: 1; border-top: 1px dashed var(--line-strong); }
+
+			ol { display: grid; gap: 0.4rem; margin: 0; padding: 0; list-style: none; }
+			.pin { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: start; gap: 0.75rem; padding: 0.6rem 0.75rem; border: 1px solid var(--line); border-radius: 6px; background: var(--panel); }
+			.pin:hover { border-color: var(--line-strong); }
+			.pin-title { font-weight: 600; text-decoration: none; }
+			.pin:hover .pin-title { color: var(--accent); text-decoration: underline; text-underline-offset: 2px; }
+			.pin-url { overflow: hidden; margin-top: 0.1rem; font-family: var(--mono); font-size: 0.72rem; color: var(--muted); text-overflow: ellipsis; white-space: nowrap; }
+			.pin-side { display: flex; align-items: center; gap: 0.4rem; }
+			.pin-date { font-family: var(--mono); font-size: 0.7rem; color: var(--muted); white-space: nowrap; }
+			.more { padding: 0 0.3rem; border: 1px solid transparent; border-radius: 4px; color: var(--muted); background: none; font: inherit; cursor: pointer; }
+			.more:hover { border-color: var(--line-strong); color: var(--fg); }
+
+			@media (max-width: 30rem) { .account, .pin-date { display: none; } }
+		</style>
+	</head>
+	<body>
+		<header class="site-header">
+			<div class="site-header-inner">
+				<a class="brand" href="#">cork<span>.</span></a>
+				<nav class="site-nav" aria-label="Main navigation"><a href="#" aria-current="page">boards</a><a href="#">pins</a><a href="#">people</a></nav>
+				<a class="account" href="#">@liam</a>
+			</div>
+		</header>
+		<main>
+			<div class="path"><a href="#">boards</a> / <strong>personal-computing</strong></div>
+			<header class="page-header">
+				<h1>Personal Computing</h1>
+				<span class="badge">owner</span>
+				<div class="actions">
+					<a class="button" href="#">Share</a>
+					<a class="button button-primary" href="#">New pin</a>
+				</div>
+			</header>
+
+			<h2 class="group-label">3 pins</h2>
+			<ol>
+				<li class="pin">
+					<div><a class="pin-title" href="#">Augmenting Human Intellect</a><div class="pin-url">dougengelbart.org/pubs/papers/AugmentingHumanIntellect.pdf</div></div>
+					<div class="pin-side"><span class="pin-date">Sep 4</span><button class="more" type="button" aria-label="Actions">···</button></div>
+				</li>
+				<li class="pin">
+					<div><a class="pin-title" href="#">The Mother of All Demos</a><div class="pin-url">computerhistory.org/revolution/the-mother-of-all-demos</div></div>
+					<div class="pin-side"><span class="pin-date">Aug 28</span><button class="more" type="button" aria-label="Actions">···</button></div>
+				</li>
+				<li class="pin">
+					<div><a class="pin-title" href="#">As We May Think</a><div class="pin-url">theatlantic.com/magazine/archive/1945/07/as-we-may-think</div></div>
+					<div class="pin-side"><span class="pin-date">Aug 19</span><button class="more" type="button" aria-label="Actions">···</button></div>
+				</li>
+			</ol>
+		</main>
+	</body>
+</html>

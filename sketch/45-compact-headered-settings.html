@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>Cork — Settings</title>
+		<style>
+			:root {
+				--fg: #111;
+				--muted: #626262;
+				--surface: #f1f1f1;
+				--line: #999;
+				--line-dim: #d5d5d5;
+				--blue: #0f61a9;
+			}
+
+			* { box-sizing: border-box; }
+			body { margin: 0; color: var(--fg); background: #fff; font: 14px/1.35 "Helvetica Neue", Helvetica, Arial, sans-serif; }
+			a { color: var(--blue); text-underline-offset: 2px; }
+			button { font: inherit; }
+
+			.site-header { border-bottom: 1px solid var(--line); background: var(--surface); }
+			.site-header-inner { display: flex; align-items: stretch; max-width: 35rem; height: 2.8rem; margin: auto; padding: 0 0.6rem; }
+			.brand, .site-nav a, .settings { display: flex; align-items: center; color: var(--fg); }
+			.brand { font-size: 1.15rem; font-weight: 700; text-decoration: none; }
+			.site-nav { display: flex; margin-left: 1.2rem; }
+			.site-nav a { padding: 0 0.65rem; font-weight: 600; text-decoration: none; }
+			.settings { margin-left: auto; border-bottom: 3px solid var(--blue); color: var(--fg); font-size: 0.78rem; font-weight: 600; text-decoration: none; }
+
+			main { max-width: 35rem; margin: 1.35rem auto; padding: 0 0.6rem; }
+			.page-header { margin-bottom: 1rem; padding-bottom: 0.6rem; border-bottom: 3px solid var(--fg); }
+			h1 { margin: 0; font-size: 1.45rem; line-height: 1.15; }
+
+			.frame { overflow: hidden; border: 1px solid var(--line); border-radius: 3px; background: #fff; }
+			.frame-header { min-height: 2rem; padding: 0.35rem 0.65rem; border-bottom: 2px solid var(--fg); background: var(--surface); }
+			.frame-header:not(:first-child) { border-top: 1px solid var(--line); }
+			.frame-header h2 { margin: 0; font-size: 0.85rem; }
+			.setting-row { display: grid; grid-template-columns: 6rem minmax(0, 1fr) auto; align-items: center; gap: 0.65rem; min-height: 3.15rem; padding: 0.55rem 0.65rem; }
+			.setting-label { color: var(--muted); font-size: 0.75rem; font-weight: 600; }
+			.setting-value { font-weight: 600; }
+			.session-note { color: var(--muted); font-size: 0.75rem; }
+			.button { padding: 0.34rem 0.65rem; border: 1px solid #888; border-radius: 3px; color: var(--fg); background: #fff; font-weight: 600; cursor: pointer; }
+			.button:focus-visible { border-color: var(--blue); outline: 3px solid rgb(15 97 169 / 25%); }
+
+			@media (max-width: 27rem) {
+				.site-nav { margin-left: 0.7rem; }
+				.setting-row { grid-template-columns: 1fr auto; }
+				.setting-label { grid-column: 1 / -1; margin-bottom: -0.35rem; }
+			}
+		</style>
+	</head>
+	<body>
+		<header class="site-header">
+			<div class="site-header-inner">
+				<a class="brand" href="#">Cork</a>
+				<nav class="site-nav" aria-label="Main navigation"><a href="#">Boards</a></nav>
+				<a class="settings" href="#" aria-current="page">Settings</a>
+			</div>
+		</header>
+		<main>
+			<header class="page-header"><h1>Settings</h1></header>
+
+			<div class="frame">
+				<section aria-labelledby="account-heading">
+					<header class="frame-header"><h2 id="account-heading">Account</h2></header>
+					<div class="setting-row">
+						<span class="setting-label">Signed in as</span>
+						<span class="setting-value">Liam E.</span>
+					</div>
+				</section>
+				<section aria-labelledby="session-heading">
+					<header class="frame-header"><h2 id="session-heading">Session</h2></header>
+					<form class="setting-row">
+						<span class="setting-label">This browser</span>
+						<span class="session-note">Return to the user chooser.</span>
+						<button class="button" type="submit">Sign out</button>
+					</form>
+				</section>
+			</div>
+		</main>
+	</body>
+</html>

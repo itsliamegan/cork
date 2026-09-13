@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>Cork — Paper New Pin</title>
+		<style>
+			:root {
+				--bg: #f6f4ef;
+				--panel: #fffdf9;
+				--fg: #1d1b17;
+				--muted: #797469;
+				--line: #ded7c9;
+				--line-strong: #c6bda9;
+				--accent: #9c4a22;
+				--danger: #97341f;
+				--mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+			}
+
+			* { box-sizing: border-box; }
+			body { margin: 0; color: var(--fg); background: var(--bg); font: 14px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif; }
+			a { color: inherit; }
+			input, select, button { font: inherit; }
+
+			.site-header { border-bottom: 1px solid var(--line); background: var(--panel); }
+			.site-header-inner { display: flex; align-items: center; gap: 1.4rem; max-width: 40rem; height: 3rem; margin: auto; padding: 0 1rem; }
+			.brand { font-family: var(--mono); font-size: 0.95rem; font-weight: 700; letter-spacing: -0.03em; text-decoration: none; }
+			.brand span { color: var(--accent); }
+			.site-nav { display: flex; gap: 0.3rem; font-family: var(--mono); font-size: 0.8rem; }
+			.site-nav a { padding: 0.15rem 0.5rem; border: 1px solid transparent; border-radius: 5px; color: var(--muted); text-decoration: none; }
+			.site-nav a[aria-current] { border-color: var(--line-strong); color: var(--fg); background: var(--bg); }
+			.account { margin-left: auto; font-family: var(--mono); font-size: 0.78rem; color: var(--muted); text-decoration: none; }
+
+			main { max-width: 40rem; margin: 1.75rem auto 3rem; padding: 0 1rem; }
+			.path { margin-bottom: 0.4rem; font-family: var(--mono); font-size: 0.75rem; color: var(--muted); }
+			.path a { text-decoration: none; }
+			.page-header { margin-bottom: 0.9rem; }
+			h1 { margin: 0; font-size: 1.15rem; font-weight: 650; letter-spacing: -0.01em; }
+
+			form { display: grid; gap: 0.75rem; }
+			.field { display: grid; gap: 0.25rem; }
+			label { font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.05em; color: var(--muted); text-transform: uppercase; }
+			input, select { width: 100%; padding: 0.4rem 0.6rem; border: 1px solid var(--line-strong); border-radius: 6px; color: var(--fg); background: var(--panel); }
+			input:focus, select:focus { border-color: var(--accent); outline: 2px solid rgb(156 74 34 / 18%); }
+			.url-field input { font-family: var(--mono); font-size: 0.8rem; }
+			.help { font-family: var(--mono); font-size: 0.7rem; color: var(--muted); }
+
+			.form-actions { display: flex; align-items: center; gap: 0.4rem; margin-top: 0.35rem; padding-top: 0.75rem; border-top: 1px dashed var(--line-strong); }
+			.form-actions .note { margin-right: auto; font-family: var(--mono); font-size: 0.7rem; color: var(--muted); }
+			.button { padding: 0.28rem 0.7rem; border: 1px solid var(--line-strong); border-radius: 5px; color: var(--fg); background: var(--panel); font-family: var(--mono); font-size: 0.78rem; text-decoration: none; cursor: pointer; }
+			.button:hover { border-color: var(--muted); }
+			.button-primary { border-color: var(--accent); color: var(--panel); background: var(--accent); }
+			.button-primary:hover { border-color: var(--danger); background: var(--danger); }
+
+			@media (max-width: 30rem) { .account { display: none; } }
+		</style>
+	</head>
+	<body>
+		<header class="site-header">
+			<div class="site-header-inner">
+				<a class="brand" href="#">cork<span>.</span></a>
+				<nav class="site-nav" aria-label="Main navigation"><a href="#" aria-current="page">boards</a><a href="#">pins</a><a href="#">people</a></nav>
+				<a class="account" href="#">@liam</a>
+			</div>
+		</header>
+		<main>
+			<div class="path"><a href="#">boards</a> / <a href="#">personal-computing</a> / <strong>new pin</strong></div>
+			<header class="page-header"><h1>New pin</h1></header>
+
+			<form>
+				<div class="field"><label for="title">Title</label><input id="title" name="title" value="Augmenting Human Intellect" autofocus></div>
+				<div class="field url-field"><label for="url">URL</label><input id="url" name="url" type="url" value="https://dougengelbart.org/pubs/papers/AugmentingHumanIntellect.pdf"></div>
+				<div class="field">
+					<label for="board">Board</label>
+					<select id="board" name="board"><option>Personal Computing</option><option>Labor History</option><option>Recipes</option></select>
+					<p class="help">shared boards show the pin to everyone with access</p>
+				</div>
+				<footer class="form-actions">
+					<span class="note">⌘↵ to save</span>
+					<a class="button" href="#">Cancel</a>
+					<button class="button button-primary" type="submit">Save pin</button>
+				</footer>
+			</form>
+		</main>
+	</body>
+</html>

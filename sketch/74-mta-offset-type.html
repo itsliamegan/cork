@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>Nothing to see here...</title>
+		<style>
+			:root {
+				color-scheme: light;
+				--black: #111;
+				--blue: #0039a6;
+			}
+
+			* { box-sizing: border-box; }
+			html, body { min-height: 100%; }
+			body { margin: 0; color: var(--black); background: #fff; font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; }
+			main { width: min(68rem, calc(100% - 3rem)); margin: 0 auto; padding-top: clamp(4rem, 14vh, 9rem); }
+			.sign { border-top: 1px solid var(--black); border-bottom: 0.55rem solid var(--black); }
+			h1 { margin: 0; padding: clamp(1.5rem, 4vw, 3rem) 0; font-size: clamp(4.5rem, 13vw, 10rem); font-weight: 700; letter-spacing: -0.07em; line-height: 0.76; }
+			.line { display: block; }
+			.line:nth-child(2) { margin-left: clamp(2rem, 14vw, 10rem); }
+			.line:nth-child(3) { margin-left: clamp(0.75rem, 5vw, 3.5rem); }
+			.dots { color: var(--blue); }
+
+			@media (max-width: 32rem) {
+				main { width: calc(100% - 2rem); padding-top: 12vh; }
+				.sign { border-bottom-width: 0.4rem; }
+			}
+		</style>
+	</head>
+	<body>
+		<main>
+			<section class="sign" aria-labelledby="page-title">
+				<h1 id="page-title">
+					<span class="line">Nothing</span>
+					<span class="line">to see</span>
+					<span class="line">here<span class="dots">...</span></span>
+				</h1>
+			</section>
+		</main>
+	</body>
+</html>

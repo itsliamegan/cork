@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>Nothing to see here.</title>
+		<style>
+			:root {
+				color-scheme: light;
+				--black: #111;
+				--blue: #347fc8;
+			}
+
+			* { box-sizing: border-box; }
+			html, body { min-height: 100%; }
+			body { margin: 0; background: #fff; font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; }
+			main { width: min(64rem, calc(100% - 3rem)); margin: 0 auto; padding-top: clamp(5rem, 18vh, 11rem); }
+			.sign { width: min(48rem, 100%); padding: 1rem clamp(1.25rem, 3vw, 2rem) clamp(1.5rem, 4vw, 2.5rem); background: var(--black); color: #fff; }
+			.rule { height: 1px; margin-bottom: clamp(1.25rem, 3vw, 2rem); background: linear-gradient(to right, var(--blue) 0 5rem, #fff 5rem); }
+			h1 { margin: 0; font-size: clamp(3.25rem, 8vw, 6rem); font-weight: 700; letter-spacing: -0.04em; line-height: 0.9; }
+			.line { display: block; }
+
+			@media (max-width: 32rem) {
+				main { width: calc(100% - 2rem); padding-top: 14vh; }
+				.rule { background: linear-gradient(to right, var(--blue) 0 3.5rem, #fff 3.5rem); }
+			}
+		</style>
+	</head>
+	<body>
+		<main>
+			<section class="sign" aria-labelledby="page-title">
+				<div class="rule" aria-hidden="true"></div>
+				<h1 id="page-title">
+					<span class="line">Nothing to</span>
+					<span class="line">see here.</span>
+				</h1>
+			</section>
+		</main>
+	</body>
+</html>

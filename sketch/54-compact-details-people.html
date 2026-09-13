@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>Cork — Board details and people</title>
+		<style>
+			:root {
+				--fg: #111;
+				--muted: #626262;
+				--surface: #f1f1f1;
+				--line: #999;
+				--line-dim: #d5d5d5;
+				--blue: #0f61a9;
+				--focus: rgb(15 97 169 / 25%);
+			}
+
+			* { box-sizing: border-box; }
+			body { margin: 0; color: var(--fg); background: #fff; font: 14px/1.35 "Helvetica Neue", Helvetica, Arial, sans-serif; }
+			a { color: var(--blue); text-underline-offset: 2px; }
+			button, input { font: inherit; }
+
+			.site-header { border-bottom: 1px solid var(--line); background: var(--surface); }
+			.site-header-inner { display: flex; align-items: stretch; max-width: 35rem; height: 2.8rem; margin: auto; padding: 0 0.6rem; }
+			.brand, .site-nav a, .settings { display: flex; align-items: center; color: var(--fg); }
+			.brand { font-size: 1.15rem; font-weight: 700; text-decoration: none; }
+			.site-nav { display: flex; margin-left: 1.2rem; }
+			.site-nav a { padding: 0 0.65rem; border-bottom: 3px solid var(--blue); font-weight: 600; text-decoration: none; }
+			.settings { margin-left: auto; color: var(--muted); font-size: 0.78rem; }
+
+			main { max-width: 35rem; margin: 1.35rem auto; padding: 0 0.6rem; }
+			.breadcrumb { margin-bottom: 0.5rem; color: var(--muted); font-size: 0.75rem; }
+			.page-header { margin-bottom: 1rem; padding-bottom: 0.6rem; border-bottom: 3px solid var(--fg); }
+			h1 { margin: 0; font-size: 1.45rem; line-height: 1.15; }
+
+			.frame { overflow: hidden; border: 1px solid var(--line); border-radius: 3px; background: #fff; }
+			.frame-header { display: flex; align-items: baseline; min-height: 2rem; padding: 0.35rem 0.65rem; border-bottom: 2px solid var(--fg); background: var(--surface); }
+			.frame-header:not(:first-child) { border-top: 1px solid var(--line); }
+			.frame-header h2 { margin: 0; font-size: 0.85rem; }
+			.frame-meta { margin-left: auto; color: var(--muted); font-size: 0.7rem; }
+
+			.field-row { display: grid; grid-template-columns: 5.5rem minmax(0, 1fr); align-items: center; gap: 0.65rem; padding: 0.65rem; }
+			.field-row label { font-size: 0.75rem; font-weight: 600; }
+			input[type="text"] { width: 100%; padding: 0.4rem 0.5rem; border: 1px solid #888; border-radius: 3px; color: var(--fg); background: #fff; }
+			input[type="text"]:focus { border-color: var(--blue); outline: 3px solid var(--focus); }
+
+			.people { margin: 0; padding: 0; border: 0; }
+			.person { display: grid; grid-template-columns: 1.1rem minmax(0, 1fr) 5.75rem; align-items: center; gap: 0.65rem; min-height: 3.1rem; padding: 0.5rem 0.65rem; cursor: pointer; }
+			.person + .person { border-top: 1px solid var(--line-dim); }
+			.person:hover { background: #fafafa; }
+			.person-owner { cursor: default; }
+			.person-owner:hover { background: transparent; }
+			.person input { width: 1rem; height: 1rem; margin: 0; accent-color: var(--blue); }
+			.person input:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+			.person-name { font-weight: 600; }
+			.person-role { color: var(--muted); font-size: 0.72rem; text-align: right; }
+
+			.form-actions { display: flex; align-items: center; gap: 0.5rem; padding: 0.55rem 0.65rem; border-top: 1px solid var(--line); }
+			.action-note { margin-right: auto; color: var(--muted); font-size: 0.72rem; }
+			.button { display: inline-block; padding: 0.34rem 0.65rem; border: 1px solid #888; border-radius: 3px; color: var(--fg); background: #fff; font-weight: 600; text-decoration: none; cursor: pointer; }
+			.button-primary { border-color: #0b477c; color: #fff; background: var(--blue); }
+			a:focus-visible, .button:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+
+			@media (max-width: 27rem) {
+				.settings { display: none; }
+				.site-nav { margin-left: 0.7rem; }
+				.field-row { grid-template-columns: 1fr; gap: 0.25rem; }
+				.person { grid-template-columns: 1.1rem minmax(0, 1fr) 5.25rem; }
+				.action-note { display: none; }
+				.form-actions { justify-content: flex-end; }
+			}
+		</style>
+	</head>
+	<body>
+		<header class="site-header">
+			<div class="site-header-inner">
+				<a class="brand" href="#">Cork</a>
+				<nav class="site-nav" aria-label="Main navigation"><a href="#" aria-current="page">Boards</a></nav>
+				<a class="settings" href="#">Settings</a>
+			</div>
+		</header>
+		<main>
+			<div class="breadcrumb"><a href="#">Boards</a> / Personal Computing / Edit</div>
+			<header class="page-header"><h1>Edit board</h1></header>
+
+			<form class="frame">
+				<header class="frame-header"><h2 id="details-heading">Details</h2></header>
+				<section aria-labelledby="details-heading">
+					<div class="field-row">
+						<label for="title">Title</label>
+						<input id="title" name="title" type="text" value="Personal Computing" required autofocus>
+					</div>
+				</section>
+
+				<header class="frame-header">
+					<h2 id="people-heading">People</h2>
+					<span class="frame-meta">4 people</span>
+				</header>
+				<fieldset class="people" aria-labelledby="people-heading">
+					<label class="person person-owner">
+						<input type="checkbox" checked disabled>
+						<span class="person-name">Liam E.</span>
+						<span class="person-role">Owner</span>
+					</label>
+					<label class="person">
+						<input type="checkbox" name="user_id" value="kathryn" checked>
+						<span class="person-name">Kathryn</span>
+						<span class="person-role">Contributor</span>
+					</label>
+					<label class="person">
+						<input type="checkbox" name="user_id" value="jules">
+						<span class="person-name">Jules</span>
+						<span class="person-role">—</span>
+					</label>
+					<label class="person">
+						<input type="checkbox" name="user_id" value="sam">
+						<span class="person-name">Sam</span>
+						<span class="person-role">—</span>
+					</label>
+				</fieldset>
+
+				<footer class="form-actions">
+					<span class="action-note">Contributors can view this board and add pins.</span>
+					<a class="button" href="#">Cancel</a>
+					<button class="button button-primary" type="submit">Save board</button>
+				</footer>
+			</form>
+		</main>
+	</body>
+</html>

@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>Nothing to see here...</title>
+		<style>
+			:root {
+				color-scheme: light dark;
+				--canvas: #fff;
+				--surface: #f1f1f1;
+				--text: #111;
+				--quiet: #d5d5d5;
+				--frame: #999;
+				--strong: #111;
+				--blue: #0f61a9;
+			}
+
+			* { box-sizing: border-box; }
+			html, body { min-height: 100%; }
+			body { margin: 0; color: var(--text); background: var(--canvas); font: clamp(1rem, calc(0.95rem + 0.35vw), 1.125rem)/1.35 "Helvetica Neue", Helvetica, Arial, sans-serif; }
+			main { display: grid; align-items: center; width: min(35rem, 93.5vw); min-height: 100vh; margin: 0 auto; padding: 2rem 0; }
+			h1 { margin: 0; overflow: hidden; border: 1px solid var(--frame); border-radius: 3px; font-size: clamp(3.75rem, 15vw, 7rem); font-weight: bold; letter-spacing: -0.07em; line-height: 0.82; }
+			.line { display: block; padding: 0.22em 0.18em 0.28em; }
+			.line + .line { border-top: 1px solid var(--quiet); }
+			.line:first-child { border-bottom: 2px solid var(--strong); background: var(--surface); }
+			.line:nth-child(2) { padding-left: 0.75em; }
+			.line:last-child { padding-left: 0.35em; border-bottom: 3px solid var(--strong); }
+			.dots { color: var(--blue); }
+
+			@media (prefers-color-scheme: dark) {
+				:root { --canvas: #151515; --surface: #242424; --text: #f1f1f1; --quiet: #3e3e3e; --frame: #707070; --strong: #707070; --blue: #70afe4; }
+			}
+		</style>
+	</head>
+	<body>
+		<main>
+			<h1 id="page-title">
+				<span class="line">Nothing</span>
+				<span class="line">to see</span>
+				<span class="line">here<span class="dots">...</span></span>
+			</h1>
+		</main>
+	</body>
+</html>

@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>Nothing to see here...</title>
+		<style>
+			:root {
+				color-scheme: light;
+				--black: #111;
+				--blue: #276fbe;
+			}
+
+			* { box-sizing: border-box; }
+			html, body { min-height: 100%; }
+			body { margin: 0; background: #fff; font-family: "Helvetica Neue", Helvetica, Arial, sans-serif; }
+			main { width: min(68rem, calc(100% - 3rem)); margin: 0 auto; padding-top: clamp(6rem, 20vh, 12rem); }
+			.sign { padding: clamp(1.75rem, 4vw, 3rem); background: var(--black); color: #fff; }
+			h1 { margin: 0; font-size: clamp(4rem, 10vw, 8rem); font-weight: 700; letter-spacing: -0.06em; line-height: 0.84; }
+			.line { display: block; }
+			.dots { color: var(--blue); }
+
+			@media (max-width: 32rem) {
+				main { width: calc(100% - 2rem); padding-top: 16vh; }
+			}
+		</style>
+	</head>
+	<body>
+		<main>
+			<section class="sign" aria-labelledby="page-title">
+				<h1 id="page-title">
+					<span class="line">Nothing to</span>
+					<span class="line">see here<span class="dots">...</span></span>
+				</h1>
+			</section>
+		</main>
+	</body>
+</html>

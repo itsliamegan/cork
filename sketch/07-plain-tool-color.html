@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>Cork — Plain Tool with Color</title>
+		<style>
+			:root {
+				--bg: #fff;
+				--surface: #f5f5f5;
+				--fg: #1f1f1f;
+				--muted: #656565;
+				--line: #ccc;
+				--blue: #1769aa;
+				--blue-dark: #104d7d;
+				--blue-pale: #e8f2f9;
+			}
+
+			* { box-sizing: border-box; }
+			body { margin: 0; color: var(--fg); background: var(--bg); font: 14px/1.45 "Helvetica Neue", Helvetica, Arial, sans-serif; }
+			a { color: var(--blue); text-underline-offset: 2px; }
+			button { font: inherit; }
+
+			.site-header { border-bottom: 3px solid var(--blue); background: #f5f5f5; }
+			.site-header div { display: flex; align-items: center; max-width: 42rem; height: 3.2rem; margin: auto; padding: 0 1rem; }
+			.brand { color: var(--fg); font-size: 1.2rem; font-weight: 700; text-decoration: none; }
+			.site-header nav { align-self: stretch; margin-left: 1.5rem; }
+			.site-header nav a { display: flex; align-items: center; height: 100%; padding: 0 0.8rem; color: var(--blue-dark); background: var(--blue-pale); font-weight: 600; text-decoration: none; }
+			.settings { margin-left: auto; color: var(--muted); }
+
+			main { max-width: 42rem; margin: 2rem auto; padding: 0 1rem; }
+			.breadcrumb { margin-bottom: 0.6rem; color: var(--muted); font-size: 0.8rem; }
+			.breadcrumb a { color: var(--blue); }
+			.page-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem; }
+			h1 { margin: 0; font-size: 1.6rem; line-height: 1.2; }
+			.actions { display: flex; gap: 0.5rem; margin-left: auto; }
+			.button { display: inline-block; padding: 0.4rem 0.7rem; border: 1px solid #999; border-radius: 3px; color: var(--fg); background: var(--surface); font-weight: 600; text-decoration: none; }
+			.button-primary { border-color: var(--blue-dark); color: #fff; background: var(--blue); }
+
+			.panel { overflow: hidden; border: 1px solid #aaa; border-radius: 3px; }
+			.panel-header { display: flex; align-items: center; min-height: 2.8rem; padding: 0.6rem 0.8rem; border-bottom: 1px solid #aac4d8; background: var(--blue-pale); }
+			.panel-header h2 { margin: 0; color: var(--blue-dark); font-size: 0.95rem; }
+			.count { margin-left: auto; padding: 0.1rem 0.45rem; border-radius: 1rem; color: #fff; background: var(--blue); font-size: 0.72rem; font-weight: 700; }
+			ol { margin: 0; padding: 0; list-style: none; }
+			li { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 1rem; padding: 0.8rem; }
+			li + li { border-top: 1px solid var(--line); }
+			.pin-title { color: var(--blue-dark); font-size: 0.95rem; font-weight: 600; }
+			.pin-url { overflow: hidden; margin-top: 0.15rem; color: var(--muted); font-size: 0.78rem; text-overflow: ellipsis; white-space: nowrap; }
+			.pin-date { margin-top: 0.2rem; color: var(--muted); font-size: 0.72rem; }
+			.more { padding: 0.2rem 0.45rem; border: 1px solid transparent; border-radius: 3px; color: var(--blue); background: transparent; cursor: pointer; }
+			.more:hover { border-color: #aac4d8; background: var(--blue-pale); }
+
+			@media (max-width: 30rem) {
+				.settings { display: none; }
+				.page-header { align-items: start; flex-direction: column; }
+				.actions { margin-left: 0; }
+			}
+		</style>
+	</head>
+	<body>
+		<header class="site-header">
+			<div>
+				<a class="brand" href="#">Cork</a>
+				<nav aria-label="Main navigation"><a href="#">Boards</a></nav>
+				<a class="settings" href="#">Settings</a>
+			</div>
+		</header>
+		<main>
+			<div class="breadcrumb"><a href="#">Boards</a> / Personal Computing</div>
+			<header class="page-header">
+				<h1>Personal Computing</h1>
+				<div class="actions">
+					<a class="button" href="#">Sharing</a>
+					<a class="button button-primary" href="#">New pin</a>
+				</div>
+			</header>
+
+			<section class="panel" aria-labelledby="pins-heading">
+				<header class="panel-header"><h2 id="pins-heading">Pins</h2><span class="count">3</span></header>
+				<ol>
+					<li>
+						<div><a class="pin-title" href="#">Augmenting Human Intellect</a><div class="pin-url">dougengelbart.org/pubs/papers/AugmentingHumanIntellect.pdf</div><div class="pin-date">Sep 4, 2026</div></div>
+						<button class="more" type="button" aria-label="Actions for Augmenting Human Intellect">•••</button>
+					</li>
+					<li>
+						<div><a class="pin-title" href="#">The Mother of All Demos</a><div class="pin-url">computerhistory.org/revolution/the-mother-of-all-demos</div><div class="pin-date">Aug 28, 2026</div></div>
+						<button class="more" type="button" aria-label="Actions for The Mother of All Demos">•••</button>
+					</li>
+					<li>
+						<div><a class="pin-title" href="#">As We May Think</a><div class="pin-url">theatlantic.com/magazine/archive/1945/07/as-we-may-think</div><div class="pin-date">Aug 19, 2026</div></div>
+						<button class="more" type="button" aria-label="Actions for As We May Think">•••</button>
+					</li>
+				</ol>
+			</section>
+		</main>
+	</body>
+</html>

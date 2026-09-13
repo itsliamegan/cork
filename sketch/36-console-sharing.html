@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>Cork — Console Sharing</title>
+		<style>
+			:root {
+				--bg: #0b0b0c;
+				--panel: #101012;
+				--field: #08080a;
+				--fg: #dcdcd8;
+				--muted: #76767e;
+				--line: #24242a;
+				--line-strong: #34343c;
+				--accent: #e0a33e;
+				--danger: #d97070;
+			}
+
+			* { box-sizing: border-box; }
+			body { margin: 0; color: var(--fg); background: var(--bg); font: 13px/1.5 ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace; }
+			a { color: inherit; text-decoration: none; }
+			input, select, button { font: inherit; }
+
+			.site-header { border-bottom: 1px solid var(--line); }
+			.site-header-inner { display: flex; align-items: center; gap: 1.5rem; max-width: 44rem; height: 2.6rem; margin: auto; padding: 0 1rem; }
+			.brand { font-weight: 700; letter-spacing: -0.02em; }
+			.brand::after { content: "_"; color: var(--accent); }
+			.site-nav { display: flex; gap: 1.1rem; font-size: 0.85rem; color: var(--muted); }
+			.site-nav a[aria-current] { color: var(--fg); }
+			.site-nav a[aria-current]::before { content: "› "; color: var(--accent); }
+			.settings { margin-left: auto; color: var(--muted); font-size: 0.85rem; }
+
+			main { max-width: 44rem; margin: 2rem auto; padding: 0 1rem; }
+			.path { margin-bottom: 0.35rem; color: var(--muted); font-size: 0.8rem; }
+			.page-header { display: flex; align-items: baseline; gap: 0.8rem; margin-bottom: 1.1rem; }
+			h1 { margin: 0; font-size: 0.95rem; font-weight: 700; }
+			h1::before { content: "/"; margin-right: 0.15rem; color: var(--accent); }
+			.page-header .action { margin-left: auto; }
+
+			.panel { border: 1px solid var(--line); border-radius: 3px; background: var(--panel); }
+			.panel-header { display: flex; align-items: center; padding: 0.35rem 0.75rem; border-bottom: 1px solid var(--line); color: var(--muted); font-size: 0.75rem; letter-spacing: 0.06em; text-transform: uppercase; }
+			.panel-header:not(:first-child) { border-top: 1px solid var(--line); }
+			.panel-header .meta { margin-left: auto; letter-spacing: 0; text-transform: none; }
+
+			.share-form { display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0.75rem; }
+			.share-form label { color: var(--muted); font-size: 0.8rem; }
+			.share-form label::after { content: ":"; }
+			select { flex: 1; min-width: 0; padding: 0.3rem 0.45rem; border: 1px solid var(--line-strong); border-radius: 2px; color: var(--fg); background: var(--field); }
+			select:focus { border-color: var(--accent); outline: none; }
+
+			.action { padding: 0.2rem 0.6rem; border: 1px solid var(--line-strong); border-radius: 2px; color: var(--muted); background: none; font-size: 0.8rem; cursor: pointer; }
+			.action:hover { border-color: var(--accent); color: var(--accent); }
+			.action-primary { border-color: var(--accent); color: var(--accent); }
+			.action-primary:hover { color: var(--bg); background: var(--accent); }
+			.action-danger:hover { border-color: var(--danger); color: var(--danger); }
+
+			ul { margin: 0; padding: 0; list-style: none; }
+			.person { display: grid; grid-template-columns: minmax(0, 1fr) 7rem 5rem; align-items: center; gap: 0.75rem; padding: 0.45rem 0.75rem; }
+			.person + .person { border-top: 1px solid var(--line); }
+			.person:hover { background: #16161a; }
+			.handle::before { content: "@"; color: var(--line-strong); }
+			.role { color: var(--muted); font-size: 0.78rem; }
+			.person-action { justify-self: end; }
+			.person-action[hidden] { display: none; }
+
+			.hint { margin-top: 1.1rem; color: var(--muted); font-size: 0.75rem; }
+
+			@media (max-width: 30rem) {
+				.settings { display: none; }
+				.person { grid-template-columns: minmax(0, 1fr) 5rem; }
+				.role { display: none; }
+			}
+		</style>
+	</head>
+	<body>
+		<header class="site-header">
+			<div class="site-header-inner">
+				<a class="brand" href="#">cork</a>
+				<nav class="site-nav" aria-label="Main navigation"><a href="#" aria-current="page">boards</a><a href="#">pins</a></nav>
+				<a class="settings" href="#">liam@cork</a>
+			</div>
+		</header>
+		<main>
+			<div class="path"><a href="#">boards</a> / <a href="#">personal-computing</a> / sharing</div>
+			<header class="page-header">
+				<h1>sharing</h1>
+				<a class="action" href="#">done</a>
+			</header>
+
+			<div class="panel">
+				<section aria-labelledby="add">
+					<header class="panel-header"><span id="add">add person</span></header>
+					<form class="share-form">
+						<label for="user">user</label>
+						<select id="user" name="user"><option value="">select…</option><option>sam</option><option>jules</option></select>
+						<button class="action action-primary" type="submit">add</button>
+					</form>
+				</section>
+
+				<section aria-labelledby="access">
+					<header class="panel-header"><span id="access">access</span><span class="meta">2</span></header>
+					<ul>
+						<li class="person"><span class="handle">liam</span><span class="role">owner</span></li>
+						<li class="person"><span class="handle">kathryn</span><span class="role">member</span><button class="action action-danger person-action" type="button">remove</button></li>
+					</ul>
+				</section>
+			</div>
+
+			<p class="hint">members can add and remove pins. only the owner can share.</p>
+		</main>
+	</body>
+</html>

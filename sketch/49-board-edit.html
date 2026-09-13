@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>Cork — Edit Personal Computing</title>
+		<style>
+			:root { --fg:#111; --muted:#626262; --surface:#f1f1f1; --line:#999; --line-dim:#d5d5d5; --blue:#0f61a9; --focus:rgb(15 97 169 / 25%); }
+			* { box-sizing:border-box; }
+			body { margin:0; color:var(--fg); background:#fff; font:14px/1.35 "Helvetica Neue",Helvetica,Arial,sans-serif; }
+			a { color:var(--blue); text-underline-offset:2px; }
+			button,input { font:inherit; }
+			.site-header { border-bottom:1px solid var(--line); background:var(--surface); }
+			.site-header-inner { display:flex; align-items:stretch; max-width:35rem; height:2.8rem; margin:auto; padding:0 .6rem; }
+			.brand,.site-nav a,.settings { display:flex; align-items:center; color:var(--fg); }
+			.brand { font-size:1.15rem; font-weight:700; text-decoration:none; }
+			.site-nav { display:flex; margin-left:1.2rem; }
+			.site-nav a { padding:0 .65rem; font-weight:600; text-decoration:none; }
+			.site-nav a[aria-current="page"] { border-bottom:3px solid var(--blue); }
+			.settings { margin-left:auto; color:var(--muted); font-size:.78rem; }
+			main { max-width:35rem; margin:1.35rem auto; padding:0 .6rem; }
+			.breadcrumb { margin-bottom:.5rem; color:var(--muted); font-size:.75rem; }
+			.page-header { margin-bottom:1rem; padding-bottom:.6rem; border-bottom:3px solid var(--fg); }
+			h1 { margin:0; font-size:1.45rem; line-height:1.15; }
+			.frame { overflow:hidden; border:1px solid var(--line); border-radius:3px; }
+			.frame-header { min-height:2rem; padding:.35rem .65rem; border-bottom:2px solid var(--fg); background:var(--surface); }
+			.frame-header h2 { margin:0; font-size:.85rem; }
+			.field { display:grid; grid-template-columns:5.5rem minmax(0,1fr); align-items:center; gap:.65rem; padding:.65rem; }
+			.field label { font-size:.78rem; font-weight:600; }
+			input { width:100%; padding:.4rem .5rem; border:1px solid #888; border-radius:3px; color:var(--fg); background:#fff; }
+			input:focus { border-color:var(--blue); outline:3px solid var(--focus); }
+			.form-actions { display:flex; justify-content:flex-end; gap:.5rem; padding:.55rem .65rem; border-top:1px solid var(--line); }
+			.button { padding:.34rem .65rem; border:1px solid #888; border-radius:3px; color:var(--fg); background:#fff; font-weight:600; text-decoration:none; cursor:pointer; }
+			.button-primary { border-color:#0b477c; color:#fff; background:var(--blue); }
+			a:focus-visible,.button:focus-visible { outline:3px solid var(--focus); outline-offset:2px; }
+			@media(max-width:27rem) {
+				.settings { display:none; }
+				.site-nav { margin-left:.7rem; }
+				.field { grid-template-columns:1fr; gap:.25rem; }
+			}
+		</style>
+	</head>
+	<body>
+		<header class="site-header">
+			<div class="site-header-inner">
+				<a class="brand" href="#">Cork</a>
+				<nav class="site-nav" aria-label="Main navigation"><a href="48-board-index-edit-links.html" aria-current="page">Boards</a><a href="#">Inbox</a></nav>
+				<a class="settings" href="#">Settings</a>
+			</div>
+		</header>
+		<main>
+			<div class="breadcrumb"><a href="48-board-index-edit-links.html">Boards</a> / Personal Computing / Edit</div>
+			<header class="page-header"><h1>Edit board</h1></header>
+			<form class="frame">
+				<header class="frame-header"><h2>Details</h2></header>
+				<div class="field"><label for="title">Title</label><input id="title" name="title" value="Personal Computing" required autofocus></div>
+				<footer class="form-actions"><a class="button" href="48-board-index-edit-links.html">Cancel</a><button class="button button-primary" type="submit">Save board</button></footer>
+			</form>
+		</main>
+	</body>
+</html>

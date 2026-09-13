@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>Cork — Delete Pin</title>
+		<style>
+			:root { --fg:#111; --muted:#626262; --surface:#f1f1f1; --line:#999; --line-dim:#d5d5d5; --blue:#0f61a9; --danger:#9b1c1c; }
+			* { box-sizing:border-box; } body { margin:0; color:var(--fg); background:#fff; font:14px/1.35 "Helvetica Neue",Helvetica,Arial,sans-serif; } a { color:var(--blue); } button { font:inherit; }
+			.site-header { border-bottom:1px solid var(--line); background:var(--surface); } .site-header-inner { display:flex; align-items:stretch; max-width:35rem; height:2.8rem; margin:auto; padding:0 .6rem; } .brand,.site-nav a,.settings { display:flex; align-items:center; color:var(--fg); } .brand { font-size:1.15rem; font-weight:700; text-decoration:none; } .site-nav { display:flex; margin-left:1.2rem; } .site-nav a { padding:0 .65rem; border-bottom:3px solid var(--blue); font-weight:600; text-decoration:none; } .settings { margin-left:auto; color:var(--muted); font-size:.78rem; }
+			main { max-width:35rem; margin:1.35rem auto; padding:0 .6rem; } .breadcrumb { margin-bottom:.5rem; color:var(--muted); font-size:.75rem; } .page-header { margin-bottom:1rem; padding-bottom:.6rem; border-bottom:3px solid var(--fg); } h1 { margin:0; font-size:1.45rem; } .frame { overflow:hidden; border:1px solid var(--line); border-radius:3px; } .frame-header { padding:.35rem .65rem; border-bottom:2px solid var(--fg); background:var(--surface); } .frame-header h2 { margin:0; font-size:.85rem; } .row { display:flex; align-items:center; min-height:3rem; padding:.5rem .65rem; } .pin-title { color:var(--fg); font-weight:600; } .row button { margin-left:auto; }
+			.button { padding:.34rem .65rem; border:1px solid #888; border-radius:3px; color:var(--fg); background:#fff; font-weight:600; cursor:pointer; } .button-danger { border-color:#751616; color:#fff; background:var(--danger); }
+			dialog { width:min(22rem,calc(100% - 1.2rem)); padding:0; border:2px solid var(--fg); border-radius:3px; color:var(--fg); background:#fff; } dialog::backdrop { background:rgb(0 0 0 / 38%); } .dialog-header { padding:.4rem .65rem; border-bottom:2px solid var(--fg); background:var(--surface); } .dialog-header h2 { margin:0; font-size:.9rem; } .dialog-body { padding:.8rem .65rem; } .dialog-body p { margin:0; } .dialog-actions { display:flex; justify-content:flex-end; gap:.5rem; padding:.55rem .65rem; border-top:1px solid var(--line); }
+		</style>
+	</head>
+	<body>
+		<header class="site-header"><div class="site-header-inner"><a class="brand" href="#">Cork</a><nav class="site-nav"><a href="#">Boards</a></nav><a class="settings" href="#">Settings</a></div></header>
+		<main><div class="breadcrumb"><a href="#">Boards</a> / Personal Computing</div><header class="page-header"><h1>Personal Computing</h1></header><section class="frame"><header class="frame-header"><h2>Pins</h2></header><div class="row"><a class="pin-title" href="#">Augmenting Human Intellect</a><button class="button">•••</button></div></section></main>
+		<dialog aria-labelledby="dialog-title"><header class="dialog-header"><h2 id="dialog-title">Delete pin?</h2></header><div class="dialog-body"><p>Augmenting Human Intellect will be permanently removed.</p></div><footer class="dialog-actions"><button class="button">Cancel</button><button class="button button-danger">Delete pin</button></footer></dialog>
+		<script>document.querySelector("dialog").showModal()</script>
+	</body>
+</html>

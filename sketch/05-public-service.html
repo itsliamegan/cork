@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>Cork — Public Service</title>
+		<style>
+			:root {
+				--bg: #fff;
+				--fg: #0b0c0c;
+				--muted: #505a5f;
+				--line: #b1b4b6;
+				--link: #1d70b8;
+			}
+
+			* { box-sizing: border-box; }
+			body { margin: 0; color: var(--fg); background: var(--bg); font: 16px/1.45 "Helvetica Neue", Helvetica, Arial, sans-serif; }
+			a { color: var(--link); text-decoration-thickness: 1px; text-underline-offset: 2px; }
+
+			.site-header { border-bottom: 4px solid var(--link); background: var(--fg); }
+			.site-header div { display: flex; align-items: center; max-width: 40rem; height: 3.2rem; margin: auto; padding: 0 1rem; }
+			.brand { color: #fff; font-size: 1.25rem; font-weight: 700; text-decoration: none; }
+			.site-header nav { margin-left: 1.5rem; }
+			.site-header nav a, .settings { color: #fff; font-size: 0.85rem; }
+			.settings { margin-left: auto; }
+
+			main { max-width: 40rem; margin: 2.2rem auto; padding: 0 1rem; }
+			.breadcrumb { margin: 0 0 1.2rem; font-size: 0.85rem; }
+			h1 { max-width: 30rem; margin: 0; font-size: 2rem; line-height: 1.1; }
+			.summary { margin: 0.5rem 0 1.5rem; color: var(--muted); }
+			.actions { display: flex; align-items: center; gap: 1rem; margin-bottom: 2rem; }
+			.button { display: inline-block; padding: 0.5rem 0.8rem; border: 0; color: #fff; background: var(--fg); box-shadow: 0 2px 0 #777; font-weight: 700; text-decoration: none; }
+			.actions a:not(.button) { font-size: 0.9rem; }
+
+			h2 { margin: 0; padding-bottom: 0.5rem; border-bottom: 1px solid var(--fg); font-size: 1.15rem; }
+			ol { margin: 0; padding: 0; list-style: none; }
+			li { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 1rem; padding: 1rem 0; border-bottom: 1px solid var(--line); }
+			.pin-title { font-weight: 700; }
+			.pin-url { overflow: hidden; margin-top: 0.2rem; color: var(--muted); font-size: 0.8rem; text-overflow: ellipsis; white-space: nowrap; }
+			.pin-date { margin: 0.25rem 0 0; color: var(--muted); font-size: 0.75rem; }
+			.more { align-self: center; padding: 0; border: 0; color: var(--link); background: transparent; text-decoration: underline; cursor: pointer; font: 0.85rem "Helvetica Neue", Helvetica, Arial, sans-serif; }
+
+			@media (max-width: 28rem) {
+				.settings { display: none; }
+			}
+		</style>
+	</head>
+	<body>
+		<header class="site-header">
+			<div>
+				<a class="brand" href="#">Cork</a>
+				<nav aria-label="Main navigation"><a href="#">Boards</a></nav>
+				<a class="settings" href="#">Settings</a>
+			</div>
+		</header>
+		<main>
+			<p class="breadcrumb"><a href="#">Boards</a> / Personal Computing</p>
+			<h1>Personal Computing</h1>
+			<p class="summary">A board containing 3 saved links.</p>
+			<div class="actions">
+				<a class="button" href="#">Add a pin</a>
+				<a href="#">Manage sharing</a>
+			</div>
+
+			<section aria-labelledby="pins-heading">
+				<h2 id="pins-heading">Saved links</h2>
+				<ol>
+					<li>
+						<div><a class="pin-title" href="#">Augmenting Human Intellect</a><div class="pin-url">dougengelbart.org/pubs/papers/AugmentingHumanIntellect.pdf</div><p class="pin-date">Saved 4 September 2026</p></div>
+						<button class="more" type="button" aria-label="Actions for Augmenting Human Intellect">Actions</button>
+					</li>
+					<li>
+						<div><a class="pin-title" href="#">The Mother of All Demos</a><div class="pin-url">computerhistory.org/revolution/the-mother-of-all-demos</div><p class="pin-date">Saved 28 August 2026</p></div>
+						<button class="more" type="button" aria-label="Actions for The Mother of All Demos">Actions</button>
+					</li>
+					<li>
+						<div><a class="pin-title" href="#">As We May Think</a><div class="pin-url">theatlantic.com/magazine/archive/1945/07/as-we-may-think</div><p class="pin-date">Saved 19 August 2026</p></div>
+						<button class="more" type="button" aria-label="Actions for As We May Think">Actions</button>
+					</li>
+				</ol>
+			</section>
+		</main>
+	</body>
+</html>

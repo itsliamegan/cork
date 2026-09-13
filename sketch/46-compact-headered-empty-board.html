@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>Cork — Field Notes</title>
+		<style>
+			:root {
+				--fg: #111;
+				--muted: #626262;
+				--surface: #f1f1f1;
+				--line: #999;
+				--line-dim: #d5d5d5;
+				--blue: #0f61a9;
+			}
+
+			* { box-sizing: border-box; }
+			body { margin: 0; color: var(--fg); background: #fff; font: 14px/1.35 "Helvetica Neue", Helvetica, Arial, sans-serif; }
+			a { color: var(--blue); text-underline-offset: 2px; }
+
+			.site-header { border-bottom: 1px solid var(--line); background: var(--surface); }
+			.site-header-inner { display: flex; align-items: stretch; max-width: 35rem; height: 2.8rem; margin: auto; padding: 0 0.6rem; }
+			.brand, .site-nav a, .settings { display: flex; align-items: center; color: var(--fg); }
+			.brand { font-size: 1.15rem; font-weight: 700; text-decoration: none; }
+			.site-nav { display: flex; margin-left: 1.2rem; }
+			.site-nav a { padding: 0 0.65rem; border-bottom: 3px solid var(--blue); font-weight: 600; text-decoration: none; }
+			.settings { margin-left: auto; color: var(--muted); font-size: 0.78rem; }
+
+			main { max-width: 35rem; margin: 1.35rem auto; padding: 0 0.6rem; }
+			.breadcrumb { margin-bottom: 0.5rem; color: var(--muted); font-size: 0.75rem; }
+			.page-header { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem; padding-bottom: 0.6rem; border-bottom: 3px solid var(--fg); }
+			h1 { margin: 0; font-size: 1.45rem; line-height: 1.15; }
+			.actions { display: flex; gap: 0.5rem; margin-left: auto; }
+			.button { padding: 0.34rem 0.65rem; border: 1px solid #888; border-radius: 3px; color: var(--fg); background: #fff; font-weight: 600; text-decoration: none; }
+			.button-primary { border-color: #0b477c; color: #fff; background: var(--blue); }
+			.button:focus-visible { border-color: var(--blue); outline: 3px solid rgb(15 97 169 / 25%); }
+
+			.frame { overflow: hidden; border: 1px solid var(--line); border-radius: 3px; }
+			.frame-header { display: flex; align-items: baseline; min-height: 2rem; padding: 0.35rem 0.65rem; border-bottom: 2px solid var(--fg); background: var(--surface); }
+			.frame-header h2 { margin: 0; font-size: 0.85rem; }
+			.frame-meta { margin-left: auto; color: var(--muted); font-size: 0.7rem; }
+			.empty-row { min-height: 4.4rem; padding: 0.8rem 0.65rem; }
+			.empty-title { margin: 0; font-weight: 600; }
+			.empty-copy { margin: 0.15rem 0 0; color: var(--muted); font-size: 0.75rem; }
+
+			@media (max-width: 27rem) {
+				.settings { display: none; }
+				.site-nav { margin-left: 0.7rem; }
+				.page-header { align-items: flex-start; flex-direction: column; }
+				.actions { margin-left: 0; }
+			}
+		</style>
+	</head>
+	<body>
+		<header class="site-header">
+			<div class="site-header-inner">
+				<a class="brand" href="#">Cork</a>
+				<nav class="site-nav" aria-label="Main navigation"><a href="#" aria-current="page">Boards</a></nav>
+				<a class="settings" href="#">Settings</a>
+			</div>
+		</header>
+		<main>
+			<div class="breadcrumb"><a href="#">Boards</a> / Field Notes</div>
+			<header class="page-header">
+				<h1>Field Notes</h1>
+				<div class="actions"><a class="button" href="#">Sharing</a><a class="button button-primary" href="#">New pin</a></div>
+			</header>
+
+			<section class="frame" aria-labelledby="pins-heading">
+				<header class="frame-header"><h2 id="pins-heading">Pins</h2><span class="frame-meta">0</span></header>
+				<div class="empty-row">
+					<p class="empty-title">No pins yet.</p>
+					<p class="empty-copy">Add a link to start this board.</p>
+				</div>
+			</section>
+		</main>
+	</body>
+</html>
