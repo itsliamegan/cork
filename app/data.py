@@ -177,13 +177,18 @@ class Pin(Model):
 	url = attr(str)
 	title = attr(str)
 	note = attr(str, default="")
-	board_id = attr(UUID, nullable=True)
-	user_id = attr(UUID)
+	creator_id = attr(UUID)
 
 
 class Board(Model):
 	title = attr(str)
-	user_id = attr(UUID)
+	creator_id = attr(UUID)
+
+
+class Placement(Model):
+	pin_id = attr(UUID)
+	board_id = attr(UUID)
+	adder_id = attr(UUID)
 
 
 class Share(Model):
@@ -204,6 +209,7 @@ schema = Schema(
 		Invite,
 		Pin,
 		Board,
+		Placement,
 		Share,
 		Ordering,
 	]
@@ -213,19 +219,23 @@ schema = Schema(
 def find_owned(ctx, model_type: type[Model], id: UUID) -> Model:
 	model = ctx.get(Store).find_one(model_type, id)
 	auth = ctx.get(Authenticator)
-	if model.user_id != auth.user.id:
+	if model.creator_id != auth.user.id:
 		raise NotFoundError(model_type, id)
 	return model
 
 
-def find_all_owned(ctx, model_type: type[Model], **attrs) -> list[Model]:
-	auth = ctx.get(Authenticator)
-	return ctx.get(Store).find_by(model_type, user_id=auth.user.id, **attrs)
+def find_sole_placement(store: Store, pin_id: UUID) -> Placement:
+	placements = store.find_by(Placement, pin_id=pin_id)
+	if len(placements) != 1:
+		raise ValueError(
+			f"expected exactly one placement for Pin {pin_id}, found {len(placements)}"
+		)
+	return placements[0]
 
 
 def can_access_board(ctx, board: Board) -> bool:
 	auth = ctx.get(Authenticator)
-	if board.user_id == auth.user.id:
+	if board.creator_id == auth.user.id:
 		return True
 	return bool(ctx.get(Store).find_by(Share, board_id=board.id, user_id=auth.user.id))
 
@@ -238,11 +248,11 @@ def find_accessible_board(ctx, id: UUID) -> Board:
 
 
 def find_accessible_pin(ctx, id: UUID) -> Pin:
-	pin = ctx.get(Store).find_one(Pin, id)
-	if pin.board_id is None:
-		raise NotFoundError(Pin, id)
+	store = ctx.get(Store)
+	pin = store.find_one(Pin, id)
+	placement = find_sole_placement(store, pin.id)
 	try:
-		find_accessible_board(ctx, pin.board_id)
+		find_accessible_board(ctx, placement.board_id)
 	except NotFoundError as err:
 		raise NotFoundError(Pin, id) from err
 	return pin
@@ -257,7 +267,7 @@ def find_all_accessible_boards(ctx) -> list[Board]:
 	return [
 		board
 		for board in store.find_all(Board)
-		if board.user_id == auth.user.id or board.id in shared_board_ids
+		if board.creator_id == auth.user.id or board.id in shared_board_ids
 	]
 
 

@@ -12,7 +12,7 @@
 		<a href="/boards/{{ board.id }}">{{ board.title }}</a>
 	</span>
 
-	{% if pin.user_id == current_user.id %}
+	{% if pin.creator_id == current_user.id %}
 	<section id="page-actions">
 		<a class="button" href="/pins/{{ pin.id }}/edit">Edit</a>
 	</section>

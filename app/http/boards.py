@@ -12,6 +12,7 @@ from app.data import (
 	Board,
 	Ordering,
 	Pin,
+	Placement,
 	Share,
 	User,
 	find_accessible_board,
@@ -60,7 +61,7 @@ def index(req: Request, ctx: Context) -> Response:
 	private_boards = [
 		board
 		for board in boards
-		if board.user_id == auth.user.id and board.id not in shared_board_ids
+		if board.creator_id == auth.user.id and board.id not in shared_board_ids
 	]
 	shared_boards = [board for board in boards if board.id in shared_board_ids]
 
@@ -97,7 +98,7 @@ def create(req: Request, ctx: Context) -> Response:
 	if not selected_user_ids <= available_user_ids:
 		return Response.text("400 Bad Request", status=Status.BAD_REQUEST)
 
-	board = store.create(Board, title=input["title"], user_id=auth.user.id)
+	board = store.create(Board, title=input["title"], creator_id=auth.user.id)
 	for user_id in selected_user_ids:
 		store.create(Share, board_id=board.id, user_id=user_id)
 
@@ -125,7 +126,8 @@ def show(req: Request, ctx: Context, id: UUID) -> Response:
 	views = ctx.get(Views)
 
 	board = find_accessible_board(ctx, id)
-	pins = store.find_by(Pin, board_id=board.id)
+	placements = store.find_by(Placement, board_id=board.id)
+	pins = [store.find_one(Pin, placement.pin_id) for placement in placements]
 
 	html = views.render(
 		"boards.show",
@@ -156,7 +158,7 @@ def edit(req: Request, ctx: Context, id: UUID) -> Response:
 			"board": board,
 			"current_user": auth.user,
 			"owner": auth.user,
-			"people": _sharing_people(ctx, board.user_id, shared_user_ids),
+			"people": _sharing_people(ctx, board.creator_id, shared_user_ids),
 			"return_to": _board_return_url(req.referrer, board.id),
 		},
 	)
@@ -182,7 +184,7 @@ def update(req: Request, ctx: Context, id: UUID) -> Response:
 	selected_user_ids = set(input["user_id"])
 
 	available_user_ids = {
-		user.id for user in store.find_all(User) if user.id != board.user_id
+		user.id for user in store.find_all(User) if user.id != board.creator_id
 	}
 	if not selected_user_ids <= available_user_ids:
 		return Response.text("400 Bad Request", status=Status.BAD_REQUEST)
@@ -206,11 +208,12 @@ def delete(req: Request, ctx: Context, id: UUID) -> Response:
 	store = ctx.get(Store)
 
 	board = find_owned(ctx, Board, id)
-	pins = store.find_by(Pin, board_id=board.id)
+	placements = store.find_by(Placement, board_id=board.id)
 	shares = store.find_by(Share, board_id=board.id)
 	orderings = store.find_by(Ordering, board_id=board.id)
-	for pin in pins:
-		store.delete(pin.id)
+	for placement in placements:
+		store.delete(placement.pin_id)
+		store.delete(placement.id)
 	for share in shares:
 		store.delete(share.id)
 	for ordering in orderings:

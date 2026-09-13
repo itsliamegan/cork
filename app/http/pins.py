@@ -11,15 +11,17 @@ from helios.views.engine import Views
 from app.data import (
 	Board,
 	Pin,
+	Placement,
 	User,
 	find_accessible_board,
 	find_accessible_pin,
 	find_all_accessible_boards,
 	find_owned,
+	find_sole_placement,
 )
 
 
-def _pin_return_url(raw_url: str | None, pin: Pin) -> URL:
+def _pin_return_url(raw_url: str | None, pin: Pin, placement: Placement) -> URL:
 	fallback = URL(f"/pins/{pin.id}")
 	if not isinstance(raw_url, str):
 		return fallback
@@ -31,7 +33,7 @@ def _pin_return_url(raw_url: str | None, pin: Pin) -> URL:
 
 	if path == f"/pins/{pin.id}":
 		return URL(path)
-	if pin.board_id is not None and path == f"/boards/{pin.board_id}":
+	if path == f"/boards/{placement.board_id}":
 		return URL(path)
 	return fallback
 
@@ -54,13 +56,18 @@ def create(req: Request, ctx: Context) -> Response:
 
 	board = find_accessible_board(ctx, input["board_id"])
 
-	store.create(
+	pin = store.create(
 		Pin,
 		title=input["title"],
 		url=input["url"],
 		note=input["note"],
+		creator_id=auth.user.id,
+	)
+	store.create(
+		Placement,
+		pin_id=pin.id,
 		board_id=board.id,
-		user_id=auth.user.id,
+		adder_id=auth.user.id,
 	)
 
 	return Response.redirect(URL(f"/boards/{board.id}"))
@@ -91,8 +98,9 @@ def show(req: Request, ctx: Context, id: UUID) -> Response:
 	views = ctx.get(Views)
 
 	pin = find_accessible_pin(ctx, id)
-	board = find_accessible_board(ctx, pin.board_id)
-	creator = store.find_one(User, pin.user_id)
+	placement = find_sole_placement(store, pin.id)
+	board = find_accessible_board(ctx, placement.board_id)
+	creator = store.find_one(User, pin.creator_id)
 	html = views.render(
 		"pins.show",
 		{
@@ -112,16 +120,18 @@ def edit(req: Request, ctx: Context, id: UUID) -> Response:
 	views = ctx.get(Views)
 
 	pin = find_owned(ctx, Pin, id)
-	board = store.find_one(Board, pin.board_id) if pin.board_id else None
+	placement = find_sole_placement(store, pin.id)
+	board = store.find_one(Board, placement.board_id)
 	boards = find_all_accessible_boards(ctx)
 	html = views.render(
 		"pins.edit",
 		{
 			"pin": pin,
+			"placement": placement,
 			"board": board,
 			"boards": boards,
 			"current_user": auth.user,
-			"return_to": _pin_return_url(req.referrer, pin),
+			"return_to": _pin_return_url(req.referrer, pin, placement),
 		},
 	)
 	return Response.html(html)
@@ -131,6 +141,7 @@ def update(req: Request, ctx: Context, id: UUID) -> Response:
 	store = ctx.get(Store)
 
 	pin = find_owned(ctx, Pin, id)
+	placement = find_sole_placement(store, pin.id)
 
 	form = Form(
 		[
@@ -146,13 +157,14 @@ def update(req: Request, ctx: Context, id: UUID) -> Response:
 		return Response.text("400 Bad Request", status=Status.BAD_REQUEST)
 
 	board = find_accessible_board(ctx, input["board_id"])
-	return_to = _pin_return_url(input["return_to"], pin)
+	return_to = _pin_return_url(input["return_to"], pin, placement)
 
 	pin.url = input["url"]
 	pin.title = input["title"]
-	pin.board_id = board.id
 	pin.note = input["note"] or ""
+	placement.board_id = board.id
 	store.save(pin)
+	store.save(placement)
 
 	return Response.redirect(return_to)
 
@@ -161,12 +173,10 @@ def delete(req: Request, ctx: Context, id: UUID) -> Response:
 	store = ctx.get(Store)
 
 	pin = find_owned(ctx, Pin, id)
+	placement = find_sole_placement(store, pin.id)
+	board_url = URL(f"/boards/{placement.board_id}")
 
-	if pin.board_id is None:
-		board_url = URL("/")
-	else:
-		board_url = URL(f"/boards/{pin.board_id}")
-
+	store.delete(placement.id)
 	store.delete(pin.id)
 
 	return Response.redirect(board_url)

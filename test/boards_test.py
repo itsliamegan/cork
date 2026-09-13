@@ -1,6 +1,6 @@
 from luna.test.assertion import assert_eq, assert_that
 
-from app.data import Board, Ordering, Pin, Share, User
+from app.data import Board, Ordering, Pin, Placement, Share, User
 from test.support import TestApplication
 
 
@@ -16,13 +16,13 @@ def test_creates_board():
 		assert_eq(res.headers["Location"], f"/boards/{boards[0].id}")
 		assert_eq(len(boards), 1)
 		assert_eq(boards[0].title, "Reading")
-		assert_eq(boards[0].user_id, user.id)
+		assert_eq(boards[0].creator_id, user.id)
 
 
 def test_deletes_board():
 	with TestApplication() as app:
 		user = app.store.create(User, name="Alice")
-		board = app.store.create(Board, title="Reading", user_id=user.id)
+		board = app.store.create(Board, title="Reading", creator_id=user.id)
 		app.sign_in(user)
 
 		res = app.client.post(
@@ -41,16 +41,16 @@ def test_shares_board():
 		alice = app.store.create(User, name="Alice")
 		bob = app.store.create(User, name="Bob")
 		charlie = app.store.create(User, name="Charlie")
-		board = app.store.create(Board, title="Reading", user_id=alice.id)
+		board = app.store.create(Board, title="Reading", creator_id=alice.id)
 		app.store.create(Share, board_id=board.id, user_id=bob.id)
 		pin = app.store.create(
 			Pin,
 			title="Stanford Entry on Sartre",
 			url="https://plato.stanford.edu/entries/sartre/",
 			note="Read the Negation section.",
-			board_id=board.id,
-			user_id=alice.id,
+			creator_id=alice.id,
 		)
+		app.store.create(Placement, pin_id=pin.id, board_id=board.id, adder_id=alice.id)
 		app.sign_in(bob)
 
 		res = app.client.get(f"/boards/{board.id}")
@@ -71,7 +71,9 @@ def test_shares_board():
 
 		assert_eq(res.status_code, 302)
 		assert_eq(created.note, "")
-		assert_eq(created.user_id, bob.id)
+		assert_eq(created.creator_id, bob.id)
+		created_placement = app.store.find_by(Placement, pin_id=created.id)[0]
+		assert_eq(created_placement.board_id, board.id)
 
 		res = app.client.post(
 			f"/boards/{board.id}",
@@ -143,14 +145,14 @@ def test_deleted_board_cascades():
 	with TestApplication() as app:
 		alice = app.store.create(User, name="Alice")
 		bob = app.store.create(User, name="Bob")
-		board = app.store.create(Board, title="Reading", user_id=alice.id)
-		app.store.create(
+		board = app.store.create(Board, title="Reading", creator_id=alice.id)
+		pin = app.store.create(
 			Pin,
 			title="Stanford Entry on Sartre",
 			url="https://plato.stanford.edu/entries/sartre/",
-			board_id=board.id,
-			user_id=alice.id,
+			creator_id=alice.id,
 		)
+		app.store.create(Placement, pin_id=pin.id, board_id=board.id, adder_id=alice.id)
 		app.store.create(Share, board_id=board.id, user_id=bob.id)
 		app.store.create(
 			Ordering,
@@ -168,5 +170,6 @@ def test_deleted_board_cascades():
 		assert_eq(res.status_code, 302)
 		assert_eq(app.store.find_all(Board), [])
 		assert_eq(app.store.find_all(Pin), [])
+		assert_eq(app.store.find_all(Placement), [])
 		assert_eq(app.store.find_all(Share), [])
 		assert_eq(app.store.find_all(Ordering), [])

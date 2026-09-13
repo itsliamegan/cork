@@ -7,9 +7,9 @@ from test.support import TestApplication
 def test_orders_boards():
 	with TestApplication() as app:
 		alice = app.store.create(User, name="Alice")
-		reading = app.store.create(Board, title="Reading", user_id=alice.id)
-		philosophy = app.store.create(Board, title="Philosophy", user_id=alice.id)
-		essays = app.store.create(Board, title="Essays", user_id=alice.id)
+		reading = app.store.create(Board, title="Reading", creator_id=alice.id)
+		philosophy = app.store.create(Board, title="Philosophy", creator_id=alice.id)
+		essays = app.store.create(Board, title="Essays", creator_id=alice.id)
 		app.sign_in(alice)
 
 		res = app.client.post(
@@ -43,9 +43,9 @@ def test_rejects_invalid_orderings():
 	with TestApplication() as app:
 		alice = app.store.create(User, name="Alice")
 		bob = app.store.create(User, name="Bob")
-		reading = app.store.create(Board, title="Reading", user_id=alice.id)
-		philosophy = app.store.create(Board, title="Philosophy", user_id=alice.id)
-		private = app.store.create(Board, title="Bob's Reading", user_id=bob.id)
+		reading = app.store.create(Board, title="Reading", creator_id=alice.id)
+		philosophy = app.store.create(Board, title="Philosophy", creator_id=alice.id)
+		private = app.store.create(Board, title="Bob's Reading", creator_id=bob.id)
 		app.store.create(
 			Ordering,
 			user_id=alice.id,
