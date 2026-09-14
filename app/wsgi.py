@@ -2,6 +2,7 @@ import helios.app
 import helios.auth
 import helios.data.component
 import helios.flash
+import helios.limit.middleware
 import helios.persist.component
 from helios.persist.files import Files
 from helios.routing import Router
@@ -28,4 +29,5 @@ class Application(Application):
 				helios.flash.Component(),
 				helios.auth.Component(User),
 			],
+			[helios.limit.middleware.Middleware(config.rate_limit)],
 		)
