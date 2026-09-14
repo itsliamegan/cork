@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>Cork - Edit pin with searchable boards</title>
+		<style>
+			:root{--canvas:#fff;--foreground:#111;--muted:#626262;--surface:#f1f1f1;--soft:#fafafa;--control:#fff;--border:#999;--divider:#d5d5d5;--blue:#0f61a9;--blue-soft:#e6f1fb;--focus:rgb(15 97 169 / 25%)}@media(prefers-color-scheme:dark){:root{--canvas:#151515;--foreground:#f1f1f1;--muted:#aaa;--surface:#242424;--soft:#1c1c1c;--control:#191919;--border:#707070;--divider:#3e3e3e;--blue:#68afe9;--blue-soft:#173c5a;--focus:rgb(104 175 233 / 30%)}}
+			*{box-sizing:border-box}body{margin:0;color:var(--foreground);background:var(--canvas);font:14px/1.35 "Helvetica Neue",Helvetica,Arial,sans-serif}a{color:var(--blue);text-underline-offset:2px}button,input{font:inherit}.site-header{border-bottom:1px solid var(--border);background:var(--surface)}.site-header-inner{display:flex;align-items:stretch;max-width:40rem;height:2.8rem;margin:auto;padding:0 .6rem}.brand,.site-nav a,.settings{display:flex;align-items:center;color:var(--foreground);text-decoration:none}.brand{font-size:1.15rem;font-weight:700}.site-nav{display:flex;margin-left:1.2rem}.site-nav a{padding:0 .6rem;border-bottom:3px solid transparent;font-weight:600}.settings{margin-left:auto;color:var(--muted);font-size:.78rem}
+			main{max-width:40rem;margin:1.35rem auto 3rem;padding:0 .6rem}.breadcrumb{margin-bottom:.5rem;color:var(--muted);font-size:.75rem}.page-header{margin-bottom:1rem;padding-bottom:.6rem;border-bottom:3px solid var(--foreground)}h1{margin:0;font-size:1.45rem;line-height:1.15}.frame{overflow:hidden;border:1px solid var(--border);border-radius:3px}.frame-header{display:flex;align-items:baseline;min-height:2rem;padding:.35rem .65rem;border-bottom:2px solid var(--foreground);background:var(--surface)}.frame-header:not(:first-child){border-top:1px solid var(--border)}.frame-header h2{margin:0;font-size:.85rem}.frame-meta{margin-left:auto;color:var(--muted);font-size:.7rem}.field{display:grid;grid-template-columns:5.5rem minmax(0,1fr);align-items:center;gap:.65rem;padding:.55rem .65rem}.field+.field{border-top:1px solid var(--divider)}.field label,.search-label{font-size:.75rem;font-weight:600}.field input,.board-search{width:100%;min-width:0;padding:.38rem .5rem;border:1px solid var(--border);border-radius:3px;color:var(--foreground);background:var(--control)}
+			.selected-boards{display:grid;grid-template-columns:5.5rem minmax(0,1fr);align-items:start;gap:.65rem;padding:.5rem .65rem;border-bottom:1px solid var(--divider)}.selected-label{padding-top:.15rem;color:var(--muted);font-size:.72rem}.tags{display:flex;flex-wrap:wrap;gap:.3rem}.tag{padding:.15rem .4rem;border:1px solid var(--divider);border-radius:3px;color:var(--blue);background:var(--blue-soft);font-size:.7rem}.board-search-row{display:grid;grid-template-columns:5.5rem minmax(0,1fr);align-items:center;gap:.65rem;padding:.5rem .65rem;border-bottom:1px solid var(--divider)}.board-options{max-height:15rem;overflow-y:auto;overscroll-behavior:contain}.board-option{display:grid;grid-template-columns:1rem minmax(0,1fr) auto;align-items:center;gap:.6rem;min-height:2.2rem;padding:.18rem .65rem;cursor:pointer}.board-option+.board-option{border-top:1px solid var(--divider)}.board-option:hover{background:var(--soft)}.board-option:has(input:checked){background:var(--blue-soft)}.board-option[hidden]{display:none}.board-option input{width:1rem;height:1rem;margin:0;accent-color:#0f61a9}.board-name{font-weight:600}.board-state{color:var(--muted);font-size:.68rem;text-align:right}.no-results{display:none;padding:.75rem .65rem;color:var(--muted);font-size:.75rem}.picker-status{display:flex;align-items:center;padding:.42rem .65rem;border-top:1px solid var(--border);color:var(--muted);background:var(--soft);font-size:.7rem}.visibility-note{margin-left:auto;color:var(--blue)}.form-actions{display:flex;justify-content:flex-end;gap:.5rem;padding:.55rem .65rem;border-top:1px solid var(--border)}.button{display:inline-block;padding:.34rem .65rem;border:1px solid var(--border);border-radius:3px;color:var(--foreground);background:var(--control);font-weight:600;text-decoration:none;cursor:pointer}.button-primary{border-color:#0b477c;color:#fff;background:#0f61a9}input:focus,a:focus-visible,button:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+			@media(max-width:28rem){.settings{display:none}.site-nav{margin-left:.55rem}.site-nav a{padding:0 .4rem}.field,.selected-boards,.board-search-row{grid-template-columns:1fr;gap:.25rem}.selected-label{padding:0}.board-options{max-height:17rem}.board-state{max-width:8rem}.visibility-note{display:none}}
+		</style>
+	</head>
+	<body>
+		<header class="site-header"><div class="site-header-inner"><a class="brand" href="#">Cork</a><nav class="site-nav" aria-label="Main navigation"><a href="#">Home</a><a href="#">Boards</a><a href="#">Pins</a></nav><a class="settings" href="#">Settings</a></div></header>
+		<main>
+			<div class="breadcrumb"><a href="#">Pins</a> / A Pattern Language for Web Usability / Edit</div>
+			<header class="page-header"><h1>Edit pin</h1></header>
+			<form class="frame" data-board-picker>
+				<header class="frame-header"><h2>Details</h2></header>
+				<div class="field"><label for="title">Title</label><input id="title" name="title" type="text" value="A Pattern Language for Web Usability" autofocus></div>
+				<div class="field"><label for="url">URL</label><input id="url" name="url" type="url" value="https://www.welie.com/patterns/gui/" required></div>
+				<header class="frame-header"><h2>Boards</h2><span class="frame-meta">86 available</span></header>
+				<div class="selected-boards"><span class="selected-label">Selected</span><div class="tags" data-selected-tags><span class="tag">Seminar reading</span><span class="tag">To read</span></div></div>
+				<div class="board-search-row"><label class="search-label" for="board-search">Find a board</label><input class="board-search" id="board-search" type="search" value="essay" placeholder="Type to filter 86 boards" autocomplete="off" data-board-search></div>
+				<div class="board-options" data-board-options>
+					<label class="board-option" data-board-name="seminar reading"><input type="checkbox" name="board_ids" value="seminar-reading" checked><span class="board-name">Seminar reading</span><span class="board-state">Shared · Nadia, Theo</span></label>
+					<label class="board-option" data-board-name="to read"><input type="checkbox" name="board_ids" value="to-read" checked><span class="board-name">To read</span><span class="board-state">Private</span></label>
+					<label class="board-option" data-board-name="personal computing"><input type="checkbox" name="board_ids" value="personal-computing"><span class="board-name">Personal computing</span><span class="board-state">Private</span></label>
+					<label class="board-option" data-board-name="design patterns"><input type="checkbox" name="board_ids" value="design-patterns"><span class="board-name">Design patterns</span><span class="board-state">Shared · Jules</span></label>
+					<label class="board-option" data-board-name="sources for the essay"><input type="checkbox" name="board_ids" value="essay-sources"><span class="board-name">Sources for the essay</span><span class="board-state">Shared · Marguerite</span></label>
+					<label class="board-option" data-board-name="links for liam"><input type="checkbox" name="board_ids" value="links-for-liam"><span class="board-name">Links for Liam</span><span class="board-state">Shared · Theo</span></label>
+					<label class="board-option" data-board-name="research methods"><input type="checkbox" name="board_ids" value="research-methods"><span class="board-name">Research methods</span><span class="board-state">Private</span></label>
+					<label class="board-option" data-board-name="web history"><input type="checkbox" name="board_ids" value="web-history"><span class="board-name">Web history</span><span class="board-state">Shared · Nadia</span></label>
+					<label class="board-option" data-board-name="weekend projects"><input type="checkbox" name="board_ids" value="weekend-projects"><span class="board-name">Weekend projects</span><span class="board-state">Private</span></label>
+					<div class="no-results" data-no-results>No boards match this search.</div>
+				</div>
+				<div class="picker-status"><span data-selection-count>2 boards selected</span><span class="visibility-note">Visible to Nadia and Theo</span></div>
+				<footer class="form-actions"><a class="button" href="#">Cancel</a><button class="button button-primary" type="submit">Save</button></footer>
+			</form>
+		</main>
+		<script>
+			const picker = document.querySelector("[data-board-picker]")
+			const search = picker.querySelector("[data-board-search]")
+			const options = [...picker.querySelectorAll("[data-board-name]")]
+			const noResults = picker.querySelector("[data-no-results]")
+			const selectionCount = picker.querySelector("[data-selection-count]")
+			const selectedTags = picker.querySelector("[data-selected-tags]")
+
+			function updateOptions() {
+				const query = search.value.trim().toLocaleLowerCase()
+				let visibleCount = 0
+				for (const option of options) {
+					option.hidden = !option.dataset.boardName.includes(query)
+					if (!option.hidden) visibleCount += 1
+				}
+				noResults.style.display = visibleCount === 0 ? "block" : "none"
+			}
+
+			function updateSelection() {
+				const selectedOptions = [...picker.querySelectorAll('[name="board_ids"]:checked')]
+				selectionCount.textContent = `${selectedOptions.length} ${selectedOptions.length === 1 ? "board" : "boards"} selected`
+				selectedTags.replaceChildren(...selectedOptions.map((input) => {
+					const tag = document.createElement("span")
+					tag.className = "tag"
+					tag.textContent = input.closest("label").querySelector(".board-name").textContent
+					return tag
+				}))
+				if (selectedOptions.length === 0) selectedTags.textContent = "None"
+			}
+
+			search.addEventListener("input", updateOptions)
+			picker.addEventListener("change", updateSelection)
+			updateOptions()
+		</script>
+	</body>
+</html>

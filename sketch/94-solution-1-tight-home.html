@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>Cork - Tight home - Solution 1</title>
+		<style>
+			:root{--canvas:#fff;--foreground:#111;--muted:#626262;--surface:#f1f1f1;--soft:#fafafa;--border:#999;--divider:#d5d5d5;--blue:#0f61a9;--focus:rgb(15 97 169 / 25%)}@media(prefers-color-scheme:dark){:root{--canvas:#151515;--foreground:#f1f1f1;--muted:#aaa;--surface:#242424;--soft:#1c1c1c;--border:#707070;--divider:#3e3e3e;--blue:#68afe9;--focus:rgb(104 175 233 / 30%)}}
+			*{box-sizing:border-box}body{margin:0;color:var(--foreground);background:var(--canvas);font:14px/1.35 "Helvetica Neue",Helvetica,Arial,sans-serif}a{color:var(--blue);text-underline-offset:2px}.site-header{border-bottom:1px solid var(--border);background:var(--surface)}.site-header-inner{display:flex;align-items:stretch;max-width:35rem;height:2.8rem;margin:auto;padding:0 .6rem}.brand,.site-nav a,.settings{display:flex;align-items:center;color:var(--foreground);text-decoration:none}.brand{font-size:1.15rem;font-weight:700}.site-nav{display:flex;margin-left:1.2rem}.site-nav a{padding:0 .55rem;border-bottom:3px solid transparent;font-weight:600}.site-nav a[aria-current="page"]{border-color:var(--blue)}.settings{margin-left:auto;color:var(--muted);font-size:.78rem}
+			main{max-width:35rem;margin:1.35rem auto 3rem;padding:0 .6rem}.page-header{margin-bottom:1rem;padding-bottom:.6rem;border-bottom:3px solid var(--foreground)}h1{margin:0;font-size:1.45rem;line-height:1.15}.frame{overflow:hidden;border:1px solid var(--border);border-radius:3px}.frame-header{display:flex;align-items:baseline;min-height:2rem;padding:.35rem .65rem;border-bottom:2px solid var(--foreground);background:var(--surface)}.frame-header:not(:first-child){border-top:1px solid var(--border)}.frame-header h2{margin:0;font-size:.85rem}.frame-meta{margin-left:auto;color:var(--muted);font-size:.7rem}.activity{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:.75rem;min-height:2.85rem;padding:.38rem .65rem}.activity+.activity{border-top:1px solid var(--divider)}.title{color:var(--foreground);font-weight:600}.meta{margin-top:.12rem;color:var(--muted);font-size:.72rem}.time{align-self:center;color:var(--muted);font-size:.68rem}.boards{margin:0;padding:0;list-style:none}.board{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:.75rem;min-height:2.65rem;padding:.35rem .65rem;color:var(--foreground);text-decoration:none}.board+.board{border-top:1px solid var(--divider)}.board .meta{margin:0;text-align:right}.board:hover,.unfiled:hover{background:var(--soft)}.unfiled{display:flex;align-items:center;min-height:2.8rem;padding:.55rem .65rem;border-top:1px solid var(--border);color:var(--foreground);font-weight:600;text-decoration:none}.unfiled .meta{margin:0 0 0 .4rem}.arrow{margin-left:auto;color:var(--muted);font-size:1.1rem}a:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+			@media(max-width:29rem){.settings{display:none}.site-nav{margin-left:.55rem}.site-nav a{padding:0 .4rem}.board{grid-template-columns:1fr;gap:.05rem}.board .meta{text-align:left}}
+		</style>
+	</head>
+	<body>
+		<header class="site-header"><div class="site-header-inner"><a class="brand" href="#">Cork</a><nav class="site-nav" aria-label="Main navigation"><a href="#" aria-current="page">Home</a><a href="#">Boards</a><a href="#">Pins</a></nav><a class="settings" href="#">Settings</a></div></header>
+		<main>
+			<header class="page-header"><h1>Home</h1></header>
+			<div class="frame">
+				<header class="frame-header"><h2>New since you were here</h2><span class="frame-meta">3</span></header>
+				<div class="activity"><div><a class="title" href="#">A Pattern Language for Web Usability</a><div class="meta">Nadia added to <a href="#">Seminar reading</a></div></div><time class="time">12 min</time></div>
+				<div class="activity"><div><a class="title" href="#">The Humane Interface</a><div class="meta">Theo added to <a href="#">Seminar reading</a></div></div><time class="time">Yesterday</time></div>
+				<div class="activity"><div><a class="title" href="#">Notes on the Synthesis of Form</a><div class="meta">Theo added to <a href="#">Links for Liam</a></div></div><time class="time">Yesterday</time></div>
+				<header class="frame-header"><h2>Recently active</h2></header>
+				<div class="boards"><a class="board" href="#"><span class="title">Seminar reading</span><span class="meta">Shared · 3 people · 2 new</span></a><a class="board" href="#"><span class="title">Personal computing</span><span class="meta">Private · 19 pins</span></a><a class="board" href="#"><span class="title">Links for Liam</span><span class="meta">Shared · 2 people · 1 new</span></a></div>
+				<a class="unfiled" href="#">Pins not on a board <span class="meta">7</span><span class="arrow">›</span></a>
+			</div>
+		</main>
+	</body>
+</html>

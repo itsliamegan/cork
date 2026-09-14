@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>Cork - Search</title>
+		<style>
+			:root{--canvas:#fff;--foreground:#111;--muted:#626262;--surface:#f1f1f1;--soft:#fafafa;--control:#fff;--border:#999;--divider:#d5d5d5;--blue:#0f61a9;--blue-soft:#e6f1fb;--focus:rgb(15 97 169 / 25%)}@media(prefers-color-scheme:dark){:root{--canvas:#151515;--foreground:#f1f1f1;--muted:#aaa;--surface:#242424;--soft:#1c1c1c;--control:#191919;--border:#707070;--divider:#3e3e3e;--blue:#68afe9;--blue-soft:#173c5a;--focus:rgb(104 175 233 / 30%)}}
+			*{box-sizing:border-box}body{margin:0;color:var(--foreground);background:var(--canvas);font:14px/1.35 "Helvetica Neue",Helvetica,Arial,sans-serif}a{color:var(--blue);text-underline-offset:2px}button,input{font:inherit}.site-header{border-bottom:1px solid var(--border);background:var(--surface)}.site-header-inner{display:flex;align-items:stretch;max-width:44rem;height:2.8rem;margin:auto;padding:0 .6rem}.brand,.site-nav a,.settings{display:flex;align-items:center;color:var(--foreground);text-decoration:none}.brand{font-size:1.15rem;font-weight:700}.site-nav{display:flex;margin-left:1.2rem}.site-nav a{padding:0 .6rem;border-bottom:3px solid transparent;font-weight:600}.site-nav a[aria-current="page"]{border-color:var(--blue)}.settings{margin-left:auto;color:var(--muted);font-size:.78rem}
+			main{max-width:44rem;margin:1.35rem auto 3rem;padding:0 .6rem}.page-header{margin-bottom:1rem;padding-bottom:.6rem;border-bottom:3px solid var(--foreground)}h1{margin:0;font-size:1.45rem;line-height:1.15}.frame{overflow:hidden;border:1px solid var(--border);border-radius:3px}.search-form{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:.3rem .45rem;padding:.65rem;border-bottom:1px solid var(--border)}.search-form label{grid-column:1/-1;font-size:.75rem;font-weight:600}.search-form input{min-width:0;padding:.4rem .5rem;border:1px solid var(--border);border-radius:3px;color:var(--foreground);background:var(--control)}.search-button{padding:.34rem .7rem;border:1px solid #0b477c;border-radius:3px;color:#fff;background:#0f61a9;font-weight:600;cursor:pointer}.filters{display:flex;gap:.35rem;padding:0 .65rem .55rem;border-bottom:1px solid var(--border)}.filter{padding:.24rem .5rem;border:1px solid var(--divider);border-radius:3px;color:var(--muted);background:var(--control);font-size:.72rem}.filter.active{border-color:var(--blue);color:var(--blue);background:var(--blue-soft);font-weight:600}.frame-header{display:flex;align-items:baseline;min-height:2rem;padding:.35rem .65rem;border-bottom:2px solid var(--foreground);background:var(--surface)}.frame-header:not(:first-of-type){border-top:1px solid var(--border)}.frame-header h2{margin:0;font-size:.85rem}.frame-meta{margin-left:auto;color:var(--muted);font-size:.7rem}
+			.result{display:grid;grid-template-columns:minmax(0,1fr) 11rem;align-items:center;gap:.75rem;min-height:3rem;padding:.35rem .65rem}.result+.result{border-top:1px solid var(--divider)}.result:hover{background:var(--soft)}.result-title{display:block;overflow:hidden;color:var(--foreground);font-weight:600;text-overflow:ellipsis;white-space:nowrap}.meta{overflow:hidden;margin-top:.1rem;color:var(--muted);font-size:.68rem;text-overflow:ellipsis;white-space:nowrap}.host{color:var(--foreground);font-weight:500}.context{color:var(--muted);font-size:.68rem;text-align:right}.match{background:var(--blue-soft);color:var(--foreground)}input:focus,a:focus-visible,button:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+			@media(max-width:30rem){.settings{display:none}.site-nav{margin-left:.55rem}.site-nav a{padding:0 .4rem}.result{grid-template-columns:1fr;gap:.05rem}.context{text-align:left}.search-form{grid-template-columns:1fr}.search-button{justify-self:start}}
+		</style>
+	</head>
+	<body>
+		<header class="site-header"><div class="site-header-inner"><a class="brand" href="#">Cork</a><nav class="site-nav" aria-label="Main navigation"><a href="#">Home</a><a href="#">Boards</a><a href="#">Pins</a><a href="#" aria-current="page">Search</a></nav><a class="settings" href="#">Settings</a></div></header>
+		<main>
+			<header class="page-header"><h1>Search</h1></header>
+			<section class="frame">
+				<form class="search-form"><label for="search-query">Pins and boards</label><input id="search-query" type="search" value="pattern" autofocus><button class="search-button" type="submit">Search</button></form>
+				<div class="filters"><button class="filter active" type="button">Everything 4</button><button class="filter" type="button">Pins 3</button><button class="filter" type="button">Boards 1</button></div>
+				<header class="frame-header"><h2>Pins</h2><span class="frame-meta">3 results</span></header>
+				<article class="result"><div><a class="result-title" href="#">A <span class="match">Pattern</span> Language for Web Usability</a><div class="meta"><span class="host">welie.com</span> · added Sep 7</div></div><span class="context">Seminar reading · To read</span></article>
+				<article class="result"><div><a class="result-title" href="#"><span class="match">Pattern</span> Languages of Program Design</a><div class="meta"><span class="host">hillside.net</span> · added Aug 12</div></div><span class="context">Personal computing</span></article>
+				<article class="result"><div><a class="result-title" href="#">A Timeless Way of Building</a><div class="meta"><span class="host">archive.org</span> · Notes mention “<span class="match">pattern</span>”</div></div><span class="context">Not on a board</span></article>
+				<header class="frame-header"><h2>Boards</h2><span class="frame-meta">1 result</span></header>
+				<article class="result"><div><a class="result-title" href="#">Design <span class="match">patterns</span></a><div class="meta">Private · 12 pins</div></div><span class="context">Updated yesterday</span></article>
+			</section>
+		</main>
+	</body>
+</html>

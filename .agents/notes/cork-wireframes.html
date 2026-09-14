@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cork wireframes</title>
+<style>
+  :root {
+    --bg: #ffffff;
+    --page: #f4f4f2;
+    --card: #ffffff;
+    --line: #e3e3e0;
+    --line-strong: #c9c9c5;
+    --block: #d6d6d2;
+    --text: #24241f;
+    --muted: #6f6f6a;
+    --faint: #9a9a95;
+    --accent-bg: #e6f1fb;
+    --accent-fg: #185fa5;
+    --danger: #a32d2d;
+    --radius: 8px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #16161a;
+      --page: #1e1e22;
+      --card: #26262b;
+      --line: #35353b;
+      --line-strong: #4a4a51;
+      --block: #4a4a51;
+      --text: #e8e8e4;
+      --muted: #a3a39d;
+      --faint: #77777a;
+      --accent-bg: #0c447c;
+      --accent-fg: #b5d4f4;
+      --danger: #f09595;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    padding: 3rem 1.5rem 5rem;
+    background: var(--bg);
+    color: var(--text);
+    font: 400 16px/1.6 system-ui, -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
+  }
+  main { max-width: 720px; margin: 0 auto; }
+  h1 { font-size: 24px; font-weight: 500; margin: 0 0 .5rem; }
+  h2 { font-size: 17px; font-weight: 500; margin: 0 0 .35rem; }
+  .lede { color: var(--muted); font-size: 14px; margin: 0 0 3rem; max-width: 58ch; }
+  section { margin-bottom: 3.5rem; }
+  .note { color: var(--muted); font-size: 13.5px; margin: 0 0 1rem; max-width: 62ch; }
+  .frame { background: var(--page); border-radius: 12px; padding: 1.25rem; }
+  .nav {
+    display: flex; align-items: center; justify-content: space-between;
+    padding-bottom: 10px; border-bottom: 1px solid var(--line-strong); margin-bottom: 1.25rem;
+  }
+  .nav-links { display: flex; align-items: center; gap: 18px; font-size: 13px; color: var(--muted); }
+  .brand { font-weight: 500; color: var(--text); }
+  .here { color: var(--text); border-bottom: 1.5px solid var(--text); padding-bottom: 2px; }
+  .btn { font-size: 12px; border: 1px solid var(--line-strong); border-radius: var(--radius); padding: 5px 11px; color: var(--text); }
+  .label { font-size: 12px; color: var(--muted); margin-bottom: 8px; }
+  .list { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); }
+  .row { padding: 11px 12px; border-bottom: 1px solid var(--line); }
+  .row:last-child { border-bottom: none; }
+  .flex { display: flex; align-items: center; gap: 10px; }
+  .push { margin-left: auto; }
+  .bar { height: 9px; background: var(--block); border-radius: 2px; }
+  .meta { font-size: 11px; color: var(--muted); }
+  .faint { font-size: 11px; color: var(--faint); }
+  .new { font-size: 11px; color: var(--accent-fg); }
+  .pill { font-size: 11px; background: var(--accent-bg); color: var(--accent-fg); padding: 3px 9px; border-radius: 20px; }
+  .chip { font-size: 11px; border: 1px solid var(--line); color: var(--muted); padding: 4px 11px; border-radius: 20px; }
+  .chip.on { background: var(--accent-bg); color: var(--accent-fg); border-color: transparent; }
+  .field { height: 32px; border: 1px solid var(--line); border-radius: var(--radius); display: flex; align-items: center; padding: 0 11px; font-size: 12px; color: var(--faint); }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 12px 14px; }
+  .card.sel { border-color: var(--line-strong); }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; }
+  .picker { background: var(--card); border: 1px solid var(--line-strong); border-radius: var(--radius); overflow: hidden; }
+  .opt { padding: 9px 12px; display: flex; align-items: center; gap: 9px; border-bottom: 1px solid var(--line); }
+  .opt.hover { background: var(--page); }
+  .box { width: 13px; height: 13px; border: 1px solid var(--line-strong); border-radius: 3px; flex: none; }
+  .box.on { background: var(--accent-fg); border-color: var(--accent-fg); }
+  .consequence { padding: 10px 12px; background: var(--accent-bg); font-size: 12px; color: var(--accent-fg); }
+  .actions { display: flex; align-items: center; justify-content: space-between; border-top: 1px solid var(--line); padding-top: 10px; margin-top: 11px; font-size: 12px; }
+  .destructive { color: var(--danger); }
+  .drag { color: var(--faint); font-size: 13px; letter-spacing: -1px; flex: none; }
+</style>
+</head>
+<body>
+<main>
+
+<h1>Cork wireframes</h1>
+<p class="lede">Low-fidelity sketches for the placement architecture. Deliberately unstyled: grey blocks for content, one accent colour for shared and interactive states. September 2026.</p>
+
+<section>
+  <h2>Home</h2>
+  <p class="note">An activity inbox. Contributions are described as “person added to board”, which is what teaches the model. The unfiled drawer sits at the bottom as one quiet line, not a section, so deferring filing does not feel like accruing a backlog.</p>
+  <div class="frame">
+    <div class="nav">
+      <div class="nav-links"><span class="brand">Cork</span><span class="here">Home</span><span>Boards</span><span>Pins</span></div>
+      <span class="meta">liam</span>
+    </div>
+
+    <div class="label">New since you were here</div>
+    <div class="list" style="margin-bottom:1.5rem;">
+      <div class="row"><div class="bar" style="width:62%; margin-bottom:7px;"></div><div class="meta">nadia added to seminar reading</div></div>
+      <div class="row"><div class="bar" style="width:48%; margin-bottom:7px;"></div><div class="meta">nadia added to seminar reading</div></div>
+      <div class="row"><div class="bar" style="width:71%; margin-bottom:7px;"></div><div class="meta">theo added to links for liam</div></div>
+    </div>
+
+    <div class="label">Recently active</div>
+    <div class="grid" style="margin-bottom:1.5rem;">
+      <div class="card"><div class="bar" style="width:70%; margin-bottom:8px;"></div><div class="meta">shared · 3 people</div></div>
+      <div class="card"><div class="bar" style="width:55%; margin-bottom:8px;"></div><div class="meta">private</div></div>
+      <div class="card"><div class="bar" style="width:64%; margin-bottom:8px;"></div><div class="meta">shared · 2 people</div></div>
+    </div>
+
+    <div class="card flex">
+      <span class="meta" style="font-size:13px;">7 pins not on a board</span>
+      <span class="faint push">›</span>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>Filing a pin</h2>
+  <p class="note">The interaction that does not exist in Cork today. Pills on the card show where the pin already sits, which doubles as the visibility display. Picker rows carry sharing status inline. Checkboxes rather than a dropdown, because the control itself has to say a pin can be in several places. The consequence line names the board and the person, and appears only when a shared board is selected.</p>
+  <div class="frame">
+    <div class="card" style="margin-bottom:10px;">
+      <div class="bar" style="height:10px; width:58%; margin-bottom:8px;"></div>
+      <div class="bar" style="height:7px; width:34%; background:var(--line); margin-bottom:12px;"></div>
+      <div class="flex">
+        <span class="pill">seminar reading</span>
+        <span class="pill">to read</span>
+        <span class="meta push">+ Add to board</span>
+      </div>
+    </div>
+
+    <div class="picker">
+      <div style="padding:10px 12px; border-bottom:1px solid var(--line);"><div class="field">Search boards</div></div>
+      <div class="opt"><span class="box on"></span><span class="bar" style="width:110px;"></span><span class="meta push">shared · nadia, theo</span></div>
+      <div class="opt"><span class="box on"></span><span class="bar" style="width:66px;"></span><span class="meta push">private</span></div>
+      <div class="opt hover"><span class="box"></span><span class="bar" style="width:94px;"></span><span class="meta push">shared · marguerite</span></div>
+      <div class="opt"><span class="box"></span><span class="bar" style="width:78px;"></span><span class="meta push">private</span></div>
+      <div class="consequence">Adding to sources for the essay shows this pin to marguerite.</div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>Board detail</h2>
+  <p class="note">The removal control names the board it applies to; that is the whole safety mechanism between a scoped action and a global one. They are textually different rather than two icons, and only the destructive one carries colour. Attribution shows a second name only when the creator and the placer differ. “Also on N boards” is the fix for apparent duplication and is deliberately muted.</p>
+  <div class="frame">
+    <div style="margin-bottom:14px;">
+      <div class="bar" style="height:11px; width:38%; margin-bottom:7px;"></div>
+      <div class="meta">shared with nadia, theo</div>
+    </div>
+
+    <div class="card" style="margin-bottom:9px;">
+      <div class="bar" style="width:64%; margin-bottom:9px;"></div>
+      <div class="flex"><span class="meta">nadia · added by theo</span><span class="faint push">also on 2 boards</span></div>
+    </div>
+
+    <div class="card sel" style="margin-bottom:9px;">
+      <div class="bar" style="width:52%; margin-bottom:9px;"></div>
+      <div class="flex"><span class="meta">liam</span><span class="faint push">also on 1 board</span></div>
+      <div class="actions">
+        <span class="meta" style="font-size:12px;">Remove from seminar reading</span>
+        <span class="destructive">Delete pin</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="bar" style="width:71%; margin-bottom:9px;"></div>
+      <div class="meta">theo</div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>Boards</h2>
+  <p class="note">Grouped by private and shared, which describes the board rather than a person’s standing in it. Shared comes first because that is where activity is. Every row lists all members including you, in the same voice, with no marker for who created it. This assumes flat permissions; a creator field that quietly grants power would contradict the framing.</p>
+  <div class="frame">
+    <div class="nav">
+      <div class="nav-links"><span class="brand">Cork</span><span>Home</span><span class="here">Boards</span><span>Pins</span></div>
+      <span class="btn">+ New board</span>
+    </div>
+
+    <div class="label">Shared</div>
+    <div class="list" style="margin-bottom:1.5rem;">
+      <div class="row flex"><span class="drag">⠿</span><span class="bar" style="width:120px;"></span><span class="meta">liam, nadia, theo</span><span class="new push">3 new</span></div>
+      <div class="row flex"><span class="drag">⠿</span><span class="bar" style="width:96px;"></span><span class="meta">liam, theo</span><span class="faint push">19 pins</span></div>
+      <div class="row flex"><span class="drag">⠿</span><span class="bar" style="width:104px;"></span><span class="meta">liam, marguerite</span><span class="faint push">8 pins</span></div>
+    </div>
+
+    <div class="label">Private</div>
+    <div class="list">
+      <div class="row flex"><span class="drag">⠿</span><span class="bar" style="width:84px;"></span><span class="faint push">12 pins</span></div>
+      <div class="row flex"><span class="drag">⠿</span><span class="bar" style="width:66px;"></span><span class="faint push">31 pins</span></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>Pins</h2>
+  <p class="note">Your own library. Its job is filing rather than browsing, which argues for a dense list. “Not on a board” is a filter and a row state, never a separate destination, so unfiled pins sit among filed ones instead of becoming a backlog. Every row carries a plus, so filing happens while scanning. This shows only pins you created, which leaves open how you get back to pins you found on someone else’s board.</p>
+  <div class="frame">
+    <div class="nav">
+      <div class="nav-links"><span class="brand">Cork</span><span>Home</span><span>Boards</span><span class="here">Pins</span></div>
+      <span class="btn">+ New pin</span>
+    </div>
+
+    <div class="field" style="margin-bottom:10px;">Search your pins</div>
+
+    <div style="display:flex; gap:7px; margin-bottom:14px;">
+      <span class="chip on">All 187</span>
+      <span class="chip">Not on a board 7</span>
+      <span class="chip">Recently added</span>
+    </div>
+
+    <div class="list">
+      <div class="row">
+        <div class="bar" style="width:60%; margin-bottom:9px;"></div>
+        <div class="flex" style="gap:6px;"><span class="pill">seminar reading</span><span class="pill">to read</span><span class="faint push">+</span></div>
+      </div>
+      <div class="row">
+        <div class="bar" style="width:46%; margin-bottom:9px;"></div>
+        <div class="flex" style="gap:6px;"><span class="faint">Not on a board</span><span class="faint push">+</span></div>
+      </div>
+      <div class="row">
+        <div class="bar" style="width:69%; margin-bottom:9px;"></div>
+        <div class="flex" style="gap:6px;"><span class="pill">sources for the essay</span><span class="faint push">+</span></div>
+      </div>
+      <div class="row">
+        <div class="bar" style="width:54%; margin-bottom:9px;"></div>
+        <div class="flex" style="gap:6px;"><span class="faint">Not on a board</span><span class="faint push">+</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+</body>
+</html>

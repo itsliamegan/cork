@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>Cork - Tight new pin - Solution 1</title>
+		<style>
+			:root { --canvas:#fff; --foreground:#111; --muted:#626262; --surface:#f1f1f1; --surface-soft:#fafafa; --control:#fff; --border:#999; --divider:#d5d5d5; --blue:#0f61a9; --blue-soft:#e6f1fb; --focus:rgb(15 97 169 / 25%); }
+			@media (prefers-color-scheme:dark) { :root { --canvas:#151515; --foreground:#f1f1f1; --muted:#aaa; --surface:#242424; --surface-soft:#1c1c1c; --control:#191919; --border:#707070; --divider:#3e3e3e; --blue:#68afe9; --blue-soft:#173c5a; --focus:rgb(104 175 233 / 30%); } }
+			* { box-sizing:border-box; }
+			body { margin:0; color:var(--foreground); background:var(--canvas); font:14px/1.35 "Helvetica Neue",Helvetica,Arial,sans-serif; }
+			a { color:var(--blue); text-underline-offset:2px; }
+			button,input { font:inherit; }
+			.site-header { border-bottom:1px solid var(--border); background:var(--surface); }
+			.site-header-inner { display:flex; align-items:stretch; width:100%; max-width:35rem; height:2.8rem; margin:auto; padding:0 .6rem; }
+			.brand,.site-nav a,.account { display:flex; align-items:center; color:var(--foreground); text-decoration:none; }
+			.brand { font-size:1.15rem; font-weight:700; }
+			.site-nav { display:flex; margin-left:1.2rem; }
+			.site-nav a { padding:0 .65rem; border-bottom:3px solid transparent; font-weight:600; }
+			.account { gap:.55rem; margin-left:auto; color:var(--muted); font-size:.78rem; }
+			.account span { color:var(--foreground); font-weight:600; }
+			main { width:100%; max-width:35rem; margin:1.35rem auto 3rem; padding:0 .6rem; }
+			.breadcrumb { margin-bottom:.5rem; color:var(--muted); font-size:.75rem; }
+			.page-header { margin-bottom:1rem; padding-bottom:.6rem; border-bottom:3px solid var(--foreground); }
+			h1 { margin:0; font-size:1.45rem; line-height:1.15; }
+			.frame { overflow:hidden; border:1px solid var(--border); border-radius:3px; }
+			.frame-header { display:flex; align-items:baseline; min-height:2rem; padding:.35rem .65rem; border-bottom:2px solid var(--foreground); background:var(--surface); }
+			.frame-header:not(:first-child) { border-top:1px solid var(--border); }
+			.frame-header h2 { margin:0; font-size:.85rem; }
+			.frame-meta { margin-left:auto; color:var(--muted); font-size:.7rem; }
+			.field { display:grid; grid-template-columns:5.5rem minmax(0,1fr); align-items:center; gap:.65rem; padding:.65rem; }
+			.field + .field { border-top:1px solid var(--divider); }
+			.field label { font-size:.78rem; font-weight:600; }
+			input[type="text"],input[type="url"] { width:100%; padding:.4rem .5rem; border:1px solid var(--border); border-radius:3px; color:var(--foreground); background:var(--control); }
+			.boards { margin:0; padding:0; border:0; }
+			.board { display:grid; grid-template-columns:1rem minmax(0,1fr) auto; align-items:center; gap:.65rem; min-height:2.55rem; padding:.3rem .65rem; cursor:pointer; }
+			.board + .board { border-top:1px solid var(--divider); }
+			.board:hover { background:var(--surface-soft); }
+			.board input { width:1rem; height:1rem; margin:0; accent-color:#0f61a9; }
+			.board-name { font-weight:600; }
+			.board-state { color:var(--muted); font-size:.72rem; text-align:right; }
+			.consequence { padding:.45rem .65rem; border-top:1px solid var(--divider); color:var(--blue); background:var(--blue-soft); font-size:.72rem; }
+			.form-actions { display:flex; justify-content:flex-end; gap:.5rem; padding:.55rem .65rem; border-top:1px solid var(--border); }
+			.button { display:inline-block; padding:.34rem .65rem; border:1px solid var(--border); border-radius:3px; color:var(--foreground); background:var(--control); font-weight:600; text-decoration:none; cursor:pointer; }
+			.button-primary { border-color:#0b477c; color:#fff; background:#0f61a9; }
+			input:focus,.button:focus-visible,a:focus-visible { border-color:var(--blue); outline:3px solid var(--focus); outline-offset:2px; }
+			@media (max-width:27rem) { .account span{display:none}.site-nav{margin-left:.6rem}.site-nav a{padding:0 .45rem}.field{grid-template-columns:1fr;gap:.25rem}.board-state{max-width:7.5rem} }
+		</style>
+	</head>
+	<body>
+		<header class="site-header">
+			<div class="site-header-inner">
+				<a class="brand" href="#">Cork</a>
+				<nav class="site-nav" aria-label="Main navigation"><a href="#">Home</a><a href="#">Boards</a><a href="#">Pins</a></nav>
+				<a class="account" href="#"><span>Liam</span> Settings</a>
+			</div>
+		</header>
+		<main>
+			<div class="breadcrumb"><a href="#">Pins</a> / New pin</div>
+			<header class="page-header"><h1>New pin</h1></header>
+			<form class="frame">
+				<header class="frame-header"><h2 id="details-heading">Details</h2></header>
+				<section aria-labelledby="details-heading">
+					<div class="field"><label for="title">Title</label><input id="title" name="title" type="text" value="A Pattern Language for Web Usability" autofocus></div>
+					<div class="field"><label for="url">URL</label><input id="url" name="url" type="url" value="https://www.welie.com/patterns/gui/" required></div>
+				</section>
+				<header class="frame-header"><h2 id="boards-heading">Boards</h2><span class="frame-meta">Optional · choose any</span></header>
+				<fieldset class="boards" aria-labelledby="boards-heading">
+					<label class="board"><input type="checkbox" name="board" value="seminar-reading" checked><span class="board-name">Seminar reading</span><span class="board-state">Shared · Nadia, Theo</span></label>
+					<label class="board"><input type="checkbox" name="board" value="personal-computing"><span class="board-name">Personal computing</span><span class="board-state">Private</span></label>
+					<label class="board"><input type="checkbox" name="board" value="links-for-liam"><span class="board-name">Links for Liam</span><span class="board-state">Shared · Theo</span></label>
+				</fieldset>
+				<div class="consequence">Adding to Seminar reading shows this pin to Nadia and Theo.</div>
+				<footer class="form-actions"><a class="button" href="#">Cancel</a><button class="button button-primary" type="submit">Save</button></footer>
+			</form>
+		</main>
+	</body>
+</html>

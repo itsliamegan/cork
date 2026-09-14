@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>Cork - Seminar reading - Solution 2</title>
+		<style>
+			:root { --canvas:#fff; --foreground:#111; --muted:#626262; --surface:#f1f1f1; --surface-soft:#fafafa; --border:#999; --divider:#d5d5d5; --blue:#0f61a9; --danger:#9b1c1c; --focus:rgb(15 97 169 / 25%); }
+			@media (prefers-color-scheme:dark) { :root { --canvas:#151515; --foreground:#f1f1f1; --muted:#aaa; --surface:#242424; --surface-soft:#1c1c1c; --border:#707070; --divider:#3e3e3e; --blue:#68afe9; --danger:#f09595; --focus:rgb(104 175 233 / 30%); } }
+			* { box-sizing:border-box; }
+			body { margin:0; color:var(--foreground); background:var(--canvas); font:14px/1.35 "Helvetica Neue",Helvetica,Arial,sans-serif; }
+			a { color:var(--blue); text-underline-offset:2px; }
+			button { font:inherit; }
+			.site-header { border-bottom:1px solid var(--border); background:var(--surface); }
+			.site-header-inner { display:flex; align-items:stretch; width:100%; max-width:40rem; height:2.8rem; margin:auto; padding:0 .6rem; }
+			.brand,.site-nav a,.account { display:flex; align-items:center; color:var(--foreground); text-decoration:none; }
+			.brand { font-size:1.15rem; font-weight:700; }
+			.site-nav { display:flex; margin-left:1.2rem; }
+			.site-nav a { padding:0 .65rem; border-bottom:3px solid transparent; font-weight:600; }
+			.site-nav a[aria-current="page"] { border-color:var(--blue); }
+			.account { gap:.55rem; margin-left:auto; color:var(--muted); font-size:.78rem; }
+			.account span { color:var(--foreground); font-weight:600; }
+			main { width:100%; max-width:40rem; margin:1.35rem auto 3rem; padding:0 .6rem; }
+			.page-introduction { display:flex; align-items:flex-start; gap:1rem; margin-bottom:1.25rem; }
+			h1 { margin:0; font-size:1.45rem; line-height:1.15; }
+			.context { margin-top:.25rem; color:var(--muted); font-size:.75rem; }
+			.page-actions { display:flex; gap:.45rem; margin-left:auto; }
+			.button { display:inline-block; padding:.34rem .65rem; border:1px solid var(--border); border-radius:3px; color:var(--foreground); background:var(--canvas); font-weight:600; text-decoration:none; cursor:pointer; }
+			.button-primary { border-color:#0b477c; color:#fff; background:#0f61a9; }
+			.section-title { display:flex; align-items:baseline; margin:0 0 .4rem; font-size:.85rem; }
+			.section-count { margin-left:auto; color:var(--muted); font-size:.7rem; font-weight:400; }
+			.frame { overflow:hidden; border:1px solid var(--border); border-radius:3px; }
+			.pin { min-height:3.7rem; padding:.55rem .65rem; }
+			.pin + .pin { border-top:1px solid var(--divider); }
+			.pin-main { display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:center; gap:.75rem; }
+			.pin-title { color:var(--foreground); font-weight:600; }
+			.pin-url { overflow:hidden; margin-top:.1rem; color:var(--muted); font-size:.75rem; text-overflow:ellipsis; white-space:nowrap; }
+			.pin-meta { margin-top:.15rem; color:var(--muted); font-size:.68rem; }
+			.placement-count { color:var(--muted); font-size:.68rem; white-space:nowrap; }
+			.selected { background:var(--surface-soft); }
+			.pin-actions { display:flex; align-items:center; gap:.65rem; margin:.55rem -.65rem -.55rem; padding:.5rem .65rem; border-top:1px solid var(--divider); background:var(--canvas); }
+			.pin-actions button { padding:0; border:0; color:var(--foreground); background:transparent; font-size:.75rem; text-decoration:underline; text-underline-offset:2px; cursor:pointer; }
+			.pin-actions .delete { margin-left:auto; color:var(--danger); }
+			.button:focus-visible,a:focus-visible,button:focus-visible { outline:3px solid var(--focus); outline-offset:2px; }
+			@media (max-width:32rem) { .account span{display:none}.site-nav{margin-left:.6rem}.site-nav a{padding:0 .45rem}.page-introduction{display:block}.page-actions{margin-top:.75rem}.placement-count{display:none} }
+		</style>
+	</head>
+	<body>
+		<header class="site-header">
+			<div class="site-header-inner">
+				<a class="brand" href="#">Cork</a>
+				<nav class="site-nav" aria-label="Main navigation"><a href="#">Home</a><a href="#" aria-current="page">Boards</a><a href="#">Pins</a></nav>
+				<a class="account" href="#"><span>Liam</span> Settings</a>
+			</div>
+		</header>
+		<main>
+			<header class="page-introduction">
+				<div><h1>Seminar reading</h1><div class="context">Shared with Nadia and Theo</div></div>
+				<div class="page-actions"><a class="button" href="#">Edit board</a><a class="button button-primary" href="#">New pin</a></div>
+			</header>
+			<section aria-labelledby="pins-heading">
+				<h2 class="section-title" id="pins-heading">Pins <span class="section-count">3</span></h2>
+				<div class="frame">
+					<article class="pin"><div class="pin-main"><div><a class="pin-title" href="#">A Pattern Language for Web Usability</a><div class="pin-url">welie.com/patterns/gui/a-pattern-language-for-web-usability</div><div class="pin-meta">Nadia · added by Theo · Sep 7</div></div><span class="placement-count">Also on 2 boards</span></div></article>
+					<article class="pin selected"><div class="pin-main"><div><a class="pin-title" href="#">The Humane Interface</a><div class="pin-url">archive.org/details/humaneinterface</div><div class="pin-meta">Liam · Sep 5</div></div><span class="placement-count">Also on 1 board</span></div><div class="pin-actions"><button type="button">Remove from Seminar reading</button><button class="delete" type="button">Delete pin</button></div></article>
+					<article class="pin"><div class="pin-main"><div><a class="pin-title" href="#">Notes on the Synthesis of Form</a><div class="pin-url">monoskop.org/images/f/ff/Alexander_Christopher_Notes_on_the_Synthesis_of_Form.pdf</div><div class="pin-meta">Theo · Aug 29</div></div></div></article>
+				</div>
+			</section>
+		</main>
+	</body>
+</html>

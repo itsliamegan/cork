@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>Cork - Home - Solution 2</title>
+		<style>
+			:root { --canvas:#fff; --foreground:#111; --muted:#626262; --surface:#f1f1f1; --surface-soft:#fafafa; --control:#fff; --border:#999; --divider:#d5d5d5; --blue:#0f61a9; --blue-soft:#e6f1fb; --focus:rgb(15 97 169 / 25%); }
+			@media (prefers-color-scheme:dark) { :root { --canvas:#151515; --foreground:#f1f1f1; --muted:#aaa; --surface:#242424; --surface-soft:#1c1c1c; --control:#191919; --border:#707070; --divider:#3e3e3e; --blue:#68afe9; --blue-soft:#173c5a; --focus:rgb(104 175 233 / 30%); } }
+			* { box-sizing:border-box; }
+			body { margin:0; color:var(--foreground); background:var(--canvas); font:14px/1.35 "Helvetica Neue",Helvetica,Arial,sans-serif; }
+			a { color:var(--blue); text-underline-offset:2px; }
+			.site-header { border-bottom:1px solid var(--border); background:var(--surface); }
+			.site-header-inner { display:flex; align-items:stretch; width:100%; max-width:40rem; height:2.8rem; margin:auto; padding:0 .6rem; }
+			.brand,.site-nav a,.account { display:flex; align-items:center; color:var(--foreground); text-decoration:none; }
+			.brand { font-size:1.15rem; font-weight:700; }
+			.site-nav { display:flex; margin-left:1.2rem; }
+			.site-nav a { padding:0 .65rem; border-bottom:3px solid transparent; font-weight:600; }
+			.site-nav a[aria-current="page"] { border-color:var(--blue); }
+			.account { gap:.55rem; margin-left:auto; color:var(--muted); font-size:.78rem; }
+			.account span { color:var(--foreground); font-weight:600; }
+			main { width:100%; max-width:40rem; margin:1.35rem auto 3rem; padding:0 .6rem; }
+			.section + .section { margin-top:1.4rem; }
+			.section-title { margin:0 0 .4rem; font-size:.85rem; line-height:1.2; }
+			.frame { overflow:hidden; border:1px solid var(--border); border-radius:3px; background:var(--canvas); }
+			.activity { display:grid; grid-template-columns:minmax(0,1fr) auto; gap:.75rem; min-height:3.35rem; padding:.55rem .65rem; }
+			.activity + .activity { border-top:1px solid var(--divider); }
+			.pin-title,.board-title { color:var(--foreground); font-weight:600; }
+			.activity-note { margin-top:.12rem; color:var(--muted); font-size:.72rem; }
+			.activity-time { align-self:center; color:var(--muted); font-size:.68rem; white-space:nowrap; }
+			.board-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:.55rem; }
+			.board-summary { min-height:4.2rem; padding:.65rem; border:1px solid var(--border); border-radius:3px; color:var(--foreground); text-decoration:none; }
+			.board-summary:focus-visible,.unfiled:focus-visible,a:focus-visible { outline:3px solid var(--focus); outline-offset:2px; }
+			.board-summary:hover,.unfiled:hover { background:var(--surface-soft); }
+			.board-meta { margin-top:.3rem; color:var(--muted); font-size:.72rem; }
+			.new-count { color:var(--blue); }
+			.unfiled { display:flex; align-items:center; min-height:2.8rem; margin-top:1.4rem; padding:.55rem .65rem; border:1px solid var(--border); border-radius:3px; color:var(--foreground); font-weight:600; text-decoration:none; }
+			.unfiled-count { margin-left:.4rem; color:var(--muted); font-size:.72rem; font-weight:400; }
+			.arrow { margin-left:auto; color:var(--muted); font-size:1.1rem; }
+			@media (max-width:32rem) { .account span{display:none}.site-nav{margin-left:.6rem}.site-nav a{padding:0 .45rem}.board-grid{grid-template-columns:1fr} }
+		</style>
+	</head>
+	<body>
+		<header class="site-header">
+			<div class="site-header-inner">
+				<a class="brand" href="#">Cork</a>
+				<nav class="site-nav" aria-label="Main navigation"><a href="#" aria-current="page">Home</a><a href="#">Boards</a><a href="#">Pins</a></nav>
+				<a class="account" href="#"><span>Liam</span> Settings</a>
+			</div>
+		</header>
+		<main>
+			<section class="section" aria-labelledby="new-heading">
+				<h1 class="section-title" id="new-heading">New since you were here</h1>
+				<div class="frame">
+					<div class="activity"><div><a class="pin-title" href="#">A Pattern Language for Web Usability</a><div class="activity-note">Nadia added to <a href="#">Seminar reading</a></div></div><time class="activity-time">12 min</time></div>
+					<div class="activity"><div><a class="pin-title" href="#">The Humane Interface</a><div class="activity-note">Theo added to <a href="#">Seminar reading</a></div></div><time class="activity-time">Yesterday</time></div>
+					<div class="activity"><div><a class="pin-title" href="#">Notes on the Synthesis of Form</a><div class="activity-note">Theo added to <a href="#">Links for Liam</a></div></div><time class="activity-time">Yesterday</time></div>
+				</div>
+			</section>
+			<section class="section" aria-labelledby="recent-heading">
+				<h2 class="section-title" id="recent-heading">Recently active</h2>
+				<div class="board-grid">
+					<a class="board-summary" href="#"><span class="board-title">Seminar reading</span><div class="board-meta">Shared · 3 people · <span class="new-count">2 new</span></div></a>
+					<a class="board-summary" href="#"><span class="board-title">Personal computing</span><div class="board-meta">Private · 19 pins</div></a>
+					<a class="board-summary" href="#"><span class="board-title">Links for Liam</span><div class="board-meta">Shared · 2 people · <span class="new-count">1 new</span></div></a>
+				</div>
+			</section>
+			<a class="unfiled" href="#">Pins not on a board <span class="unfiled-count">7</span><span class="arrow">›</span></a>
+		</main>
+	</body>
+</html>
