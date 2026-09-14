@@ -1,13 +1,13 @@
 import helios.app
 import helios.auth
-import helios.data.component
+import helios.data
 import helios.flash
-import helios.limit.middleware
-import helios.persist.component
+import helios.limit
+import helios.persist
 from helios.persist.files import Files
 from helios.routing import Router
-import helios.session.component
-import helios.views.component
+import helios.session
+import helios.views
 from helios.wsgi import Application
 
 from app.config import Config
@@ -22,12 +22,12 @@ class Application(Application):
 			helios.app.Config(base_url=config.base_url),
 			Router(routes),
 			[
-				helios.persist.component.Component(files),
-				helios.session.component.Component(config.session, files),
-				helios.data.component.Component(config.data, files, schema),
-				helios.views.component.Component(config.views),
-				helios.flash.Component(),
-				helios.auth.Component(User),
+				helios.persist.Provider(files),
+				helios.data.Provider(config.data, files, schema),
+				helios.views.Provider(config.views),
+				helios.session.Provider(config.session, files),
+				helios.flash.Provider(),
+				helios.auth.Provider(User),
 			],
-			[helios.limit.middleware.Middleware(config.rate_limit)],
+			[helios.limit.Middleware(config.rate_limit)],
 		)

@@ -39,7 +39,6 @@ class TestApplication(Application):
 				config.data.store_file, Format(schema)
 			)
 			super().__init__(config)
-			self.boot()
 			with self.persistence.lock() as scope:
 				self.store = scope.open(self.store_data).load()
 			self.client = TestClient(self)
@@ -51,7 +50,10 @@ class TestApplication(Application):
 		return self
 
 	def __exit__(self, exc_type, exc, traceback):
-		self.temp_dir.cleanup()
+		try:
+			self.close()
+		finally:
+			self.temp_dir.cleanup()
 
 	def sign_in(self, user: User):
 		session_id = uuid4()
