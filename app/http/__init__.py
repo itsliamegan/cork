@@ -8,6 +8,7 @@ from app.http import (
 	invites,
 	orderings,
 	pins,
+	placements,
 	recoveries,
 	redemptions,
 	sessions,
@@ -64,6 +65,7 @@ routes = [
 				],
 			),
 			Route(Method.PUT, Pattern("/orderings"), orderings.update),
+			Route(Method.DELETE, Pattern("/placements/{id:uuid}"), placements.delete),
 			Group(
 				prefix="/boards",
 				routes=[
@@ -74,13 +76,20 @@ routes = [
 					Route(Method.GET, Pattern("/{id:uuid}/edit"), boards.edit),
 					Route(Method.PUT, Pattern("/{id:uuid}"), boards.update),
 					Route(Method.DELETE, Pattern("/{id:uuid}"), boards.delete),
+					Route(
+						Method.PUT,
+						Pattern("/{board_id:uuid}/placements"),
+						placements.update_order,
+					),
 					Route(Method.GET, Pattern("/{id:uuid}/pins/new"), pins.new),
 				],
 			),
 			Group(
 				prefix="/pins",
 				routes=[
+					Route(Method.GET, Pattern("/"), pins.index),
 					Route(Method.POST, Pattern("/"), pins.create),
+					Route(Method.GET, Pattern("/new"), pins.canonical_new),
 					Route(Method.GET, Pattern("/{id:uuid}"), pins.show),
 					Route(Method.GET, Pattern("/{id:uuid}/edit"), pins.edit),
 					Route(Method.PUT, Pattern("/{id:uuid}"), pins.update),

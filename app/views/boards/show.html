@@ -15,15 +15,40 @@
 	</section>
 </header>
 
-<section class="frame">
+<section
+	class="frame"
+	data-controller="reorder"
+	data-reorder-url-value="/boards/{{ board.id }}/placements"
+	data-reorder-field-value="placement_id"
+>
 	<header class="frame-header">
 		<h3 class="frame-title">Pins</h3>
 	</header>
 
-	<ol class="frame-items">
-		{% for pin in pins | sort(attribute = "created_at", reverse = True) %}
-		<li class="frame-item">
+	<ol
+		class="frame-items"
+		data-reorder-target="list"
+		data-action="dragover->reorder#dragOver dragleave->reorder#dragLeave drop->reorder#drop"
+	>
+		{% for row in pin_rows %}
+		{% set pin = row.pin %}
+		{% set placement = row.placement %}
+		<li
+			class="frame-item frame-item--reorderable pin-row"
+			data-controller="pin-details"
+			data-reorder-target="item"
+			data-reorder-id="{{ placement.id }}"
+		>
 			<article class="pin">
+				<button
+					class="reorder-handle"
+					type="button"
+					draggable="true"
+					title="Drag to reorder"
+					data-action="dragstart->reorder#dragStart dragend->reorder#dragEnd"
+				>
+					⠿
+				</button>
 				<section class="pin-details">
 					<a
 						class="pin-link"
@@ -31,73 +56,50 @@
 						{% if open_in_new_tab %}target="_blank" rel="noopener noreferrer"{% endif %}
 					>
 						<h3 class="pin-title">{{ pin.title }}</h3>
-						<span class="pin-url">{{ pin.url }}</span>
 					</a>
 					<section class="pin-meta">
+						<a
+							class="pin-url"
+							href="{{ pin.url }}"
+							{% if open_in_new_tab %}target="_blank" rel="noopener noreferrer"{% endif %}
+						>{{ pin.display_url() }}</a>
 						<time class="pin-date" datetime="{{ pin.created_at }}">
 							{{ pin.created_at | date }}
 						</time>
-						<a class="pin-details-link" href="/pins/{{ pin.id }}">Details</a>
+						<a
+							class="pin-details-link"
+							href="/pins/{{ pin.id }}"
+							data-turbo-frame="pin-{{ pin.id }}-details"
+							data-pin-details-target="link"
+							data-action="click->pin-details#toggle"
+						>Details</a>
 					</section>
 				</section>
 
-				{% if pin.creator_id == current_user.id %}
+				{% if pin.creator_id == current_user.id or row.can_remove %}
 				<section class="pin-actions">
-					<button
-						class="button button--icon"
-						command="toggle-popover"
-						commandfor="pin-{{ pin.id }}-actions"
-					>
-						&#8942;
-					</button>
-
-					<menu class="menu" id="pin-{{ pin.id }}-actions" popover>
-						<li><a class="menu-item" href="/pins/{{ pin.id }}/edit">Edit</a></li>
-						<li>
-							<button
-								class="menu-item menu-item--danger"
-								command="show-modal"
-								commandfor="pin-{{ pin.id }}-dialog"
-							>
-								Delete
-							</button>
-						</li>
+					<button class="button button--icon" command="toggle-popover" commandfor="placement-{{ placement.id }}-actions">&#8942;</button>
+					<menu class="menu" id="placement-{{ placement.id }}-actions" popover>
+						<li><a class="menu-item" href="/pins/{{ pin.id }}">View</a></li>
+						{% if pin.creator_id == current_user.id %}<li><a class="menu-item" href="/pins/{{ pin.id }}/edit">Edit</a></li>{% endif %}
+						{% if row.can_remove %}<li><button class="menu-item menu-item--danger" command="show-modal" commandfor="placement-{{ placement.id }}-dialog">Remove</button></li>{% endif %}
 					</menu>
-
-					<dialog id="pin-{{ pin.id }}-dialog" class="dialog">
-						<section class="dialog-content">
-							<p>Are you sure you want to delete this pin? This action cannot be undone.</p>
-						</section>
+					{% if row.can_remove %}
+					<dialog id="placement-{{ placement.id }}-dialog" class="dialog">
+						<section class="dialog-content"><p>Are you sure you want to remove this pin from this board? It will remain in Pins and on any other boards.</p></section>
 						<footer class="dialog-actions">
-							<button
-								class="button"
-								command="close"
-								commandfor="pin-{{ pin.id }}-dialog"
-							>
-								Cancel
-							</button>
-							<button
-								class="button button--danger"
-								type="submit"
-								form="pin-{{ pin.id }}-delete-form"
-								autofocus
-							>
-								Delete
-							</button>
-							<form
-								id="pin-{{ pin.id }}-delete-form"
-								action="/pins/{{ pin.id }}"
-								method="POST"
-								hidden
-							>
+							<button class="button" command="close" commandfor="placement-{{ placement.id }}-dialog">Cancel</button>
+							<button class="button button--danger" type="submit" form="placement-{{ placement.id }}-delete-form" autofocus>Remove</button>
+							<form id="placement-{{ placement.id }}-delete-form" action="/placements/{{ placement.id }}" method="POST" hidden>
 								<input type="text" name="_method" value="DELETE" hidden>
-								<input type="hidden" name="return_to" value="/boards/{{ board.id }}">
 							</form>
 						</footer>
 					</dialog>
+					{% endif %}
 				</section>
 				{% endif %}
 			</article>
+			<turbo-frame id="pin-{{ pin.id }}-details" data-pin-details-target="frame"></turbo-frame>
 		</li>
 		{% else %}
 		<li class="frame-item frame-empty">No pins yet.</li>

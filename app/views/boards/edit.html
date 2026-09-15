@@ -5,12 +5,7 @@
 
 {% block content %}
 <header id="page-header">
-	<h2 id="page-title">Edit</h2>
-
-	<span id="page-context">
-		<span>Board:</span>
-		<a href="/boards/{{ board.id }}">{{ board.title }}</a>
-	</span>
+	<h2 id="page-title">Edit board</h2>
 </header>
 
 <form class="frame" action="/boards/{{ board.id }}" method="POST" autocomplete="off">

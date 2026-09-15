@@ -1,16 +1,11 @@
 {% extends "layouts.app" %}
-{% set active_nav = "boards" %}
+{% set active_nav = "pins" %}
 
 {% block title %}Cork - Edit pin{% endblock %}
 
 {% block content %}
 <header id="page-header">
-	<h2 id="page-title">Edit</h2>
-
-	<span id="page-context">
-		<span>Board:</span>
-		<a href="/boards/{{ board.id }}">{{ board.title }}</a>
-	</span>
+	<h2 id="page-title">Edit pin</h2>
 </header>
 
 <form class="frame" method="POST" action="/pins/{{ pin.id }}" autocomplete="off">
@@ -38,39 +33,7 @@
 		</label>
 	</section>
 
-	<header class="frame-header">
-		<h3 class="frame-title">Boards</h3>
-		<span class="frame-meta">{{ board_options | length }} available</span>
-	</header>
-
-	<section class="board-picker" data-controller="filter">
-		<div class="board-picker-search">
-			<input
-				class="form-field board-picker-search-input"
-				type="search"
-				placeholder="Search"
-				autocomplete="off"
-				data-filter-target="query"
-				data-action="input->filter#filter"
-			>
-		</div>
-		<fieldset class="board-picker-options">
-			{% for board_option in board_options %}
-			<label class="board-picker-option" data-filter-target="item" data-filter-text="{{ board_option.board.title }}">
-				<input
-					class="form-field"
-					type="checkbox"
-					name="board_id"
-					value="{{ board_option.board.id }}"
-					{% if board_option.board.id in placed_board_ids %}checked{% endif %}
-				>
-				<span class="board-picker-title">{{ board_option.board.title }}</span>
-				<span class="board-picker-state">{{ board_option.sharing_label }}</span>
-			</label>
-			{% endfor %}
-		</fieldset>
-		<p class="board-picker-empty" data-filter-target="empty" hidden>No boards match this search.</p>
-	</section>
+	{% include "pins._placements" %}
 
 	<footer class="frame-item form-actions">
 		<a class="button" href="{{ return_to }}">Cancel</a>

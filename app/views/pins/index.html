@@ -1,0 +1,75 @@
+{% extends "layouts.app" %}
+{% set active_nav = "pins" %}
+
+{% block title %}Cork - Pins{% endblock %}
+
+{% block content %}
+<header id="page-header">
+	<h2 id="page-title">Pins</h2>
+	<section id="page-actions">
+		<a class="button button--action" href="/pins/new">New pin</a>
+	</section>
+</header>
+
+<section class="frame" data-controller="filter">
+	<header class="frame-header">
+		<h3 class="frame-title">Saved by you</h3>
+	</header>
+	<div class="pin-index-search">
+		<input
+			class="form-field pin-index-search-input"
+			type="search"
+			placeholder="Search"
+			aria-label="Search pins"
+			autocomplete="off"
+			data-filter-target="query"
+			data-action="input->filter#filter"
+		>
+	</div>
+	<ol class="frame-items">
+		{% for row in pin_rows %}
+		{% set pin = row.pin %}
+		<li
+			class="frame-item pin-row"
+			data-filter-target="item"
+			data-filter-text="{{ pin.title }} {{ pin.url }} {{ pin.note }}"
+		>
+			<article class="pin">
+				<section class="pin-details">
+					<a class="pin-link" href="{{ pin.url }}" {% if open_in_new_tab %}target="_blank" rel="noopener noreferrer"{% endif %}><h3 class="pin-title">{{ pin.title }}</h3></a>
+					<section class="pin-meta">
+						<a class="pin-url" href="{{ pin.url }}" {% if open_in_new_tab %}target="_blank" rel="noopener noreferrer"{% endif %}>{{ pin.display_url() }}</a>
+						<time class="pin-date" datetime="{{ pin.created_at }}">{{ pin.created_at | date }}</time>
+						<span class="pin-board-count">
+							{% if row.board_count %}{{ row.board_count }} board{% if row.board_count != 1 %}s{% endif %}{% else %}No boards{% endif %}
+						</span>
+					</section>
+				</section>
+				<section class="pin-actions">
+					<button class="button button--icon" command="toggle-popover" commandfor="pin-{{ pin.id }}-actions">&#8942;</button>
+					<menu class="menu" id="pin-{{ pin.id }}-actions" popover>
+						<li><a class="menu-item" href="/pins/{{ pin.id }}">View</a></li>
+						<li><a class="menu-item" href="/pins/{{ pin.id }}/edit">Edit</a></li>
+						<li><button class="menu-item menu-item--danger" command="show-modal" commandfor="pin-{{ pin.id }}-delete-dialog">Delete</button></li>
+					</menu>
+					<dialog id="pin-{{ pin.id }}-delete-dialog" class="dialog">
+						<section class="dialog-content"><p>Are you sure you want to delete this pin? This action cannot be undone.</p></section>
+						<footer class="dialog-actions">
+							<button class="button" command="close" commandfor="pin-{{ pin.id }}-delete-dialog">Cancel</button>
+							<button class="button button--danger" type="submit" form="pin-{{ pin.id }}-delete-form">Delete</button>
+							<form id="pin-{{ pin.id }}-delete-form" action="/pins/{{ pin.id }}" method="POST" hidden>
+								<input type="text" name="_method" value="DELETE" hidden>
+								<input type="hidden" name="return_to" value="/pins/">
+							</form>
+						</footer>
+					</dialog>
+				</section>
+			</article>
+		</li>
+		{% else %}
+		<li class="frame-item frame-empty pin-index-empty">No pins yet.</li>
+		{% endfor %}
+		<li class="frame-item frame-empty pin-index-no-match" data-filter-target="empty" hidden>No matching pins.</li>
+	</ol>
+</section>
+{% endblock %}

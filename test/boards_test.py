@@ -176,7 +176,7 @@ def test_deleting_board_retains_pins_placed_on_another_board():
 		)
 
 
-def test_deleted_board_cascades():
+def test_deleted_board_removes_related_records_but_retains_pins():
 	with TestApplication() as app:
 		alice = app.store.create(User, name="Alice")
 		bob = app.store.create(User, name="Bob")
@@ -204,7 +204,56 @@ def test_deleted_board_cascades():
 
 		assert_eq(res.status_code, 302)
 		assert_eq(app.store.find_all(Board), [])
-		assert_eq(app.store.find_all(Pin), [])
+		assert_eq([stored_pin.id for stored_pin in app.store.find_all(Pin)], [pin.id])
 		assert_eq(app.store.find_all(Placement), [])
 		assert_eq(app.store.find_all(Share), [])
 		assert_eq(app.store.find_all(Ordering), [])
+
+
+def test_board_overflow_menu_offers_edit_and_delete_without_sharing():
+	with TestApplication() as app:
+		user = app.store.create(User, name="Alice")
+		board = app.store.create(Board, title="Reading", creator_id=user.id)
+		app.sign_in(user)
+
+		index_res = app.client.get("/boards/")
+		edit_res = app.client.get(f"/boards/{board.id}/edit")
+
+		assert_that('<a class="menu-item" href="/boards/' in index_res.text)
+		assert_that('class="menu-item menu-item--danger"' in index_res.text)
+		assert_that(">Delete</button>" in index_res.text)
+		assert_that(">Sharing</a>" not in index_res.text)
+		assert_that(
+			"pins will remain in Pins and on any other boards" in index_res.text
+		)
+		assert_that(f'action="/boards/{board.id}"' in index_res.text)
+		assert_that("Delete board" not in edit_res.text)
+
+
+def test_board_pin_rows_target_unique_detail_frames_and_shorten_hostnames():
+	with TestApplication() as app:
+		user = app.store.create(User, name="Alice")
+		board = app.store.create(Board, title="Reading", creator_id=user.id)
+		pin = app.store.create(
+			Pin,
+			title="Sartre",
+			url="https://www.example.com/articles/sartre",
+			creator_id=user.id,
+		)
+		placement = app.store.create(
+			Placement, pin_id=pin.id, board_id=board.id, adder_id=user.id
+		)
+		app.sign_in(user)
+
+		res = app.client.get(f"/boards/{board.id}")
+
+		assert_eq(res.status_code, 200)
+		assert_that('href="https://www.example.com/articles/sartre"' in res.text)
+		assert_that('class="pin-url"' in res.text and ">example.com</a>" in res.text)
+		assert_that(
+			f'href="/pins/{pin.id}"' in res.text
+			and f'data-turbo-frame="pin-{pin.id}-details"' in res.text
+			and f'<turbo-frame id="pin-{pin.id}-details"' in res.text
+		)
+		assert_that("Also on" not in res.text and "Only on this board" not in res.text)
+		assert_that(f'action="/placements/{placement.id}"' in res.text)

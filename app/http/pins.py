@@ -1,5 +1,4 @@
 from typing import cast
-from urllib.parse import urlsplit
 from uuid import UUID
 
 from helios.app import Context
@@ -26,13 +25,12 @@ from app.data import (
 
 def _referring_board_id(
 	raw_url: str | None,
-	pin: Pin,
 	placements: list[Placement],
 ) -> UUID | None:
 	if not isinstance(raw_url, str):
 		return None
 	try:
-		path = urlsplit(raw_url).path
+		path = URL(raw_url).path
 	except ValueError:
 		return None
 	for placement in placements:
@@ -41,19 +39,29 @@ def _referring_board_id(
 	return None
 
 
-def _pin_return_url(raw_url: str | None, pin: Pin, placements: list[Placement]) -> URL:
+def _pin_return_url(
+	ctx: Context,
+	raw_url: str | None,
+	pin: Pin,
+	placements: list[Placement],
+) -> URL:
 	fallback = URL(f"/pins/{pin.id}")
 	if not isinstance(raw_url, str):
 		return fallback
 	try:
-		path = urlsplit(raw_url).path
+		path = URL(raw_url).path
 	except ValueError:
 		return fallback
-	if path == f"/pins/{pin.id}":
+	if path in {"/pins/", f"/pins/{pin.id}"}:
 		return URL(path)
-	if _referring_board_id(raw_url, pin, placements) is not None:
-		return URL(path)
-	return fallback
+	board_id = _referring_board_id(raw_url, placements)
+	if board_id is None:
+		return fallback
+	try:
+		find_accessible_board(ctx, board_id)
+	except NotFoundError:
+		return fallback
+	return URL(path)
 
 
 def build_board_options(ctx: Context) -> list[dict[str, Board | str]]:
@@ -92,6 +100,39 @@ def build_board_options(ctx: Context) -> list[dict[str, Board | str]]:
 	return board_options
 
 
+def index(req: Request, ctx: Context) -> Response:
+	store = ctx.get(Store)
+	auth = ctx.get(Authenticator)
+	views = ctx.get(Views)
+	user = cast(User, auth.user)
+
+	pins = store.find_by(Pin, creator_id=user.id)
+	pins.sort(key=lambda pin: pin.created_at, reverse=True)
+	pin_ids = {pin.id for pin in pins}
+	placements_by_pin_id: dict[UUID, list[Placement]] = {pin.id: [] for pin in pins}
+	for placement in store.find_all(Placement):
+		if placement.pin_id in pin_ids:
+			placements_by_pin_id[placement.pin_id].append(placement)
+	pin_rows = []
+	for pin in pins:
+		pin_rows.append(
+			{
+				"pin": pin,
+				"board_count": len(placements_by_pin_id[pin.id]),
+			}
+		)
+
+	html = views.render(
+		"pins.index",
+		{
+			"pin_rows": pin_rows,
+			"current_user": user,
+			"open_in_new_tab": user.open_in_new_tab,
+		},
+	)
+	return Response.html(html)
+
+
 def create(req: Request, ctx: Context) -> Response:
 	store = ctx.get(Store)
 	auth = ctx.get(Authenticator)
@@ -101,8 +142,8 @@ def create(req: Request, ctx: Context) -> Response:
 		[
 			Field("title", parser.Required(parser.Str())),
 			Field("url", parser.Required(parser.Str())),
-			Field("note", parser.Str()),
-			Field("board_id", parser.Required(parser.List(parser.UUID()))),
+			Field("note", parser.Optional(parser.Str())),
+			Field("board_id", parser.List(parser.UUID())),
 			Field("return_to", parser.Optional(parser.Str())),
 		]
 	)
@@ -120,36 +161,46 @@ def create(req: Request, ctx: Context) -> Response:
 		Pin,
 		title=input["title"],
 		url=input["url"],
-		note=input["note"],
+		note=input["note"] or "",
 		creator_id=user.id,
 	)
 	for board in boards:
-		store.create(Placement, pin_id=pin.id, board_id=board.id, adder_id=user.id)
+		Placement.create(store, pin, board, user)
 
-	return_to = URL(f"/boards/{boards[0].id}")
+	return_to = URL("/pins/")
 	if isinstance(input["return_to"], str):
 		try:
-			path = urlsplit(input["return_to"]).path
+			path = URL(input["return_to"]).path
 		except ValueError:
 			path = ""
-		if path in {f"/boards/{board.id}" for board in boards}:
+		if path == "/pins/" or path in {f"/boards/{board.id}" for board in boards}:
 			return_to = URL(path)
 	return Response.redirect(return_to)
 
 
-def new(req: Request, ctx: Context, id: UUID) -> Response:
+def render_new(ctx: Context, board: Board | None = None) -> Response:
 	auth = ctx.get(Authenticator)
 	views = ctx.get(Views)
-	board = find_accessible_board(ctx, id)
+	return_to = URL(f"/boards/{board.id}") if board is not None else URL("/pins/")
 	html = views.render(
 		"pins.new",
 		{
-			"board": board,
+			"originating_board": board,
 			"board_options": build_board_options(ctx),
+			"selected_board_ids": {board.id} if board is not None else set(),
 			"current_user": auth.user,
+			"return_to": return_to,
 		},
 	)
 	return Response.html(html)
+
+
+def canonical_new(req: Request, ctx: Context) -> Response:
+	return render_new(ctx)
+
+
+def new(req: Request, ctx: Context, id: UUID) -> Response:
+	return render_new(ctx, find_accessible_board(ctx, id))
 
 
 def show(req: Request, ctx: Context, id: UUID) -> Response:
@@ -161,22 +212,30 @@ def show(req: Request, ctx: Context, id: UUID) -> Response:
 	pin = find_accessible_pin(ctx, id)
 	placements = find_pin_placements(store, pin.id)
 	accessible_placements = []
+	accessible_boards = []
 	for placement in placements:
 		try:
-			find_accessible_board(ctx, placement.board_id)
+			board = find_accessible_board(ctx, placement.board_id)
 		except NotFoundError:
 			continue
 		accessible_placements.append(placement)
-	placement = find_contextual_placement(
-		accessible_placements, _referring_board_id(req.referrer, pin, placements)
+		accessible_boards.append(board)
+	contextual_placement = find_contextual_placement(
+		accessible_placements, _referring_board_id(req.referrer, accessible_placements)
 	)
-	board = find_accessible_board(ctx, placement.board_id)
+	adder = (
+		store.find_one(User, contextual_placement.adder_id)
+		if contextual_placement is not None
+		else None
+	)
 	html = views.render(
 		"pins.show",
 		{
 			"pin": pin,
-			"board": board,
+			"accessible_boards": accessible_boards,
 			"creator": store.find_one(User, pin.creator_id),
+			"adder": adder,
+			"is_unfiled": not placements,
 			"current_user": user,
 			"open_in_new_tab": user.open_in_new_tab,
 		},
@@ -191,20 +250,24 @@ def edit(req: Request, ctx: Context, id: UUID) -> Response:
 
 	pin = find_owned(ctx, Pin, id)
 	placements = find_pin_placements(store, pin.id)
-	placement = find_contextual_placement(
-		placements, _referring_board_id(req.referrer, pin, placements)
-	)
-	board = store.find_one(Board, placement.board_id)
+	accessible_placements = []
+	for placement in placements:
+		try:
+			find_accessible_board(ctx, placement.board_id)
+		except NotFoundError:
+			continue
+		accessible_placements.append(placement)
 
 	html = views.render(
 		"pins.edit",
 		{
 			"pin": pin,
-			"board": board,
 			"board_options": build_board_options(ctx),
-			"placed_board_ids": {placement.board_id for placement in placements},
+			"selected_board_ids": {
+				placement.board_id for placement in accessible_placements
+			},
 			"current_user": auth.user,
-			"return_to": _pin_return_url(req.referrer, pin, placements),
+			"return_to": _pin_return_url(ctx, req.referrer, pin, placements),
 		},
 	)
 	return Response.html(html)
@@ -222,7 +285,7 @@ def update(req: Request, ctx: Context, id: UUID) -> Response:
 		[
 			Field("url", parser.Required(parser.Str())),
 			Field("title", parser.Required(parser.Str())),
-			Field("board_id", parser.Required(parser.List(parser.UUID()))),
+			Field("board_id", parser.List(parser.UUID())),
 			Field("note", parser.Optional(parser.Str())),
 			Field("return_to", parser.Optional(parser.Str())),
 		]
@@ -233,17 +296,26 @@ def update(req: Request, ctx: Context, id: UUID) -> Response:
 
 	board_ids = set(input["board_id"])
 	try:
-		[find_accessible_board(ctx, board_id) for board_id in board_ids]
+		boards_by_id = {
+			board_id: find_accessible_board(ctx, board_id) for board_id in board_ids
+		}
 	except NotFoundError:
 		return Response.text("400 Bad Request", status=Status.BAD_REQUEST)
 
-	return_to = _pin_return_url(input["return_to"], pin, placements)
-	existing_board_ids = {placement.board_id for placement in placements}
+	return_to = _pin_return_url(ctx, input["return_to"], pin, placements)
+	accessible_placements = []
 	for placement in placements:
+		try:
+			find_accessible_board(ctx, placement.board_id)
+		except NotFoundError:
+			continue
+		accessible_placements.append(placement)
+	for placement in accessible_placements:
 		if placement.board_id not in board_ids:
 			store.delete(placement.id)
+	existing_board_ids = {placement.board_id for placement in placements}
 	for board_id in board_ids - existing_board_ids:
-		store.create(Placement, pin_id=pin.id, board_id=board_id, adder_id=user.id)
+		Placement.create(store, pin, boards_by_id[board_id], user)
 	pin.url = input["url"]
 	pin.title = input["title"]
 	pin.note = input["note"] or ""
@@ -257,11 +329,24 @@ def delete(req: Request, ctx: Context, id: UUID) -> Response:
 
 	pin = find_owned(ctx, Pin, id)
 	placements = find_pin_placements(store, pin.id)
-	raw_return_to = cast(str, req.input.items.get("return_to"))
-	board_id = _referring_board_id(raw_return_to, pin, placements)
-	if board_id is None:
-		board_id = find_contextual_placement(placements).board_id
-	return_to = URL(f"/boards/{board_id}")
+	return_to = URL("/pins/")
+	raw_return_to = req.input.items.get("return_to")
+	if isinstance(raw_return_to, str):
+		try:
+			path = URL(raw_return_to).path
+		except ValueError:
+			path = ""
+		if path == "/pins/":
+			return_to = URL(path)
+		else:
+			board_id = _referring_board_id(raw_return_to, placements)
+			if board_id is not None:
+				try:
+					find_accessible_board(ctx, board_id)
+				except NotFoundError:
+					pass
+				else:
+					return_to = URL(path)
 	for placement in placements:
 		store.delete(placement.id)
 	store.delete(pin.id)

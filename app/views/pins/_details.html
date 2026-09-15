@@ -1,0 +1,35 @@
+<section class="pin-detail-panel">
+	<div class="pin-detail-row">
+		<span class="pin-detail-label">URL</span>
+		<a
+			class="pin-detail-value pin-detail-url"
+			href="{{ pin.url }}"
+			{% if open_in_new_tab %}target="_blank" rel="noopener noreferrer"{% endif %}
+		>
+			{{ pin.url }}
+		</a>
+	</div>
+	<div class="pin-detail-row">
+		<span class="pin-detail-label">Note</span>
+		{% if pin.note %}
+		<p class="pin-detail-value pin-note">{{ pin.note }}</p>
+		{% else %}
+		<span class="pin-detail-value pin-detail-empty">No note.</span>
+		{% endif %}
+	</div>
+	{% if adder %}
+	<div class="pin-detail-row">
+		<span class="pin-detail-label">Added by</span>
+		<span class="pin-detail-value">{{ adder.name }}</span>
+	</div>
+	{% endif %}
+	<div class="pin-detail-row">
+		<span class="pin-detail-label">Boards</span>
+		<span class="pin-detail-value board-chips">
+			{% for board in accessible_boards %}
+			{% include "boards._chip" %}
+			{% endfor %}
+			{% if is_unfiled %}<span class="pin-unfiled">Not on any boards</span>{% endif %}
+		</span>
+	</div>
+</section>

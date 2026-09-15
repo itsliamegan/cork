@@ -1,16 +1,11 @@
-{% extends "layouts.app" %} {% set active_nav = "boards" %} {% block title
+{% extends "layouts.app" %} {% set active_nav = "pins" if originating_board is none else "boards" %} {% block title
 %}Cork - New pin{% endblock %} {% block content %}
 <header id="page-header">
 	<h2 id="page-title">New pin</h2>
-
-	<span id="page-context">
-		<span>Board:</span>
-		<a href="/boards/{{ board.id }}">{{ board.title }}</a>
-	</span>
 </header>
 
 <form class="frame" method="POST" action="/pins/" autocomplete="off">
-	<input type="hidden" name="return_to" value="/boards/{{ board.id }}" />
+	<input type="hidden" name="return_to" value="{{ return_to }}" />
 	<header class="frame-header">
 		<h3 class="frame-title">Details</h3>
 	</header>
@@ -42,48 +37,10 @@
 		</label>
 	</section>
 
-	<header class="frame-header">
-		<h3 class="frame-title">Boards</h3>
-		<span class="frame-meta">{{ board_options | length }} available</span>
-	</header>
-
-	<section class="board-picker" data-controller="filter">
-		<div class="board-picker-search">
-			<input
-				class="form-field board-picker-search-input"
-				type="search"
-				placeholder="Search"
-				autocomplete="off"
-				data-filter-target="query"
-				data-action="input->filter#filter"
-			>
-		</div>
-		<fieldset class="board-picker-options">
-			{% for board_option in board_options %}
-			<label
-				class="board-picker-option"
-				data-filter-target="item"
-				data-filter-text="{{ board_option.board.title }}"
-			>
-				<input
-					class="form-field"
-					type="checkbox"
-					name="board_id"
-					value="{{ board_option.board.id }}"
-					{% if board_option.board.id == board.id %}checked{% endif %}
-				>
-				<span class="board-picker-title">{{ board_option.board.title }}</span>
-				<span class="board-picker-state">{{ board_option.sharing_label }}</span>
-			</label>
-			{% endfor %}
-		</fieldset>
-		<p class="board-picker-empty" data-filter-target="empty" hidden>
-			No matching boards.
-		</p>
-	</section>
+	{% include "pins._placements" %}
 
 	<footer class="frame-item form-actions">
-		<a class="button" href="/boards/{{ board.id }}">Cancel</a>
+		<a class="button" href="{{ return_to }}">Cancel</a>
 		<button class="button button--action" type="submit">Save</button>
 	</footer>
 </form>

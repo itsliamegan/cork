@@ -1,0 +1,20 @@
+{
+	"name": "Cork",
+	"short_name": "Cork",
+	"icons": [
+		{
+			"src": "/static/favicon.png",
+			"sizes": "180x180",
+			"type": "image/png"
+		},
+		{
+			"src": "/static/apple.png",
+			"sizes": "180x180",
+			"type": "image/png"
+		}
+	],
+	"start_url": "/",
+	"display": "standalone",
+	"background_color": "#242424",
+	"theme_color": "#242424"
+}

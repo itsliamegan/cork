@@ -1,16 +1,11 @@
 {% extends "layouts.app" %}
-{% set active_nav = "boards" %}
+{% set active_nav = "pins" %}
 
 {% block title %}Cork - {{ pin.title }}{% endblock %}
 
 {% block content %}
 <header id="page-header">
 	<h2 id="page-title">{{ pin.title }}</h2>
-
-	<span id="page-context">
-		<span>Board:</span>
-		<a href="/boards/{{ board.id }}">{{ board.title }}</a>
-	</span>
 
 	{% if pin.creator_id == current_user.id %}
 	<section id="page-actions">
@@ -23,7 +18,6 @@
 	<header class="frame-header">
 		<h3 class="frame-title">Details</h3>
 	</header>
-
 	<section class="frame-item pin-detail">
 		<a
 			class="pin-detail-url"
@@ -41,11 +35,24 @@
 	<header class="frame-header">
 		<h3 class="frame-title">Note</h3>
 	</header>
-
 	{% if pin.note %}
 	<p class="frame-item pin-note">{{ pin.note }}</p>
 	{% else %}
 	<p class="frame-item frame-empty">No note.</p>
 	{% endif %}
+
+	<header class="frame-header">
+		<h3 class="frame-title">Boards</h3>
+	</header>
+	<section class="frame-item board-chips">
+		{% for board in accessible_boards %}
+		{% include "boards._chip" %}
+		{% endfor %}
+		{% if is_unfiled %}<span class="pin-unfiled">Not on any boards</span>{% endif %}
+	</section>
 </section>
+
+<turbo-frame id="pin-{{ pin.id }}-details" hidden>
+	{% include "pins._details" %}
+</turbo-frame>
 {% endblock %}

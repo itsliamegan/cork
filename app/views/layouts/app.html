@@ -9,29 +9,31 @@
 {% endblock %}
 
 {% block header %}
-<header id="site-header">
-	<h1 id="site-title">Cork</h1>
-
-	<nav id="site-nav">
-		<a
-			class="site-nav-link {% if active_nav == "boards" %} site-nav-link--active {% endif %}"
-			href="/boards/"
+<nav id="site-nav">
+	<a
+		class="site-nav-link {% if active_nav == "boards" %} site-nav-link--active {% endif %}"
+		href="/boards/"
 		>
-			Boards
-		</a>
-	</nav>
-
-	<section id="site-actions">
-		<span class="site-identity">{{ current_user.name }}</span>
-		<span class="site-action-separator">/</span>
-		<a
-			class="site-action {% if active_nav == "settings" %} site-action--active {% endif %}"
-			href="/settings"
+		Boards
+	</a>
+	<a
+		class="site-nav-link {% if active_nav == "pins" %} site-nav-link--active {% endif %}"
+		href="/pins/"
 		>
-			Settings
-		</a>
-	</section>
-</header>
+		Pins
+	</a>
+</nav>
+
+<section id="site-actions">
+	<span class="site-identity">{{ current_user.name }}</span>
+	<span class="site-action-separator">/</span>
+	<a
+		class="site-action {% if active_nav == "settings" %} site-action--active {% endif %}"
+		href="/settings"
+		>
+		Settings
+	</a>
+</section>
 {% endblock %}
 
 {% block page %}

@@ -4,16 +4,16 @@
 {% macro board_item(board, current_user) %}
 <li
 	class="frame-item frame-item--reorderable"
-	data-board-order-target="board"
-	data-board-id="{{ board.id }}"
+	data-reorder-target="item"
+	data-reorder-id="{{ board.id }}"
 >
 	<article class="board">
 		<button
-			class="board-reorder-handle"
+			class="reorder-handle"
 			type="button"
 			draggable="true"
 			title="Drag to reorder"
-			data-action="dragstart->board-order#dragStart dragend->board-order#dragEnd"
+			data-action="dragstart->reorder#dragStart dragend->reorder#dragEnd"
 		>
 			⠿
 		</button>
@@ -37,48 +37,22 @@
 
 			<menu class="menu" id="board-{{ board.id }}-actions" popover>
 				<li><a class="menu-item" href="/boards/{{ board.id }}/edit">Edit</a></li>
-				<li><a class="menu-item" href="/boards/{{ board.id }}/edit#sharing">Sharing</a></li>
-				<li>
-					<button
-						class="menu-item menu-item--danger"
-						command="show-modal"
-						commandfor="board-{{ board.id }}-dialog"
-					>
-						Delete
-					</button>
-				</li>
+				<li><button class="menu-item menu-item--danger" command="show-modal" commandfor="board-{{ board.id }}-delete-dialog">Delete</button></li>
 			</menu>
 
-			<dialog id="board-{{ board.id }}-dialog" class="dialog">
+			<dialog id="board-{{ board.id }}-delete-dialog" class="dialog">
 				<section class="dialog-content">
-					<p>Are you sure you want to delete this board? This action cannot be undone.</p>
+					<p>Delete this board? Its pins will remain in Pins and on any other boards. This action cannot be undone.</p>
 				</section>
 				<footer class="dialog-actions">
-					<button
-						class="button"
-						command="close"
-						commandfor="board-{{ board.id }}-dialog"
-					>
-						Cancel
-					</button>
-					<button
-						class="button button--danger"
-						type="submit"
-						form="board-{{ board.id }}-delete-form"
-						autofocus
-					>
-						Delete
-					</button>
-					<form
-						id="board-{{ board.id }}-delete-form"
-						action="/boards/{{ board.id }}"
-						method="POST"
-						hidden
-					>
+					<button class="button" command="close" commandfor="board-{{ board.id }}-delete-dialog">Cancel</button>
+					<button class="button button--danger" type="submit" form="board-{{ board.id }}-delete-form">Delete</button>
+					<form id="board-{{ board.id }}-delete-form" action="/boards/{{ board.id }}" method="POST" hidden>
 						<input type="text" name="_method" value="DELETE" hidden>
 					</form>
 				</footer>
 			</dialog>
+
 		</section>
 		{% endif %}
 	</article>
@@ -98,17 +72,18 @@
 
 <section
 	class="frame"
-	data-controller="board-order"
-	data-board-order-url-value="/orderings"
+	data-controller="reorder"
+	data-reorder-url-value="/orderings"
+	data-reorder-field-value="board_id"
 >
 	<header class="frame-header">
-		<h3 class="frame-title">Private boards</h3>
+		<h3 class="frame-title">Private</h3>
 	</header>
 
 	<ol
 		class="frame-items"
-		data-board-order-target="list"
-		data-action="dragover->board-order#dragOver dragleave->board-order#dragLeave drop->board-order#drop"
+		data-reorder-target="list"
+		data-action="dragover->reorder#dragOver dragleave->reorder#dragLeave drop->reorder#drop"
 	>
 		{% for board in private_boards %}
 		{{ board_item(board, current_user) }}
@@ -118,13 +93,13 @@
 	</ol>
 
 	<header class="frame-header">
-		<h3 class="frame-title">Shared boards</h3>
+		<h3 class="frame-title">Shared</h3>
 	</header>
 
 	<ol
 		class="frame-items"
-		data-board-order-target="list"
-		data-action="dragover->board-order#dragOver dragleave->board-order#dragLeave drop->board-order#drop"
+		data-reorder-target="list"
+		data-action="dragover->reorder#dragOver dragleave->reorder#dragLeave drop->reorder#drop"
 	>
 		{% for board in shared_boards %}
 		{{ board_item(board, current_user) }}

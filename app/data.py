@@ -8,6 +8,7 @@ from helios.auth import Authenticator
 from helios.auth.password import Digest
 from helios.data.model import Model, attr
 from helios.data.store import NotFoundError, Schema, Store
+from helios.http import URL
 
 
 class User(Model):
@@ -181,6 +182,13 @@ class Pin(Model):
 	note = attr(str, default="")
 	creator_id = attr(UUID)
 
+	def display_url(self) -> str:
+		try:
+			host = URL(self.url).host
+		except ValueError:
+			return self.url
+		return host.removeprefix("www.") if host else self.url
+
 
 class Board(Model):
 	title = attr(str)
@@ -191,6 +199,24 @@ class Placement(Model):
 	pin_id = attr(UUID)
 	board_id = attr(UUID)
 	adder_id = attr(UUID)
+	position = attr(int, default=0)
+
+	@classmethod
+	def create(
+		cls,
+		store: Store,
+		pin: Pin,
+		board: Board,
+		adder: User,
+	) -> Placement:
+		if store.find_by(cls, pin_id=pin.id, board_id=board.id):
+			raise ValueError(f"Pin {pin.id} is already placed on Board {board.id}")
+		return store.create(
+			cls,
+			pin_id=pin.id,
+			board_id=board.id,
+			adder_id=adder.id,
+		)
 
 
 class Share(Model):
@@ -231,21 +257,19 @@ def find_owned[T: Pin | Board](ctx: Context, model_type: type[T], id: UUID) -> T
 
 
 def find_pin_placements(store: Store, pin_id: UUID) -> list[Placement]:
-	placements = store.find_by(Placement, pin_id=pin_id)
-	if not placements:
-		raise ValueError(
-			f"expected at least one placement for Pin {pin_id}, found none"
-		)
-	return placements
+	return store.find_by(Placement, pin_id=pin_id)
 
 
 def find_contextual_placement(
-	placements: list[Placement], board_id: UUID | None = None
-) -> Placement:
+	placements: list[Placement],
+	board_id: UUID | None = None,
+) -> Placement | None:
 	if board_id is not None:
 		for placement in placements:
 			if placement.board_id == board_id:
 				return placement
+	if not placements:
+		return None
 	return min(placements, key=lambda placement: str(placement.id))
 
 
@@ -263,9 +287,27 @@ def find_accessible_board(ctx, id: UUID) -> Board:
 	return board
 
 
+def can_remove_placement(
+	ctx: Context,
+	placement: Placement,
+	pin: Pin,
+	board: Board,
+) -> bool:
+	auth = ctx.get(Authenticator)
+	user = cast(User, auth.user)
+	return can_access_board(ctx, board) and user.id in {
+		pin.creator_id,
+		placement.adder_id,
+		board.creator_id,
+	}
+
+
 def find_accessible_pin(ctx, id: UUID) -> Pin:
 	store = ctx.get(Store)
+	auth = ctx.get(Authenticator)
 	pin = store.find_one(Pin, id)
+	if pin.creator_id == auth.user.id:
+		return pin
 	placements = find_pin_placements(store, pin.id)
 	for placement in placements:
 		try:

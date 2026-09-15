@@ -1,5 +1,4 @@
 from typing import cast
-from urllib.parse import urlsplit
 from uuid import UUID
 
 from helios.app import Context
@@ -16,6 +15,7 @@ from app.data import (
 	Placement,
 	Share,
 	User,
+	can_remove_placement,
 	find_accessible_board,
 	find_all_accessible_boards,
 	find_owned,
@@ -29,7 +29,7 @@ def _board_return_url(raw_url: str | None, id: UUID) -> URL:
 		return fallback
 
 	try:
-		path = urlsplit(raw_url).path
+		path = URL(raw_url).path
 	except ValueError:
 		return fallback
 
@@ -134,13 +134,24 @@ def show(req: Request, ctx: Context, id: UUID) -> Response:
 
 	board = find_accessible_board(ctx, id)
 	placements = store.find_by(Placement, board_id=board.id)
-	pins = [store.find_one(Pin, placement.pin_id) for placement in placements]
+	pin_rows = []
+	for placement in placements:
+		pin = store.find_one(Pin, placement.pin_id)
+		pin_rows.append(
+			{
+				"placement": placement,
+				"pin": pin,
+				"can_remove": can_remove_placement(ctx, placement, pin, board),
+			}
+		)
+	pin_rows.sort(key=lambda row: row["pin"].created_at, reverse=True)
+	pin_rows.sort(key=lambda row: row["placement"].position)
 
 	html = views.render(
 		"boards.show",
 		{
 			"board": board,
-			"pins": pins,
+			"pin_rows": pin_rows,
 			"current_user": auth.user,
 			"open_in_new_tab": user.open_in_new_tab,
 		},
@@ -220,8 +231,6 @@ def delete(req: Request, ctx: Context, id: UUID) -> Response:
 	orderings = store.find_by(Ordering, board_id=board.id)
 	for placement in placements:
 		store.delete(placement.id)
-		if not store.find_by(Placement, pin_id=placement.pin_id):
-			store.delete(placement.pin_id)
 	for share in shares:
 		store.delete(share.id)
 	for ordering in orderings:

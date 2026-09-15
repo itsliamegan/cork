@@ -10,6 +10,11 @@
 
 		<title>{% block title %}Cork{% endblock %}</title>
 
+		<link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
+		<link rel="icon" type="image/png" sizes="192x192" href="/static/favicon.png">
+		<link rel="icon" href="/static/favicon.ico">
+		<link rel="apple-touch-icon" sizes="180x180" href="/static/apple.png">
+
 		<link rel="stylesheet" type="text/css" href="/static/styles/prelude.css">
 		<link rel="stylesheet" type="text/css" href="/static/styles/theme.css">
 		<link rel="stylesheet" type="text/css" href="/static/styles/main.css">
@@ -18,11 +23,17 @@
 	</head>
 
 	<body>
-		{% block header %}
 		<header id="site-header">
-			<h1 id="site-title">Cork</h1>
+			<svg id="site-logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+				<rect width="100" height="100" rx="10" fill="var(--color-text, #111111)"/>
+				<line x1="35" y1="67" x2="69" y2="27" stroke="var(--color-surface, #f1f1f1)" stroke-width="12" stroke-linecap="square"/>
+				<rect x="20" y="52" width="30" height="30" rx="3" fill="var(--color-surface, #f1f1f1)"/>
+				<rect x="58" y="16" width="22" height="22" rx="3" fill="var(--color-surface, #f1f1f1)"/>
+			</svg>
+
+			{% block header %}
+			{% endblock %}
 		</header>
-		{% endblock %}
 
 		{% block page %}
 		<main id="auth-page">
