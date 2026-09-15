@@ -1,3 +1,4 @@
+from typing import cast
 from urllib.parse import urlsplit
 from uuid import UUID
 
@@ -55,13 +56,14 @@ def index(req: Request, ctx: Context) -> Response:
 	store = ctx.get(Store)
 	auth = ctx.get(Authenticator)
 	views = ctx.get(Views)
+	user = cast(User, auth.user)
 
 	boards = order_accessible_boards(ctx, find_all_accessible_boards(ctx))
 	shared_board_ids = {share.board_id for share in store.find_all(Share)}
 	private_boards = [
 		board
 		for board in boards
-		if board.creator_id == auth.user.id and board.id not in shared_board_ids
+		if board.creator_id == user.id and board.id not in shared_board_ids
 	]
 	shared_boards = [board for board in boards if board.id in shared_board_ids]
 
@@ -80,6 +82,7 @@ def index(req: Request, ctx: Context) -> Response:
 def create(req: Request, ctx: Context) -> Response:
 	store = ctx.get(Store)
 	auth = ctx.get(Authenticator)
+	user = cast(User, auth.user)
 
 	form = Form(
 		[
@@ -93,12 +96,14 @@ def create(req: Request, ctx: Context) -> Response:
 
 	selected_user_ids = set(input["user_id"])
 	available_user_ids = {
-		user.id for user in store.find_all(User) if user.id != auth.user.id
+		available_user.id
+		for available_user in store.find_all(User)
+		if available_user.id != user.id
 	}
 	if not selected_user_ids <= available_user_ids:
 		return Response.text("400 Bad Request", status=Status.BAD_REQUEST)
 
-	board = store.create(Board, title=input["title"], creator_id=auth.user.id)
+	board = store.create(Board, title=input["title"], creator_id=user.id)
 	for user_id in selected_user_ids:
 		store.create(Share, board_id=board.id, user_id=user_id)
 
@@ -108,13 +113,14 @@ def create(req: Request, ctx: Context) -> Response:
 def new(req: Request, ctx: Context) -> Response:
 	auth = ctx.get(Authenticator)
 	views = ctx.get(Views)
+	user = cast(User, auth.user)
 
 	html = views.render(
 		"boards.new",
 		{
 			"current_user": auth.user,
 			"owner": auth.user,
-			"people": _sharing_people(ctx, auth.user.id),
+			"people": _sharing_people(ctx, user.id),
 		},
 	)
 	return Response.html(html)
@@ -124,6 +130,7 @@ def show(req: Request, ctx: Context, id: UUID) -> Response:
 	store = ctx.get(Store)
 	auth = ctx.get(Authenticator)
 	views = ctx.get(Views)
+	user = cast(User, auth.user)
 
 	board = find_accessible_board(ctx, id)
 	placements = store.find_by(Placement, board_id=board.id)
@@ -135,7 +142,7 @@ def show(req: Request, ctx: Context, id: UUID) -> Response:
 			"board": board,
 			"pins": pins,
 			"current_user": auth.user,
-			"open_in_new_tab": auth.user.open_in_new_tab,
+			"open_in_new_tab": user.open_in_new_tab,
 		},
 	)
 
@@ -212,8 +219,9 @@ def delete(req: Request, ctx: Context, id: UUID) -> Response:
 	shares = store.find_by(Share, board_id=board.id)
 	orderings = store.find_by(Ordering, board_id=board.id)
 	for placement in placements:
-		store.delete(placement.pin_id)
 		store.delete(placement.id)
+		if not store.find_by(Placement, pin_id=placement.pin_id):
+			store.delete(placement.pin_id)
 	for share in shares:
 		store.delete(share.id)
 	for ordering in orderings:

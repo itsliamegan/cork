@@ -141,6 +141,41 @@ def test_revokes_shared_board():
 		assert_eq(app.client.get(f"/boards/{board.id}").status_code, 200)
 
 
+def test_deleting_board_retains_pins_placed_on_another_board():
+	with TestApplication() as app:
+		user = app.store.create(User, name="Alice")
+		reading = app.store.create(Board, title="Reading", creator_id=user.id)
+		essays = app.store.create(Board, title="Essays", creator_id=user.id)
+		pin = app.store.create(
+			Pin,
+			title="Stanford Entry on Sartre",
+			url="https://plato.stanford.edu/entries/sartre/",
+			creator_id=user.id,
+		)
+		reading_placement = app.store.create(
+			Placement, pin_id=pin.id, board_id=reading.id, adder_id=user.id
+		)
+		essays_placement = app.store.create(
+			Placement, pin_id=pin.id, board_id=essays.id, adder_id=user.id
+		)
+		app.sign_in(user)
+
+		res = app.client.post(f"/boards/{reading.id}", form={"_method": "DELETE"})
+
+		assert_eq(res.status_code, 302)
+		assert_eq(app.store.find_one(Pin, pin.id).id, pin.id)
+		assert_eq(
+			[placement.id for placement in app.store.find_all(Placement)],
+			[essays_placement.id],
+		)
+		assert_eq([board.id for board in app.store.find_all(Board)], [essays.id])
+		assert_eq(
+			reading_placement.id
+			in {placement.id for placement in app.store.find_all(Placement)},
+			False,
+		)
+
+
 def test_deleted_board_cascades():
 	with TestApplication() as app:
 		alice = app.store.create(User, name="Alice")

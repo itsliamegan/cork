@@ -1,7 +1,9 @@
 from datetime import UTC, datetime, timedelta
 import secrets
+from typing import cast
 from uuid import UUID
 
+from helios.app import Context
 from helios.auth import Authenticator
 from helios.auth.password import Digest
 from helios.data.model import Model, attr
@@ -216,21 +218,35 @@ schema = Schema(
 )
 
 
-def find_owned(ctx, model_type: type[Model], id: UUID) -> Model:
-	model = ctx.get(Store).find_one(model_type, id)
+def find_owned[T: Pin | Board](ctx: Context, model_type: type[T], id: UUID) -> T:
+	store = ctx.get(Store)
 	auth = ctx.get(Authenticator)
-	if model.creator_id != auth.user.id:
+	user = cast(User, auth.user)
+
+	model = store.find_one(model_type, id)
+
+	if model.creator_id != user.id:
 		raise NotFoundError(model_type, id)
 	return model
 
 
-def find_sole_placement(store: Store, pin_id: UUID) -> Placement:
+def find_pin_placements(store: Store, pin_id: UUID) -> list[Placement]:
 	placements = store.find_by(Placement, pin_id=pin_id)
-	if len(placements) != 1:
+	if not placements:
 		raise ValueError(
-			f"expected exactly one placement for Pin {pin_id}, found {len(placements)}"
+			f"expected at least one placement for Pin {pin_id}, found none"
 		)
-	return placements[0]
+	return placements
+
+
+def find_contextual_placement(
+	placements: list[Placement], board_id: UUID | None = None
+) -> Placement:
+	if board_id is not None:
+		for placement in placements:
+			if placement.board_id == board_id:
+				return placement
+	return min(placements, key=lambda placement: str(placement.id))
 
 
 def can_access_board(ctx, board: Board) -> bool:
@@ -250,12 +266,14 @@ def find_accessible_board(ctx, id: UUID) -> Board:
 def find_accessible_pin(ctx, id: UUID) -> Pin:
 	store = ctx.get(Store)
 	pin = store.find_one(Pin, id)
-	placement = find_sole_placement(store, pin.id)
-	try:
-		find_accessible_board(ctx, placement.board_id)
-	except NotFoundError as err:
-		raise NotFoundError(Pin, id) from err
-	return pin
+	placements = find_pin_placements(store, pin.id)
+	for placement in placements:
+		try:
+			find_accessible_board(ctx, placement.board_id)
+		except NotFoundError:
+			continue
+		return pin
+	raise NotFoundError(Pin, id)
 
 
 def find_all_accessible_boards(ctx) -> list[Board]:

@@ -1,9 +1,5 @@
-{% extends "layouts.app" %}
-{% set active_nav = "boards" %}
-
-{% block title %}Cork - New pin{% endblock %}
-
-{% block content %}
+{% extends "layouts.app" %} {% set active_nav = "boards" %} {% block title
+%}Cork - New pin{% endblock %} {% block content %}
 <header id="page-header">
 	<h2 id="page-title">New pin</h2>
 
@@ -14,6 +10,7 @@
 </header>
 
 <form class="frame" method="POST" action="/pins/" autocomplete="off">
+	<input type="hidden" name="return_to" value="/boards/{{ board.id }}" />
 	<header class="frame-header">
 		<h3 class="frame-title">Details</h3>
 	</header>
@@ -21,7 +18,13 @@
 	<section class="form-items">
 		<label class="frame-item form-item">
 			<span class="form-label">Title</span>
-			<input class="form-field" type="text" name="title" required autofocus>
+			<input
+				class="form-field"
+				type="text"
+				name="title"
+				required
+				autofocus
+			>
 		</label>
 
 		<label class="frame-item form-item">
@@ -30,19 +33,53 @@
 		</label>
 
 		<label class="frame-item form-item">
-			<span class="form-label">Board</span>
-			<select class="form-field" name="board_id" required>
-				{% for board in boards %}
-				{% set selected = board.id | string == board_id | string %}
-				<option {% if selected %} selected {% endif %} value="{{ board.id }}">{{ board.title }}</option>
-				{% endfor %}
-			</select>
-		</label>
-
-		<label class="frame-item form-item">
 			<span class="form-label">Note</span>
-			<textarea class="form-field pin-note-field" name="note" rows="6"></textarea>
+			<textarea
+				class="form-field pin-note-field"
+				name="note"
+				rows="6"
+			></textarea>
 		</label>
+	</section>
+
+	<header class="frame-header">
+		<h3 class="frame-title">Boards</h3>
+		<span class="frame-meta">{{ board_options | length }} available</span>
+	</header>
+
+	<section class="board-picker" data-controller="filter">
+		<div class="board-picker-search">
+			<input
+				class="form-field board-picker-search-input"
+				type="search"
+				placeholder="Search"
+				autocomplete="off"
+				data-filter-target="query"
+				data-action="input->filter#filter"
+			>
+		</div>
+		<fieldset class="board-picker-options">
+			{% for board_option in board_options %}
+			<label
+				class="board-picker-option"
+				data-filter-target="item"
+				data-filter-text="{{ board_option.board.title }}"
+			>
+				<input
+					class="form-field"
+					type="checkbox"
+					name="board_id"
+					value="{{ board_option.board.id }}"
+					{% if board_option.board.id == board.id %}checked{% endif %}
+				>
+				<span class="board-picker-title">{{ board_option.board.title }}</span>
+				<span class="board-picker-state">{{ board_option.sharing_label }}</span>
+			</label>
+			{% endfor %}
+		</fieldset>
+		<p class="board-picker-empty" data-filter-target="empty" hidden>
+			No matching boards.
+		</p>
 	</section>
 
 	<footer class="frame-item form-actions">

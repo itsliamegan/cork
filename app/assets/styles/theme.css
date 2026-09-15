@@ -52,8 +52,10 @@
 	--color-neutral-650: #626262;
 	--color-neutral-950: #111;
 
+	--color-blue-50: #e6f1fb;
 	--color-blue-700: #0f61a9;
 	--color-blue-800: #0b477c;
+	--color-blue-950: #173c5a;
 	--color-red-700: #9b1c1c;
 	--color-red-800: #751616;
 
@@ -61,6 +63,7 @@
 	--color-canvas: var(--color-neutral-0);
 	--color-surface: var(--color-neutral-50);
 	--color-surface-control: var(--color-neutral-0);
+	--color-surface-selected: var(--color-blue-50);
 	--color-text: var(--color-neutral-950);
 	--color-text-muted: var(--color-neutral-650);
 	--color-text-on-action: var(--color-neutral-0);
@@ -92,13 +95,16 @@
 		--color-neutral-650: #aaa;
 		--color-neutral-950: #f1f1f1;
 
+		--color-blue-50: #e6f1fb;
 		--color-blue-700: #0f61a9;
 		--color-blue-800: #0b477c;
+		--color-blue-950: #173c5a;
 		--color-red-700: #9b1c1c;
 		--color-red-800: #751616;
 
 		/* Keep role relationships explicit when the neutral ramp reverses. */
 		--color-surface-control: #1b1b1b;
+		--color-surface-selected: var(--color-blue-950);
 		--color-text-on-action: #fff;
 		--color-border-default: #555;
 		--color-border-control: #626262;
