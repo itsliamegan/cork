@@ -1,6 +1,11 @@
 {
 	"name": "Cork",
 	"short_name": "Cork",
+	"start_url": "/boards/",
+	"scope": "/",
+	"display": "standalone",
+	"background_color": "#242424",
+	"theme_color": "#242424"
 	"icons": [
 		{
 			"src": "/static/favicon.png",
@@ -13,8 +18,4 @@
 			"type": "image/png"
 		}
 	],
-	"start_url": "/",
-	"display": "standalone",
-	"background_color": "#242424",
-	"theme_color": "#242424"
 }
