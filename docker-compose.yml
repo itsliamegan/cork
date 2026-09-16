@@ -1,0 +1,29 @@
+services:
+  cork:
+    build:
+      context: ..
+      dockerfile: cork/Dockerfile
+    ports:
+      - "127.0.0.1:8001:8000"
+    volumes:
+      - .:/app
+      - ../helios:/deps/helios
+      - ../luna:/deps/luna
+      - ./data:/app/data
+    env_file:
+      - .env
+    command: >
+      uv run gunicorn app.main:app
+      --bind 0.0.0.0:8000
+      --workers 2
+      --reload
+
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "127.0.0.1:8080:80"
+    volumes:
+      - ./etc/nginx.dev.conf:/etc/nginx/conf.d/default.conf
+      - ./public:/srv/cork/public
+    depends_on:
+      - cork
