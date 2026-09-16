@@ -1,0 +1,45 @@
+when:
+  - event: ["push", "manual"]
+    branch: ["main"]
+
+engine: "microvm"
+image: "alpine"
+
+environment:
+  UV_PYTHON_PREFERENCE: "only-system"
+  UV_PYTHON: "python3"
+
+steps:
+  - name: "Install system dependencies"
+    command: |
+      apk update
+      apk add git openssh python3 uv
+
+  - name: "Clone local dependencies"
+    command: |
+      git clone https://tangled.org/liamegan.com/luna ../luna
+      git clone https://tangled.org/liamegan.com/helios ../helios
+
+  - name: "Install and test"
+    command: |
+      uv sync --locked
+      uv run -m luna.test.runner
+
+  - name: "Set up SSH key"
+    command: |
+      mkdir -p ~/.ssh
+      echo "$DEPLOY_KEY" > ~/.ssh/id_ed25519
+      chmod 600 ~/.ssh/id_ed25519
+
+  - name: "Deploy to VPS"
+    command: |
+      ssh \
+      -o StrictHostKeyChecking=no \
+      -p "$DEPLOY_PORT" \
+      "$DEPLOY_USER@$DEPLOY_HOST" '
+        cd /srv
+        git -C luna pull
+        git -C helios pull
+        git -C cork pull
+        sudo systemctl restart cork
+      '
