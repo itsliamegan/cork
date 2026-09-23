@@ -6,7 +6,7 @@ import helios.limit
 from helios.routing import Router
 import helios.session
 from helios.session.file import Driver
-import helios.views
+import helios.view
 from helios.wsgi import Application
 
 from app.config import Config
@@ -20,7 +20,7 @@ class Application(Application):
 			helios.app.Config(base_url=config.base_url),
 			Router(routes),
 			[
-				helios.views.Provider(config.views),
+				helios.view.Provider(config.views),
 				helios.session.Provider(
 					config.session,
 					Driver(config.session_file, config.session_lock_file),

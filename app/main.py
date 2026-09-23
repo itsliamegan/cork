@@ -10,7 +10,6 @@ def main():
 	from werkzeug.serving import run_simple
 
 	asset_files = [str(file) for file in Path("app", "assets").glob("**/*")]
-	view_files = [str(file) for file in Path("app", "views").glob("**/*.html")]
 
 	try:
 		run_simple(
@@ -18,7 +17,7 @@ def main():
 			4000,
 			app,
 			use_reloader=True,
-			extra_files=[*asset_files, *view_files],
+			extra_files=asset_files,
 			static_files={"/static": str(Path("public", "static"))},
 		)
 	finally:

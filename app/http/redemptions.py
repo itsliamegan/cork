@@ -4,7 +4,7 @@ from helios.database import Store
 from helios.flash import Flashes
 from helios.form import Field, Form, parser
 from helios.http import Request, Response, URL
-from helios.views.engine import Views
+from helios.view import Views
 
 from app.data import Invite, Recovery, User
 

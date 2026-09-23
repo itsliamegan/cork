@@ -6,7 +6,7 @@ from helios.auth import Authenticator
 from helios.database import Store
 from helios.flash import Flashes
 from helios.http import Request, Response, URL
-from helios.views.engine import Views
+from helios.view import Views
 
 from app.data import Recovery, User
 

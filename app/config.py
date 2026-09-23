@@ -6,7 +6,7 @@ import helios.database.config
 from helios.http import URL
 import helios.limit.config
 import helios.session.config
-import helios.views.config
+import helios.view.config
 
 ROOT_DIR = Path(__file__).resolve().parent.parent
 ENV_FILE = Path(ROOT_DIR, ".env")
@@ -31,11 +31,12 @@ class Config(Config):
 				Path(DATA_DIR, "store.sqlite"),
 			)
 		)
-		self.views = helios.views.config.Config(
+		self.views = helios.view.config.Config(
 			self.path(
 				"APP_VIEWS_DIR",
 				Path(ROOT_DIR, "app", "views"),
-			)
+			),
+			reload=self.boolean("APP_VIEWS_RELOAD", False),
 		)
 		self.session = helios.session.config.Config()
 		self.session_file = self.path(
