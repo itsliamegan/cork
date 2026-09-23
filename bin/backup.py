@@ -103,12 +103,7 @@ def prune(s3, archive: Archive, keep: int, dry: bool):
 
 
 def snapshot(config: Config) -> bytes:
-	"""Copy the live database with VACUUM INTO, and read the copy.
-
-	VACUUM INTO produces a consistent snapshot while Cork keeps running, and
-	rebuilds it compactly, leaving out the free pages a direct page copy
-	would carry over from deletes and updates.
-	"""
+	"""Copy the live database with VACUUM INTO, and read the copy."""
 
 	source_uri = f"{config.database.database_file.resolve().as_uri()}?mode=ro"
 	with TemporaryDirectory() as directory:
