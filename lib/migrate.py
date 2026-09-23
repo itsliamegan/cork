@@ -262,7 +262,8 @@ def pending(migrations: list[Migration], current: int) -> list[Migration]:
 
 
 def next_migration(
-	connection: Connection, migrations: list[Migration]
+	connection: Connection,
+	migrations: list[Migration],
 ) -> Migration | None:
 	"""Begin a transaction for the next pending migration, if there is one.
 
@@ -296,7 +297,8 @@ def run(connection: Connection, migration: Migration):
 		check_foreign_keys(connection, migration)
 		try:
 			connection.control(
-				f"PRAGMA user_version = {migration.number}", "version update"
+				f"PRAGMA user_version = {migration.number}",
+				"version update",
 			)
 			connection.commit()
 		except DatabaseError as error:

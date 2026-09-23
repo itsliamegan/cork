@@ -63,10 +63,12 @@ def names(migrations) -> list[str]:
 def test_applies_every_migration_to_a_fresh_database():
 	with Scratch() as scratch:
 		scratch.write(
-			"0001_users.sql", "CREATE TABLE users (id INTEGER PRIMARY KEY);\n"
+			"0001_users.sql",
+			"CREATE TABLE users (id INTEGER PRIMARY KEY);\n",
 		)
 		scratch.write(
-			"0002_boards.sql", "CREATE TABLE boards (id INTEGER PRIMARY KEY);\n"
+			"0002_boards.sql",
+			"CREATE TABLE boards (id INTEGER PRIMARY KEY);\n",
 		)
 
 		applied = apply(scratch.config, scratch.migrations)
@@ -79,7 +81,8 @@ def test_applies_every_migration_to_a_fresh_database():
 def test_second_apply_does_nothing():
 	with Scratch() as scratch:
 		scratch.write(
-			"0001_users.sql", "CREATE TABLE users (id INTEGER PRIMARY KEY);\n"
+			"0001_users.sql",
+			"CREATE TABLE users (id INTEGER PRIMARY KEY);\n",
 		)
 		apply(scratch.config, scratch.migrations)
 
@@ -92,11 +95,13 @@ def test_second_apply_does_nothing():
 def test_applies_only_migrations_after_the_current_version():
 	with Scratch() as scratch:
 		scratch.write(
-			"0001_users.sql", "CREATE TABLE users (id INTEGER PRIMARY KEY);\n"
+			"0001_users.sql",
+			"CREATE TABLE users (id INTEGER PRIMARY KEY);\n",
 		)
 		apply(scratch.config, scratch.migrations)
 		scratch.write(
-			"0002_boards.sql", "CREATE TABLE boards (id INTEGER PRIMARY KEY);\n"
+			"0002_boards.sql",
+			"CREATE TABLE boards (id INTEGER PRIMARY KEY);\n",
 		)
 
 		applied = apply(scratch.config, scratch.migrations)
@@ -109,7 +114,8 @@ def test_applies_only_migrations_after_the_current_version():
 def test_failing_statement_rolls_back_its_whole_migration():
 	with Scratch() as scratch:
 		scratch.write(
-			"0001_users.sql", "CREATE TABLE users (id INTEGER PRIMARY KEY);\n"
+			"0001_users.sql",
+			"CREATE TABLE users (id INTEGER PRIMARY KEY);\n",
 		)
 		scratch.write(
 			"0002_broken.sql",
@@ -349,6 +355,7 @@ def test_cli_status_refuses_a_missing_database():
 
 		assert_not_eq(result.returncode, 0)
 		assert_that(
-			f"database {database_file} does not exist" in result.stderr, result.stderr
+			f"database {database_file} does not exist" in result.stderr,
+			result.stderr,
 		)
 		assert_not(database_file.exists())
