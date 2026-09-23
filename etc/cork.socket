@@ -2,8 +2,8 @@
 Description=Cork application socket
 
 [Socket]
-ListenStream=/run/cork.sock
-SocketUser=www-data
+ListenStream=/run/cork/cork.sock
+SocketUser=cork
 SocketGroup=www-data
 SocketMode=0660
 
