@@ -15,7 +15,7 @@ from luna.test.assertion import (
 )
 
 from app.config import ROOT_DIR
-from lib.migrate import MigrationError, Migrations, Migrator
+from lib.migrate import ForeignKeyError, MigrationError, Migrations, Migrator
 
 
 class Scratch:
@@ -152,12 +152,10 @@ def test_foreign_key_violation_rolls_back_the_migration():
 		)
 		scratch.write("0002_orphan.sql", "INSERT INTO pins VALUES (1, 99);\n")
 
-		with assert_raises(MigrationError) as raised:
+		with assert_raises(ForeignKeyError) as raised:
 			scratch.migrator().apply()
 
-		message = str(raised.exception)
-		assert_that("0002_orphan.sql" in message, message)
-		assert_that("pins row 1 references missing boards" in message, message)
+		assert_eq(raised.exception.violations, [("pins", 1, "boards", 0)])
 		assert_eq(scratch.version(), 1)
 		assert_eq(scratch.query("SELECT * FROM pins"), [])
 

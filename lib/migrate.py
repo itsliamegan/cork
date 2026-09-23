@@ -5,7 +5,6 @@ Migrations are `NNNN_description.sql` files numbered from 0001 without gaps.
 each migration commits together with its version bump.
 """
 
-from collections.abc import Iterator
 from dataclasses import dataclass
 from pathlib import Path
 import re
@@ -21,6 +20,18 @@ TRANSACTION_KEYWORDS = {"BEGIN", "COMMIT", "END", "ROLLBACK", "SAVEPOINT", "RELE
 
 class MigrationError(RuntimeError):
 	pass
+
+
+class ForeignKeyError(MigrationError):
+	"""A migration left rows that reference missing parents.
+
+	Each violation is a `PRAGMA foreign_key_check` row: the child table, the
+	child row's rowid, the parent table, and the foreign key's index.
+	"""
+
+	def __init__(self, message: str, violations: list[tuple]):
+		super().__init__(message)
+		self.violations = violations
 
 
 @dataclass
@@ -99,7 +110,10 @@ class Migration:
 				f"{table} row {rowid} references missing {parent} (foreign key {index})"
 				for table, rowid, parent, index in violations
 			)
-			raise MigrationError(f"{self.path.name}: foreign key violations: {details}")
+			raise ForeignKeyError(
+				f"{self.path.name}: foreign key violations: {details}",
+				violations,
+			)
 
 
 class Migrations:
@@ -137,12 +151,6 @@ class Migrations:
 			)
 
 		return cls([Migration.read(path) for path in paths])
-
-	def __iter__(self) -> Iterator[Migration]:
-		return iter(self.migrations)
-
-	def __len__(self) -> int:
-		return len(self.migrations)
 
 	@property
 	def latest(self) -> int:
@@ -209,7 +217,11 @@ class Migrator:
 	def version(self) -> int:
 		"""Read the database's version without opening a transaction."""
 
-		self.require_database()
+		# Connecting would create an empty file, leaving a stray database behind
+		# when the path is mistyped.
+		if not self.config.database_file.is_file():
+			raise MigrationError(f"database {self.config.database_file} does not exist")
+
 		with self.connect() as connection:
 			return read_version(connection)
 
@@ -242,15 +254,16 @@ class Migrator:
 			)
 
 		applied = []
+		# Closing the connection rolls back a migration that failed partway.
 		with self.connect() as connection:
-			disable_foreign_keys(connection)
 			while migration := self.begin_next(connection):
+				migration.run(connection)
 				try:
-					migration.run(connection)
-					commit(connection, migration)
-				except BaseException:
-					rollback(connection)
-					raise
+					connection.commit()
+				except DatabaseError as error:
+					raise MigrationError(
+						f"{migration.path.name}: could not commit"
+					) from error
 				applied.append(migration)
 		return applied
 
@@ -266,34 +279,30 @@ class Migrator:
 		except DatabaseError as error:
 			raise MigrationError("could not begin a transaction") from error
 
-		try:
-			remaining = self.migrations.after(read_version(connection))
-		except BaseException:
-			rollback(connection)
-			raise
-
-		if not remaining:
-			rollback(connection)
-			return None
-		return remaining[0]
-
-	def require_database(self):
-		"""Refuse to continue when the database file does not exist.
-
-		Connecting would otherwise create an empty file, leaving a stray database
-		behind when the path is mistyped.
-		"""
-
-		if not self.config.database_file.is_file():
-			raise MigrationError(f"database {self.config.database_file} does not exist")
+		remaining = self.migrations.after(read_version(connection))
+		return remaining[0] if remaining else None
 
 	def connect(self) -> Connection:
+		"""Open the database with foreign keys off.
+
+		Turning them off lets migrations rebuild tables that others reference;
+		each migration checks foreign keys before committing instead. SQLite
+		ignores the pragma inside a transaction, so it runs before any begins.
+		"""
+
 		try:
-			return connect(self.config)
+			connection = connect(self.config)
 		except DatabaseError as error:
 			raise MigrationError(
 				f"could not open database {self.config.database_file}"
 			) from error
+
+		try:
+			connection.control("PRAGMA foreign_keys = OFF", "configuration")
+		except DatabaseError as error:
+			connection.close()
+			raise MigrationError("could not disable foreign keys") from error
+		return connection
 
 
 def split(path: Path) -> list[str]:
@@ -312,7 +321,8 @@ def split(path: Path) -> list[str]:
 		raise MigrationError(f"{path.name}: incomplete final statement")
 
 	for statement in statements:
-		keyword = first_keyword(statement)
+		match = re.match(r"[A-Za-z]+", strip_leading_comments(statement))
+		keyword = "" if match is None else match.group(0).upper()
 		if keyword in TRANSACTION_KEYWORDS:
 			raise MigrationError(
 				f"{path.name}: {keyword} is not allowed, "
@@ -338,29 +348,11 @@ def strip_leading_comments(statement: str) -> str:
 		remainder = remainder.lstrip()
 
 
-def first_keyword(statement: str) -> str:
-	match = re.match(r"[A-Za-z]+", strip_leading_comments(statement))
-	return "" if match is None else match.group(0).upper()
-
-
 def summarize(statement: str) -> str:
 	"""Collapse a statement onto one line, shortened for error messages."""
 
 	text = " ".join(strip_leading_comments(statement).split())
 	return text if len(text) <= 80 else text[:77] + "..."
-
-
-def disable_foreign_keys(connection: Connection):
-	"""Turn foreign keys off so migrations can rebuild referenced tables.
-
-	SQLite ignores this pragma inside a transaction, so it must run before the
-	first one begins. Each migration checks foreign keys before committing.
-	"""
-
-	try:
-		connection.control("PRAGMA foreign_keys = OFF", "configuration")
-	except DatabaseError as error:
-		raise MigrationError("could not disable foreign keys") from error
 
 
 def read_version(connection: Connection) -> int:
@@ -375,19 +367,3 @@ def read_version(connection: Connection) -> int:
 	if row is None or not isinstance(row[0], int):
 		raise MigrationError("could not read the database version")
 	return row[0]
-
-
-def commit(connection: Connection, migration: Migration):
-	try:
-		connection.commit()
-	except DatabaseError as error:
-		raise MigrationError(f"{migration.path.name}: could not commit") from error
-
-
-def rollback(connection: Connection):
-	"""Roll back the open transaction, keeping the original error if it fails."""
-
-	try:
-		connection.rollback()
-	except DatabaseError:
-		pass
