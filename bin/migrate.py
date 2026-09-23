@@ -8,7 +8,7 @@ from typing import NoReturn
 from helios.config import ConfigError
 from luna.cli import Command, Option, Program
 
-import app.config
+from app.config import Config
 from lib.migrate import MigrationError, Migrations, Migrator
 
 MIGRATIONS_DIR = Path(app.config.ROOT_DIR, "database", "migrations")
@@ -19,7 +19,10 @@ def apply(dry: bool):
 
 	migrator = load_migrator()
 	try:
-		migrations = migrator.pending() if dry else migrator.apply()
+		if dry:
+			migrations = migrator.pending()
+		else:
+			migrations = migrator.apply()
 	except MigrationError as error:
 		if not dry:
 			report_version(migrator)
@@ -53,7 +56,7 @@ def status():
 
 def load_migrator() -> Migrator:
 	try:
-		config = app.config.Config.load(env_file=app.config.ENV_FILE)
+		config = Config.load(env_file=app.config.ENV_FILE)
 	except ConfigError as error:
 		raise SystemExit(f"migrate: error: {error}") from None
 
