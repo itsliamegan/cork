@@ -252,8 +252,9 @@ sudo systemctl start cork.socket cork.service
 
 Remove any leftover `store.sqlite-journal` before starting: it belongs to the
 replaced database, and SQLite would try to roll it back into the restored one.
-Backups taken before the move to SQLite are `store-YYYY-MM-DD.json.zst`; they
-age out through normal pruning.
+Backups taken before the move to SQLite are `store-YYYY-MM-DD.json.zst`. They
+age out through normal pruning and can no longer be restored, because the JSON
+import script has been removed. Recover it from commit `853a4be` if needed.
 
 ## Migration from /home/web/cork
 

@@ -103,4 +103,4 @@ User  * ── orders ── * Board         (through Ordering)
 
 ## Persistence
 
-Application records are stored together in `data/store.json`. Session records are stored separately in `data/sessions.json`. Helios loads the JSON store for each request and writes it back afterward; Cork does not use a relational database, transactions, or database-enforced foreign keys.
+Application records are stored in a SQLite database, `/var/lib/cork/store.sqlite` by default, with one table per model. The schema is defined by the numbered SQL files in `database/migrations/`, which enforce foreign keys and uniqueness. Each request runs in a single transaction that commits when the handler returns. Session records are stored separately in `/var/lib/cork/sessions.json`.

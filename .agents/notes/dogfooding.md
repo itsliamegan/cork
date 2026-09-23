@@ -54,9 +54,9 @@ Cork's concurrent-redemption test never contends on `BEGIN IMMEDIATE`.
 ### `Store.insert` always sets `created_at`
 
 `insert` overwrites `created_at` with the current time, and nothing accepts an
-existing value. There is no supported way to import historical records, so
-`bin/import_store.py` bypasses `Store` and writes rows with raw SQL, repeating
-its encoding and quoting.
+existing value. There is no supported way to import historical records; an
+importer has to bypass `Store` and write rows with raw SQL, repeating its
+encoding and quoting.
 
 ### The session file driver fails when its file is missing
 
