@@ -2,10 +2,9 @@ from datetime import timedelta
 from pathlib import Path
 
 from helios.config import Config
-import helios.data.config
+import helios.database.config
 from helios.http import URL
 import helios.limit.config
-import helios.persist.config
 import helios.session.config
 import helios.views.config
 
@@ -25,16 +24,10 @@ class Config(Config):
 				seconds=int(self.text("APP_RATE_LIMIT_WINDOW_SECONDS", "300"))
 			),
 		)
-		self.persist = helios.persist.config.Config(
+		self.database = helios.database.config.Config(
 			self.path(
-				"APP_PERSIST_LOCK_FILE",
-				Path(ROOT_DIR, "data", "persistence.lock"),
-			)
-		)
-		self.data = helios.data.config.Config(
-			self.path(
-				"APP_DATA_STORE_FILE",
-				Path(ROOT_DIR, "data", "store.json"),
+				"APP_DATABASE_FILE",
+				Path(ROOT_DIR, "data", "store.sqlite"),
 			)
 		)
 		self.views = helios.views.config.Config(
@@ -43,9 +36,12 @@ class Config(Config):
 				Path(ROOT_DIR, "app", "views"),
 			)
 		)
-		self.session = helios.session.config.Config(
-			self.path(
-				"APP_SESSION_STORE_FILE",
-				Path(ROOT_DIR, "data", "sessions.json"),
-			)
+		self.session = helios.session.config.Config()
+		self.session_file = self.path(
+			"APP_SESSION_STORE_FILE",
+			Path(ROOT_DIR, "data", "sessions.json"),
+		)
+		self.session_lock_file = self.path(
+			"APP_SESSION_LOCK_FILE",
+			Path(ROOT_DIR, "data", "sessions.lock"),
 		)

@@ -6,6 +6,8 @@ python.uv_venv_auto = "create|source"
 
 [tasks]
 serve = "uv run serve"
+migrate = "uv run bin/migrate.py apply"
+"migrate:status" = "uv run bin/migrate.py status"
 test = "uv run -m luna.test.runner"
 lint = [
 	"ruff format",

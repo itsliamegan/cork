@@ -18,7 +18,7 @@ build-backend = "uv_build"
 package = true
 
 [tool.uv.build-backend]
-module-name = "app"
+module-name = ["app", "lib"]
 module-root = ""
 
 [tool.uv.sources]
@@ -35,7 +35,7 @@ quote-style = "double"
 
 [tool.ruff.lint.isort]
 case-sensitive = true
-known-first-party = ["app"]
+known-first-party = ["app", "lib"]
 force-sort-within-sections = true
 order-by-type = false
 

@@ -37,6 +37,14 @@ is no `exists`, projection, grouping, or relationship-loading API. This is
 reasonable for the current JSON store size, but the same joins are easy to
 repeat across handlers and become full scans as data grows.
 
+### There is no schema or migration story
+
+Helios has a SQLite database layer but nothing that creates or evolves the
+schema, so every application needs its own runner. Cork's `lib/migrate.py`
+(forward-only SQL files, `PRAGMA user_version`, one transaction per migration)
+depends only on `helios.database` and is written to move into Helios once its
+shape has settled.
+
 ### Safe return URLs are repeated application plumbing
 
 `Request.referrer` exposes the raw `Referer` string, while `URL` represents only
