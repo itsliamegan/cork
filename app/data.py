@@ -6,12 +6,13 @@ from uuid import UUID
 from helios.app import Context
 from helios.auth import Authenticator
 from helios.auth.password import Digest
-from helios.data.model import Model, attr
-from helios.data.store import NotFoundError, Schema, Store
+from helios.database import Model, NotFoundError, Scalar, Store, attr
 from helios.http import URL
 
 
 class User(Model):
+	table = "users"
+
 	name = attr(str)
 	open_in_new_tab = attr(bool, default=False)
 
@@ -29,6 +30,8 @@ class User(Model):
 
 
 class Recovery(Model):
+	table = "recoveries"
+
 	class Code:
 		ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
 		LENGTH = 16
@@ -51,12 +54,12 @@ class Recovery(Model):
 				raise TypeError(f"expected a Code, got {type(val).__name__}")
 
 		@classmethod
-		def encode(cls, val: Recovery.Code) -> str:
+		def encode(cls, val: Recovery.Code) -> Scalar:
 			cls.check(val)
 			return val.digest.encode()
 
 		@classmethod
-		def decode(cls, val: object) -> Recovery.Code:
+		def decode(cls, val: Scalar) -> Recovery.Code:
 			if not isinstance(val, str):
 				raise TypeError(f"expected a string, got {type(val).__name__}")
 			return cls(Digest.decode(val))
@@ -70,7 +73,7 @@ class Recovery(Model):
 		while cls.find_by_code(store, code.plaintext) is not None:
 			code = cls.Code.generate()
 		for recovery in store.find_by(cls, user_id=user.id):
-			store.delete(recovery.id)
+			store.delete(recovery)
 		return store.create(
 			cls,
 			user_id=user.id,
@@ -93,10 +96,12 @@ class Recovery(Model):
 
 	@classmethod
 	def exists_for(cls, store: Store, user: User) -> bool:
-		return bool(store.find_by(cls, user_id=user.id))
+		return store.query(cls).where(user_id=user.id).first() is not None
 
 
 class Invite(Model):
+	table = "invites"
+
 	class Token:
 		def __init__(self, value: str):
 			self.value = value
@@ -111,12 +116,12 @@ class Invite(Model):
 				raise TypeError(f"expected a Token, got {type(val).__name__}")
 
 		@classmethod
-		def encode(cls, val: Invite.Token) -> str:
+		def encode(cls, val: Invite.Token) -> Scalar:
 			cls.check(val)
 			return val.value
 
 		@classmethod
-		def decode(cls, val: object) -> Invite.Token:
+		def decode(cls, val: Scalar) -> Invite.Token:
 			if not isinstance(val, str):
 				raise TypeError(f"expected a string, got {type(val).__name__}")
 			return cls(val)
@@ -147,12 +152,10 @@ class Invite(Model):
 
 	@classmethod
 	def find_valid(cls, store: Store, token: str) -> Invite | None:
-		for invite in store.find_all(cls):
-			if invite.token.value == token:
-				if invite.expires_at <= datetime.now(UTC):
-					return None
-				return invite
-		return None
+		invite = store.query(cls).where(token=cls.Token(token)).first()
+		if invite is None or invite.expires_at <= datetime.now(UTC):
+			return None
+		return invite
 
 	@classmethod
 	def find_created_by(cls, store: Store, id: UUID, creator: User) -> Invite:
@@ -172,11 +175,13 @@ class Invite(Model):
 			user = self.find_target(store)
 		else:
 			user = store.create(User, name=name)
-		store.delete(self.id)
+		store.delete(self)
 		return user
 
 
 class Pin(Model):
+	table = "pins"
+
 	url = attr(str)
 	title = attr(str)
 	note = attr(str, default="")
@@ -191,11 +196,15 @@ class Pin(Model):
 
 
 class Board(Model):
+	table = "boards"
+
 	title = attr(str)
 	creator_id = attr(UUID)
 
 
 class Placement(Model):
+	table = "placements"
+
 	pin_id = attr(UUID)
 	board_id = attr(UUID)
 	adder_id = attr(UUID)
@@ -209,7 +218,8 @@ class Placement(Model):
 		board: Board,
 		adder: User,
 	) -> Placement:
-		if store.find_by(cls, pin_id=pin.id, board_id=board.id):
+		duplicate = store.query(cls).where(pin_id=pin.id, board_id=board.id).first()
+		if duplicate is not None:
 			raise ValueError(f"Pin {pin.id} is already placed on Board {board.id}")
 		return store.create(
 			cls,
@@ -220,28 +230,30 @@ class Placement(Model):
 
 
 class Share(Model):
+	table = "shares"
+
 	board_id = attr(UUID)
 	user_id = attr(UUID)
 
 
 class Ordering(Model):
+	table = "orderings"
+
 	user_id = attr(UUID)
 	board_id = attr(UUID)
 	position = attr(int)
 
 
-schema = Schema(
-	[
-		User,
-		Recovery,
-		Invite,
-		Pin,
-		Board,
-		Placement,
-		Share,
-		Ordering,
-	]
-)
+models = [
+	User,
+	Recovery,
+	Invite,
+	Pin,
+	Board,
+	Placement,
+	Share,
+	Ordering,
+]
 
 
 def find_owned[T: Pin | Board](ctx: Context, model_type: type[T], id: UUID) -> T:
@@ -277,7 +289,13 @@ def can_access_board(ctx, board: Board) -> bool:
 	auth = ctx.get(Authenticator)
 	if board.creator_id == auth.user.id:
 		return True
-	return bool(ctx.get(Store).find_by(Share, board_id=board.id, user_id=auth.user.id))
+	share = (
+		ctx.get(Store)
+		.query(Share)
+		.where(board_id=board.id, user_id=auth.user.id)
+		.first()
+	)
+	return share is not None
 
 
 def find_accessible_board(ctx, id: UUID) -> Board:
@@ -308,14 +326,19 @@ def find_accessible_pin(ctx, id: UUID) -> Pin:
 	pin = store.find_one(Pin, id)
 	if pin.creator_id == auth.user.id:
 		return pin
-	placements = find_pin_placements(store, pin.id)
-	for placement in placements:
-		try:
-			find_accessible_board(ctx, placement.board_id)
-		except NotFoundError:
-			continue
-		return pin
-	raise NotFoundError(Pin, id)
+	board_ids = [placement.board_id for placement in find_pin_placements(store, pin.id)]
+	owned_board = (
+		store.query(Board).where_in(id=board_ids).where(creator_id=auth.user.id).first()
+	)
+	share = (
+		store.query(Share)
+		.where_in(board_id=board_ids)
+		.where(user_id=auth.user.id)
+		.first()
+	)
+	if owned_board is None and share is None:
+		raise NotFoundError(Pin, id)
+	return pin
 
 
 def find_all_accessible_boards(ctx) -> list[Board]:
@@ -324,11 +347,9 @@ def find_all_accessible_boards(ctx) -> list[Board]:
 	shared_board_ids = {
 		share.board_id for share in store.find_by(Share, user_id=auth.user.id)
 	}
-	return [
-		board
-		for board in store.find_all(Board)
-		if board.creator_id == auth.user.id or board.id in shared_board_ids
-	]
+	owned_boards = store.find_by(Board, creator_id=auth.user.id)
+	shared_boards = store.query(Board).where_in(id=shared_board_ids).all()
+	return [*owned_boards, *shared_boards]
 
 
 def order_accessible_boards(ctx, boards: list[Board]) -> list[Board]:

@@ -3,14 +3,13 @@ from uuid import UUID
 
 from helios.app import Context
 from helios.auth import Authenticator
-from helios.data.store import Store
+from helios.database import Store
 from helios.form import Field, Form, parser
 from helios.http import Request, Response, Status, URL
 from helios.views.engine import Views
 
 from app.data import (
 	Board,
-	Ordering,
 	Pin,
 	Placement,
 	Share,
@@ -52,6 +51,13 @@ def _sharing_people(
 	return [{"user": user, "has_access": user.id in shared_user_ids} for user in users]
 
 
+def _are_sharable_users(store: Store, user_ids: set[UUID], owner_id: UUID) -> bool:
+	if owner_id in user_ids:
+		return False
+	users = store.query(User).where_in(id=user_ids).all()
+	return len(users) == len(user_ids)
+
+
 def index(req: Request, ctx: Context) -> Response:
 	store = ctx.get(Store)
 	auth = ctx.get(Authenticator)
@@ -59,7 +65,12 @@ def index(req: Request, ctx: Context) -> Response:
 	user = cast(User, auth.user)
 
 	boards = order_accessible_boards(ctx, find_all_accessible_boards(ctx))
-	shared_board_ids = {share.board_id for share in store.find_all(Share)}
+	shared_board_ids = {
+		share.board_id
+		for share in store.query(Share)
+		.where_in(board_id=[board.id for board in boards])
+		.all()
+	}
 	private_boards = [
 		board
 		for board in boards
@@ -95,12 +106,7 @@ def create(req: Request, ctx: Context) -> Response:
 		return Response.text("400 Bad Request", status=Status.BAD_REQUEST)
 
 	selected_user_ids = set(input["user_id"])
-	available_user_ids = {
-		available_user.id
-		for available_user in store.find_all(User)
-		if available_user.id != user.id
-	}
-	if not selected_user_ids <= available_user_ids:
+	if not _are_sharable_users(store, selected_user_ids, user.id):
 		return Response.text("400 Bad Request", status=Status.BAD_REQUEST)
 
 	board = store.create(Board, title=input["title"], creator_id=user.id)
@@ -134,9 +140,11 @@ def show(req: Request, ctx: Context, id: UUID) -> Response:
 
 	board = find_accessible_board(ctx, id)
 	placements = store.find_by(Placement, board_id=board.id)
+	pin_ids = [placement.pin_id for placement in placements]
+	pins_by_id = {pin.id: pin for pin in store.query(Pin).where_in(id=pin_ids).all()}
 	pin_rows = []
 	for placement in placements:
-		pin = store.find_one(Pin, placement.pin_id)
+		pin = pins_by_id[placement.pin_id]
 		pin_rows.append(
 			{
 				"placement": placement,
@@ -200,18 +208,14 @@ def update(req: Request, ctx: Context, id: UUID) -> Response:
 		return Response.text("400 Bad Request", status=Status.BAD_REQUEST)
 
 	selected_user_ids = set(input["user_id"])
-
-	available_user_ids = {
-		user.id for user in store.find_all(User) if user.id != board.creator_id
-	}
-	if not selected_user_ids <= available_user_ids:
+	if not _are_sharable_users(store, selected_user_ids, board.creator_id):
 		return Response.text("400 Bad Request", status=Status.BAD_REQUEST)
 
 	shares = store.find_by(Share, board_id=board.id)
 	shared_user_ids = {share.user_id for share in shares}
 	for share in shares:
 		if share.user_id not in selected_user_ids:
-			store.delete(share.id)
+			store.delete(share)
 	for user_id in selected_user_ids - shared_user_ids:
 		store.create(Share, board_id=board.id, user_id=user_id)
 
@@ -226,15 +230,6 @@ def delete(req: Request, ctx: Context, id: UUID) -> Response:
 	store = ctx.get(Store)
 
 	board = find_owned(ctx, Board, id)
-	placements = store.find_by(Placement, board_id=board.id)
-	shares = store.find_by(Share, board_id=board.id)
-	orderings = store.find_by(Ordering, board_id=board.id)
-	for placement in placements:
-		store.delete(placement.id)
-	for share in shares:
-		store.delete(share.id)
-	for ordering in orderings:
-		store.delete(ordering.id)
-	store.delete(board.id)
+	store.delete(board)
 
 	return Response.redirect(URL("/boards/"))

@@ -37,9 +37,17 @@ steps:
       -o StrictHostKeyChecking=no \
       -p "$DEPLOY_PORT" \
       "$DEPLOY_USER@$DEPLOY_HOST" '
+        set -e
+
         cd /srv
         git -C luna pull
         git -C helios pull
         git -C cork pull
-        sudo systemctl restart cork
+
+        cd /srv/cork
+        uv sync --no-default-groups --group backup
+        sudo systemctl stop cork.socket cork.service
+        sudo systemctl start cork-backup.service
+        sudo -u cork /srv/cork/.venv/bin/python bin/migrate.py apply
+        sudo systemctl start cork.socket cork.service
       '

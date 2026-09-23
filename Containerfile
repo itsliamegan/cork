@@ -40,7 +40,7 @@ RUN	chown -R cork:cork cork/
 WORKDIR /srv/cork/
 
 RUN uv python install
-RUN uv sync --locked --no-dev
+RUN uv sync --locked --no-default-groups --group backup
 RUN chown -R cork:cork .venv/
 
 COPY cork/etc/nginx.dev.conf /etc/nginx/sites-available/cork

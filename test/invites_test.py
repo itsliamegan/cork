@@ -1,11 +1,10 @@
 from concurrent.futures import ThreadPoolExecutor
 from datetime import UTC, datetime, timedelta
 
-from helios.wsgi import TestClient
 from luna.test.assertion import assert_eq, assert_that
 
 from app.data import Invite, Recovery, User
-from test.support import TestApplication
+from test.support import TestApplication, TestClient
 
 
 def test_create_stores_account_invite():
@@ -161,7 +160,7 @@ def test_invalid_tokens_render_error():
 		app.store.save(expired)
 		redeemed = Invite.create(app.store, creator)
 		redeemed_token = redeemed.token.value
-		app.store.delete(redeemed.id)
+		app.store.delete(redeemed)
 
 		unknown = app.client.get("/redemptions/new?token=not-a-real-token")
 		expired_res = app.client.get(f"/redemptions/new?token={expired.token.value}")
@@ -189,9 +188,6 @@ def test_concurrent_redemptions_create_one_user():
 					zip(clients, ["Bob", "Charlie"], strict=True),
 				)
 			)
-
-		with app.persistence.lock() as scope:
-			app.store = scope.open(app.store_data).load()
 
 		assert_eq([r.status_code for r in responses], [302, 302])
 		assert_eq(len(app.store.find_all(User)), 2)

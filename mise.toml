@@ -5,9 +5,9 @@ uv = "latest"
 python.uv_venv_auto = "create|source"
 
 [tasks]
-serve = "uv run serve"
-migrate = "uv run bin/migrate.py apply"
-"migrate:status" = "uv run bin/migrate.py status"
+serve = "podman run --name cork --replace --systemd always --volume ./data:/var/lib/cork --publish 4000:80 cork"
+migrate = "podman exec --user cork --workdir /srv/cork cork .venv/bin/python bin/migrate.py apply"
+"migrate:status" = "podman exec --user cork --workdir /srv/cork cork .venv/bin/python bin/migrate.py status"
 test = "uv run -m luna.test.runner"
 lint = [
 	"ruff format",

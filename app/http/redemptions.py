@@ -1,6 +1,6 @@
 from helios.app import Context
 from helios.auth import Authenticator
-from helios.data.store import Store
+from helios.database import Store
 from helios.flash import Flashes
 from helios.form import Field, Form, parser
 from helios.http import Request, Response, URL
@@ -40,9 +40,9 @@ def create(req: Request, ctx: Context) -> Response:
 			flash["redemption_name"] = ""
 			return Response.redirect(URL("/redemptions/new", {"token": token}))
 
-		if any(
-			user.name.casefold() == name.casefold() for user in store.find_all(User)
-		):
+		# The column's NOCASE collation makes this match names that differ only in
+		# ASCII case, which is also what its unique constraint rejects.
+		if store.query(User).where(name=name).first() is not None:
 			flash["redemption_error"] = "That name is already in use."
 			flash["redemption_name"] = name
 			return Response.redirect(URL("/redemptions/new", {"token": token}))

@@ -20,22 +20,71 @@ handler must separately load the available users, reject the owner and unknown
 IDs, and deduplicate the selection. This makes it especially important to
 finish all validation before mutating the store.
 
-### Relationships and uniqueness are entirely application concerns
+### Relationship-derived reads are assembled by hand
 
-The store has no relationship, cascade, or uniqueness primitives. This is
-consistent with its small scope, but sharing requires manual joins, duplicate
-checks, and explicit cascade-deletion loops for both pins and shares. Updating a
-board and reconciling several `Share` records also has no transaction or
-rollback boundary, so the handler must validate the complete change before it
-starts mutating the store. Concurrent request safety may also matter because
-uniqueness is check-then-create against a JSON file.
+Transactions, foreign keys, cascades, and unique constraints now live in SQL,
+so deletion loops and check-then-create races are gone. What remains is reading
+across relationships: there is no join, projection, or relationship-loading
+API, so handlers load one model, collect IDs, and fetch the related model with
+`where_in`, joining in Python. `where_in` keeps each step to one indexed query
+rather than a full scan, but the same collect-and-fetch pattern repeats across
+`boards.show`, `pins.index`, `build_board_options`, and `find_accessible_pin`.
+Counting is the sharpest case; see below.
 
-Relationship-derived views can require broad reads. Determining whether each
-accessible board is private or shared requires loading every accessible board
-and every `Share`, then joining them with an ID set in application code. There
-is no `exists`, projection, grouping, or relationship-loading API. This is
-reasonable for the current JSON store size, but the same joins are easy to
-repeat across handlers and become full scans as data grows.
+### Every signed-in request is a database writer
+
+Resolving the `Store` opens `BEGIN IMMEDIATE`, and the auth provider resolves
+the `Store` on every signed-in request to load the user. So requests that only
+read still take SQLite's write lock and serialize across workers. WAL mode
+would not help while that holds. A deferred transaction, upgraded on the first
+write, would let reads run concurrently.
+
+### Session and database locks are taken in resolution order
+
+The session provider holds its file lock from the moment the session `Store` is
+resolved until the request ends. The auth provider resolves the session before
+the database `Store`, so today every request takes the session lock first. A
+handler that resolved the database `Store` before anything touched the session
+would take the two locks in the opposite order, and two such requests could
+block each other until SQLite's busy timeout. Nothing enforces the order.
+
+The session lock also means requests already serialize on the session file, so
+Cork's concurrent-redemption test never contends on `BEGIN IMMEDIATE`.
+
+### `Store.insert` always sets `created_at`
+
+`insert` overwrites `created_at` with the current time, and nothing accepts an
+existing value. There is no supported way to import historical records, so
+`bin/import_store.py` bypasses `Store` and writes rows with raw SQL, repeating
+its encoding and quoting.
+
+### The session file driver fails when its file is missing
+
+`helios.session.file.Driver` raises `DriverError` if `sessions.json` does not
+exist, so every fresh environment has to create it by hand as `{}`. An absent
+file could be treated as an empty store, as the save path already tolerates.
+
+### Related-record counts have no query form
+
+`pins.index` shows how many boards each pin is on, so it loads every placement
+row just to count them. `Store.select()` cannot carry the count because
+hydration rejects any column that is not a model attribute, so
+`SELECT pins.*, COUNT(...) AS board_count` fails. A per-pin `count()` would be
+N+1. The only SQL-side option is hand-written `GROUP BY` against
+`store.connection`, which means guarding empty `IN ()` lists, encoding UUIDs
+by hand, decoding result keys and closing the cursor.
+
+A narrow grouped count would cover this without relationships or relaxed
+hydration, matching Rails' `where(...).group(:pin_id).count`:
+
+```python
+store.query(Placement).where_in("pin_id", pin_ids).count_by("pin_id")
+# -> {UUID(...): 2, UUID(...): 1}
+```
+
+It depends on `where_in`, and keys would be decoded with the named attribute's
+type. With `where_in` alone, Python-side counting only loads the current user's
+rows, which is fine at Cork's scale; revisit if a second grouped count appears.
 
 ### There is no schema or migration story
 
@@ -55,12 +104,3 @@ user-controlled value again before redirecting. A small framework-level helper
 for resolving safe local return targets would reduce duplicated security-sensitive
 code and make the intended origin/path handling explicit.
 
-## Cork application architecture
-
-### There is no Cork test harness yet
-
-Cork has no test directory, test command, request client, or fixtures for a
-booted application, component context, temporary store, authenticated session,
-or rendered response. Handler checks during feature work require ad hoc
-contexts and fake views. A proper harness should exercise the real request and
-component lifecycle before application tests are retained.

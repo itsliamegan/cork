@@ -3,12 +3,14 @@
 from compression import zstd
 from datetime import UTC, date, datetime, timedelta
 import hashlib
+from pathlib import Path
 import re
+import sqlite3
 import sys
+from tempfile import TemporaryDirectory
 
 from boto3 import client
 from helios.config import ConfigError
-from helios.persist.files import Files
 from luna.cli import Option, Program
 
 import app.config
@@ -29,7 +31,7 @@ class Config(app.config.Config):
 
 
 def main(dry: bool, keep: int):
-	"""Back up the data store to Cloudflare R2."""
+	"""Back up the database to Cloudflare R2."""
 
 	try:
 		config = Config.load(env_file=app.config.ENV_FILE)
@@ -50,7 +52,7 @@ def main(dry: bool, keep: int):
 
 
 def backup(s3, archive: Archive, config: Config, dry: bool):
-	"""Upload a compressed snapshot of the data store."""
+	"""Upload a compressed snapshot of the database."""
 
 	raw = snapshot(config)
 	body = zstd.compress(raw, level=ZSTD_LEVEL)
@@ -101,10 +103,29 @@ def prune(s3, archive: Archive, keep: int, dry: bool):
 
 
 def snapshot(config: Config) -> bytes:
-	"""Read the contents of the store file while holding the persistence lock."""
+	"""Copy the live database with SQLite's online backup API, and read the copy.
 
-	with Files(config.persist).lock():
-		return config.data.store_file.read_bytes()
+	The backup API produces a consistent snapshot while Cork keeps running.
+	Copying the live file directly could capture a write partway through.
+	"""
+
+	source_uri = f"{config.database.database_file.resolve().as_uri()}?mode=ro"
+	with TemporaryDirectory() as directory:
+		destination_file = Path(directory, "snapshot.sqlite")
+		source = sqlite3.connect(source_uri, uri=True)
+		try:
+			destination = sqlite3.connect(destination_file)
+			try:
+				source.backup(destination)
+				(result,) = destination.execute("PRAGMA quick_check").fetchone()
+			finally:
+				destination.close()
+		finally:
+			source.close()
+
+		if result != "ok":
+			raise SystemExit(f"backup: error: snapshot failed quick_check: {result}")
+		return destination_file.read_bytes()
 
 
 def expired(s3, archive: Archive, cutoff: date) -> list[str]:
@@ -129,9 +150,14 @@ class Archive:
 
 	# The name is written in one place and read back with a pattern derived
 	# from it, so the two directions cannot drift apart. Only names matching
-	# it exactly are ever eligible for deletion.
-	NAME = "store-{date}.json.zst"
-	PATTERN = re.compile(re.escape(NAME).replace(r"\{date\}", r"(\d{4}-\d{2}-\d{2})"))
+	# it exactly are ever eligible for deletion. Backups taken before the move
+	# to SQLite used the JSON name; recognising it lets them age out.
+	NAME = "store-{date}.sqlite.zst"
+	NAMES = (NAME, "store-{date}.json.zst")
+	PATTERNS = tuple(
+		re.compile(re.escape(name).replace(r"\{date\}", r"(\d{4}-\d{2}-\d{2})"))
+		for name in NAMES
+	)
 
 	def __init__(self, config: Config):
 		self.bucket = config.bucket
@@ -145,8 +171,12 @@ class Archive:
 	def taken(self, key: str) -> date | None:
 		"""Read the date out of an object key, or None if it isn't one of ours."""
 
-		match = self.PATTERN.fullmatch(key.removeprefix(f"{self.prefix}/"))
-		if match is None:
+		name = key.removeprefix(f"{self.prefix}/")
+		for pattern in self.PATTERNS:
+			match = pattern.fullmatch(name)
+			if match is not None:
+				break
+		else:
 			return None
 
 		try:

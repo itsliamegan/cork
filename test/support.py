@@ -4,16 +4,19 @@ from tempfile import TemporaryDirectory
 from uuid import uuid4
 
 from helios.auth.password import Digest
-from helios.data.store import Format
-from helios.persist.files import Files
-from helios.wsgi import TestClient
+from helios.database import Store
+from helios.database.sqlite import connect
+from helios.wsgi.test import TestClient
 from luna.test.assertion import assert_eq
 
-from app.config import Config
-from app.data import User, schema
+from app.config import Config, ROOT_DIR
+from app.data import User, models
 from app.wsgi import Application
+from lib.migrate import Migrations, Migrator
 
 Digest.method = "pbkdf2:sha256:1"
+
+MIGRATIONS_DIR = Path(ROOT_DIR, "database", "migrations")
 
 
 class TestApplication(Application):
@@ -21,26 +24,20 @@ class TestApplication(Application):
 		self.temp_dir = TemporaryDirectory()
 		try:
 			self.dir = Path(self.temp_dir.name)
-			self.store_file = self.dir.joinpath("store.json")
 			self.sessions_file = self.dir.joinpath("sessions.json")
-			self.lock_file = self.dir.joinpath("persistence.lock")
-			self.store_file.write_text("[]")
 			self.sessions_file.write_text("{}")
 
 			config = Config.load(
 				{
-					"APP_PERSIST_LOCK_FILE": str(self.lock_file),
-					"APP_DATA_STORE_FILE": str(self.store_file),
+					"APP_DATABASE_FILE": str(self.dir.joinpath("store.sqlite")),
 					"APP_SESSION_STORE_FILE": str(self.sessions_file),
+					"APP_SESSION_LOCK_FILE": str(self.dir.joinpath("sessions.lock")),
 				}
 			)
-			self.persistence = Files(config.persist)
-			self.store_data = self.persistence.json(
-				config.data.store_file, Format(schema)
-			)
+			Migrator(config.database, Migrations.load(MIGRATIONS_DIR)).apply()
 			super().__init__(config)
-			with self.persistence.lock() as scope:
-				self.store = scope.open(self.store_data).load()
+			self.connection = connect(config.database)
+			self.refresh()
 			self.client = TestClient(self)
 		except Exception:
 			self.temp_dir.cleanup()
@@ -51,9 +48,15 @@ class TestApplication(Application):
 
 	def __exit__(self, exc_type, exc, traceback):
 		try:
+			self.connection.close()
 			self.close()
 		finally:
 			self.temp_dir.cleanup()
+
+	def refresh(self):
+		"""Replace the store, so later reads see what a request committed."""
+
+		self.store = Store(self.connection, models)
 
 	def sign_in(self, user: User):
 		session_id = uuid4()
@@ -78,11 +81,7 @@ class TestClient(TestClient):
 		self.app = app
 
 	def request(self, *args, **kwargs):
-		with self.app.persistence.lock() as scope:
-			scope.open(self.app.store_data).save(self.app.store)
-			self.app.store.pending.clear()
 		try:
 			return super().request(*args, **kwargs)
 		finally:
-			with self.app.persistence.lock() as scope:
-				self.app.store = scope.open(self.app.store_data).load()
+			self.app.refresh()

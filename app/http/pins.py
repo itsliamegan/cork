@@ -1,9 +1,10 @@
+from collections import Counter
 from typing import cast
 from uuid import UUID
 
 from helios.app import Context
 from helios.auth import Authenticator
-from helios.data.store import NotFoundError, Store
+from helios.database import NotFoundError, Store
 from helios.form import Field, Form, parser
 from helios.http import Request, Response, Status, URL
 from helios.views.engine import Views
@@ -70,16 +71,15 @@ def build_board_options(ctx: Context) -> list[dict[str, Board | str]]:
 	boards = find_all_accessible_boards(ctx)
 	board_ids = {board.id for board in boards}
 	shares_by_board_id: dict[UUID, list[Share]] = {board.id: [] for board in boards}
-	for share in store.find_all(Share):
-		if share.board_id in board_ids:
-			shares_by_board_id[share.board_id].append(share)
+	for share in store.query(Share).where_in(board_id=board_ids).all():
+		shares_by_board_id[share.board_id].append(share)
 
 	viewer_ids = {board.creator_id for board in boards}
 	viewer_ids.update(
 		share.user_id for shares in shares_by_board_id.values() for share in shares
 	)
 	users_by_id = {
-		user.id: user.name for user in store.find_all(User) if user.id in viewer_ids
+		user.id: user.name for user in store.query(User).where_in(id=viewer_ids).all()
 	}
 	board_options = []
 	for board in boards:
@@ -106,21 +106,16 @@ def index(req: Request, ctx: Context) -> Response:
 	views = ctx.get(Views)
 	user = cast(User, auth.user)
 
-	pins = store.find_by(Pin, creator_id=user.id)
-	pins.sort(key=lambda pin: pin.created_at, reverse=True)
-	pin_ids = {pin.id for pin in pins}
-	placements_by_pin_id: dict[UUID, list[Placement]] = {pin.id: [] for pin in pins}
-	for placement in store.find_all(Placement):
-		if placement.pin_id in pin_ids:
-			placements_by_pin_id[placement.pin_id].append(placement)
-	pin_rows = []
-	for pin in pins:
-		pin_rows.append(
-			{
-				"pin": pin,
-				"board_count": len(placements_by_pin_id[pin.id]),
-			}
-		)
+	pins = (
+		store.query(Pin).where(creator_id=user.id).order_by("created_at", "desc").all()
+	)
+	board_counts = Counter(
+		placement.pin_id
+		for placement in store.query(Placement)
+		.where_in(pin_id=[pin.id for pin in pins])
+		.all()
+	)
+	pin_rows = [{"pin": pin, "board_count": board_counts[pin.id]} for pin in pins]
 
 	html = views.render(
 		"pins.index",
@@ -312,7 +307,7 @@ def update(req: Request, ctx: Context, id: UUID) -> Response:
 		accessible_placements.append(placement)
 	for placement in accessible_placements:
 		if placement.board_id not in board_ids:
-			store.delete(placement.id)
+			store.delete(placement)
 	existing_board_ids = {placement.board_id for placement in placements}
 	for board_id in board_ids - existing_board_ids:
 		Placement.create(store, pin, boards_by_id[board_id], user)
@@ -347,8 +342,6 @@ def delete(req: Request, ctx: Context, id: UUID) -> Response:
 					pass
 				else:
 					return_to = URL(path)
-	for placement in placements:
-		store.delete(placement.id)
-	store.delete(pin.id)
+	store.delete(pin)
 
 	return Response.redirect(return_to)

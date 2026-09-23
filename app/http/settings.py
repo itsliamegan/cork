@@ -3,7 +3,7 @@ from urllib.parse import urlsplit
 
 from helios.app import Context
 from helios.auth import Authenticator
-from helios.data.store import Store
+from helios.database import Store
 from helios.flash import Flashes
 from helios.form import Field, Form, parser
 from helios.http import Request, Response, Status, URL

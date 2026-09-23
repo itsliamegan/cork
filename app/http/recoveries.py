@@ -3,7 +3,7 @@ from uuid import UUID
 
 from helios.app import Context
 from helios.auth import Authenticator
-from helios.data.store import Store
+from helios.database import Store
 from helios.flash import Flashes
 from helios.http import Request, Response, URL
 from helios.views.engine import Views

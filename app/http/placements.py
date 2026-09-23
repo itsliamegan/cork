@@ -1,7 +1,7 @@
 from uuid import UUID
 
 from helios.app import Context
-from helios.data.store import NotFoundError, Store
+from helios.database import NotFoundError, Store
 from helios.form import Field, Form, parser
 from helios.http import Request, Response, Status, URL
 
@@ -48,5 +48,5 @@ def delete(req: Request, ctx: Context, id: UUID) -> Response:
 	if not can_remove_placement(ctx, placement, pin, board):
 		raise NotFoundError(Placement, id)
 
-	store.delete(placement.id)
+	store.delete(placement)
 	return Response.redirect(URL(f"/boards/{board.id}"))

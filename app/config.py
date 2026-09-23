@@ -10,6 +10,7 @@ import helios.views.config
 
 ROOT_DIR = Path(__file__).resolve().parent.parent
 ENV_FILE = Path(ROOT_DIR, ".env")
+DATA_DIR = Path("/var/lib/cork")
 
 
 class Config(Config):
@@ -27,7 +28,7 @@ class Config(Config):
 		self.database = helios.database.config.Config(
 			self.path(
 				"APP_DATABASE_FILE",
-				Path(ROOT_DIR, "data", "store.sqlite"),
+				Path(DATA_DIR, "store.sqlite"),
 			)
 		)
 		self.views = helios.views.config.Config(
@@ -39,9 +40,9 @@ class Config(Config):
 		self.session = helios.session.config.Config()
 		self.session_file = self.path(
 			"APP_SESSION_STORE_FILE",
-			Path(ROOT_DIR, "data", "sessions.json"),
+			Path(DATA_DIR, "sessions.json"),
 		)
 		self.session_lock_file = self.path(
 			"APP_SESSION_LOCK_FILE",
-			Path(ROOT_DIR, "data", "sessions.lock"),
+			Path(DATA_DIR, "sessions.lock"),
 		)

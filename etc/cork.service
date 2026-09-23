@@ -11,6 +11,7 @@ Group=cork
 WorkingDirectory=/srv/cork
 ExecStart=/srv/cork/.venv/bin/gunicorn \
 	--workers 2 \
+	--preload \
 	--access-logfile - \
 	--error-logfile - \
 	app.main:app

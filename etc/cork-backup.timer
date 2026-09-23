@@ -1,5 +1,5 @@
 [Unit]
-Description=Daily Cork data store backup
+Description=Daily Cork database backup
 
 [Timer]
 OnCalendar=daily

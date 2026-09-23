@@ -1,6 +1,6 @@
 from helios.app import Context
 from helios.auth import Authenticator
-from helios.data.store import Store
+from helios.database import Store
 from helios.form import Field, Form, parser
 from helios.http import Request, Response, Status
 
@@ -25,7 +25,7 @@ def update(req: Request, ctx: Context) -> Response:
 		return Response.text("400 Bad Request", status=Status.BAD_REQUEST)
 
 	for ordering in store.find_by(Ordering, user_id=auth.user.id):
-		store.delete(ordering.id)
+		store.delete(ordering)
 	for position, board_id in enumerate(board_ids):
 		store.create(
 			Ordering,
