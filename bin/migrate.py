@@ -9,8 +9,7 @@ from helios.config import ConfigError
 from luna.cli import Command, Option, Program
 
 import app.config
-import lib.migrate
-from lib.migrate import MigrationError
+from lib.migrate import MigrationError, Migrations, Migrator
 
 MIGRATIONS_DIR = Path(app.config.ROOT_DIR, "database", "migrations")
 
@@ -18,10 +17,12 @@ MIGRATIONS_DIR = Path(app.config.ROOT_DIR, "database", "migrations")
 def apply(dry: bool):
 	"""Apply pending migrations to the database."""
 
-	config = load_config()
+	migrator = load_migrator()
 	try:
-		migrations = lib.migrate.apply(config.database, MIGRATIONS_DIR, dry)
+		migrations = migrator.pending() if dry else migrator.apply()
 	except MigrationError as error:
+		if not dry:
+			report_version(migrator)
 		fail(error)
 
 	for migration in migrations:
@@ -30,16 +31,15 @@ def apply(dry: bool):
 	if dry:
 		print("dry run: nothing applied")
 	else:
-		status = lib.migrate.status(config.database, MIGRATIONS_DIR)
-		print(f"database at version {status.current}")
+		report_version(migrator)
 
 
 def status():
 	"""Report the database version and pending migrations."""
 
-	config = load_config()
+	migrator = load_migrator()
 	try:
-		status = lib.migrate.status(config.database, MIGRATIONS_DIR)
+		status = migrator.status()
 	except MigrationError as error:
 		fail(error)
 
@@ -51,11 +51,28 @@ def status():
 		print(f"pending  {migration.name}")
 
 
-def load_config() -> app.config.Config:
+def load_migrator() -> Migrator:
 	try:
-		return app.config.Config.load(env_file=app.config.ENV_FILE)
+		config = app.config.Config.load(env_file=app.config.ENV_FILE)
 	except ConfigError as error:
 		raise SystemExit(f"migrate: error: {error}") from None
+
+	try:
+		migrations = Migrations.load(MIGRATIONS_DIR)
+	except MigrationError as error:
+		fail(error)
+
+	return Migrator(config.database, migrations)
+
+
+def report_version(migrator: Migrator):
+	"""Print the database version, if the database can be read."""
+
+	try:
+		version = migrator.version()
+	except MigrationError:
+		return
+	print(f"database at version {version}", flush=True)
 
 
 def fail(error: MigrationError) -> NoReturn:

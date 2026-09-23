@@ -5,10 +5,12 @@ Migrations are `NNNN_description.sql` files numbered from 0001 without gaps.
 each migration commits together with its version bump.
 """
 
+from collections.abc import Iterator
 from dataclasses import dataclass
 from pathlib import Path
 import re
 import sqlite3
+from typing import Self
 
 from helios.database import Config, DatabaseError
 from helios.database.sqlite import Connection, connect
@@ -28,6 +30,167 @@ class Migration:
 	path: Path
 	statements: list[str]
 
+	@classmethod
+	def read(cls, path: Path) -> Self:
+		"""Read a migration file and split it into its SQL statements."""
+
+		match = FILENAME.match(path.name)
+		if match is None:
+			raise MigrationError(
+				f"migration files must be named NNNN_description.sql: {path.name}"
+			)
+
+		return cls(
+			number=int(match.group(1)),
+			name=path.stem,
+			path=path,
+			statements=split(path),
+		)
+
+	def run(self, connection: Connection):
+		"""Run the statements and record the version in the open transaction.
+
+		The caller owns the transaction and commits it afterwards.
+		"""
+
+		for statement in self.statements:
+			self.execute(connection, statement)
+
+		self.check_foreign_keys(connection)
+
+		try:
+			connection.control(
+				f"PRAGMA user_version = {self.number}",
+				"version update",
+			)
+		except DatabaseError as error:
+			raise MigrationError(
+				f"{self.path.name}: could not record version {self.number}"
+			) from error
+
+	def execute(self, connection: Connection, statement: str):
+		try:
+			connection.execute(statement).close()
+		except DatabaseError as error:
+			raise MigrationError(
+				f"{self.path.name}: statement failed: {summarize(statement)}"
+			) from error
+
+		if not connection.in_transaction:
+			raise MigrationError(
+				f"{self.path.name}: statement ended the transaction early: "
+				f"{summarize(statement)}"
+			)
+
+	def check_foreign_keys(self, connection: Connection):
+		try:
+			cursor = connection.execute("PRAGMA foreign_key_check")
+			try:
+				violations = cursor.fetch_all()
+			finally:
+				cursor.close()
+		except DatabaseError as error:
+			raise MigrationError(
+				f"{self.path.name}: could not check foreign keys"
+			) from error
+
+		if violations:
+			details = "; ".join(
+				f"{table} row {rowid} references missing {parent} (foreign key {index})"
+				for table, rowid, parent, index in violations
+			)
+			raise MigrationError(f"{self.path.name}: foreign key violations: {details}")
+
+
+class Migrations:
+	"""A complete sequence of migrations, numbered from 1 without gaps."""
+
+	def __init__(self, migrations: list[Migration]):
+		self.migrations = sorted(
+			migrations,
+			key=lambda migration: (migration.number, migration.path.name),
+		)
+		self.check_numbering()
+
+	@classmethod
+	def load(cls, directory: Path) -> Self:
+		"""Read and validate every migration in a directory, ignoring hidden files."""
+
+		if not directory.is_dir():
+			raise MigrationError(f"migrations directory {directory} does not exist")
+
+		paths = [
+			path
+			for path in sorted(directory.iterdir(), key=lambda path: path.name)
+			if not path.name.startswith(".")
+		]
+
+		malformed = [
+			path.name
+			for path in paths
+			if FILENAME.match(path.name) is None or not path.is_file()
+		]
+		if malformed:
+			raise MigrationError(
+				"migration files must be named NNNN_description.sql: "
+				+ ", ".join(malformed)
+			)
+
+		return cls([Migration.read(path) for path in paths])
+
+	def __iter__(self) -> Iterator[Migration]:
+		return iter(self.migrations)
+
+	def __len__(self) -> int:
+		return len(self.migrations)
+
+	@property
+	def latest(self) -> int:
+		return len(self.migrations)
+
+	def after(self, version: int) -> list[Migration]:
+		"""Select the migrations after a version.
+
+		A version beyond the latest migration means the database was migrated by
+		newer code, which this code cannot safely run against.
+		"""
+
+		if version > self.latest:
+			raise MigrationError(
+				f"database is at version {version}, "
+				f"newer than the latest migration {self.latest:04d}"
+			)
+		return self.migrations[version:]
+
+	def check_numbering(self):
+		"""Refuse duplicate numbers and numbering that does not run from 1 to N."""
+
+		by_number: dict[int, list[Migration]] = {}
+		for migration in self.migrations:
+			by_number.setdefault(migration.number, []).append(migration)
+
+		duplicates = [
+			migration.path.name
+			for group in by_number.values()
+			if len(group) > 1
+			for migration in group
+		]
+		if duplicates:
+			raise MigrationError(
+				"duplicate migration numbers: " + ", ".join(duplicates)
+			)
+
+		out_of_sequence = [
+			migration.path.name
+			for position, migration in enumerate(self.migrations, start=1)
+			if migration.number != position
+		]
+		if out_of_sequence:
+			raise MigrationError(
+				"migration numbers must run from 0001 without gaps: "
+				+ ", ".join(out_of_sequence)
+			)
+
 
 @dataclass
 class Status:
@@ -36,121 +199,109 @@ class Status:
 	pending: list[Migration]
 
 
-def apply(config: Config, directory: Path, dry: bool = False) -> list[Migration]:
-	"""Apply every pending migration, or list them without applying when dry."""
+class Migrator:
+	"""Brings one database up to date with a sequence of migrations."""
 
-	if dry:
-		require_database(config)
-	elif not config.database_file.parent.is_dir():
-		raise MigrationError(
-			f"database directory {config.database_file.parent} does not exist"
+	def __init__(self, config: Config, migrations: Migrations):
+		self.config = config
+		self.migrations = migrations
+
+	def version(self) -> int:
+		"""Read the database's version without opening a transaction."""
+
+		self.require_database()
+		with self.connect() as connection:
+			return read_version(connection)
+
+	def status(self) -> Status:
+		"""Report the database's version and the migrations it has not applied."""
+
+		current = self.version()
+		latest = self.migrations.latest
+		return Status(
+			current=current,
+			latest=latest,
+			pending=[] if current > latest else self.migrations.after(current),
 		)
 
-	migrations = load(directory)
+	def pending(self) -> list[Migration]:
+		"""List the migrations apply would run, without changing the database."""
 
-	if dry:
-		with open_database(config) as connection:
-			current = read_version(connection)
-		return pending(migrations, current)
+		return self.migrations.after(self.version())
 
-	applied = []
-	with open_database(config) as connection:
-		disable_foreign_keys(connection)
-		while migration := next_migration(connection, migrations):
-			run(connection, migration)
-			applied.append(migration)
-	return applied
+	def apply(self) -> list[Migration]:
+		"""Apply every pending migration, each in its own transaction.
 
+		When a migration fails, it is rolled back and the ones before it stay
+		committed, leaving the database at the last fully applied version.
+		"""
 
-def status(config: Config, directory: Path) -> Status:
-	"""Report the database's version and the migrations it has not applied."""
-
-	require_database(config)
-	migrations = load(directory)
-
-	with open_database(config) as connection:
-		current = read_version(connection)
-
-	return Status(
-		current=current,
-		latest=len(migrations),
-		pending=migrations[current:],
-	)
-
-
-def load(directory: Path) -> list[Migration]:
-	"""Read and validate every migration in the directory, ordered by number."""
-
-	if not directory.is_dir():
-		raise MigrationError(f"migrations directory {directory} does not exist")
-
-	migrations = []
-	malformed = []
-	for path in sorted(directory.iterdir(), key=lambda path: path.name):
-		if path.name.startswith("."):
-			continue
-		match = FILENAME.match(path.name)
-		if match is None or not path.is_file():
-			malformed.append(path.name)
-			continue
-		migrations.append(
-			Migration(
-				number=int(match.group(1)),
-				name=path.stem,
-				path=path,
-				statements=[],
+		if not self.config.database_file.parent.is_dir():
+			raise MigrationError(
+				f"database directory {self.config.database_file.parent} does not exist"
 			)
-		)
 
-	if malformed:
-		raise MigrationError(
-			"migration files must be named NNNN_description.sql: "
-			+ ", ".join(malformed)
-		)
+		applied = []
+		with self.connect() as connection:
+			disable_foreign_keys(connection)
+			while migration := self.begin_next(connection):
+				try:
+					migration.run(connection)
+					commit(connection, migration)
+				except BaseException:
+					rollback(connection)
+					raise
+				applied.append(migration)
+		return applied
 
-	check_numbering(migrations)
+	def begin_next(self, connection: Connection) -> Migration | None:
+		"""Begin a transaction for the next pending migration, if there is one.
 
-	for migration in migrations:
-		migration.statements = split(migration)
+		The version is read inside the write transaction, so a concurrent runner
+		cannot apply the same migration twice.
+		"""
 
-	return migrations
+		try:
+			connection.begin()
+		except DatabaseError as error:
+			raise MigrationError("could not begin a transaction") from error
+
+		try:
+			remaining = self.migrations.after(read_version(connection))
+		except BaseException:
+			rollback(connection)
+			raise
+
+		if not remaining:
+			rollback(connection)
+			return None
+		return remaining[0]
+
+	def require_database(self):
+		"""Refuse to continue when the database file does not exist.
+
+		Connecting would otherwise create an empty file, leaving a stray database
+		behind when the path is mistyped.
+		"""
+
+		if not self.config.database_file.is_file():
+			raise MigrationError(f"database {self.config.database_file} does not exist")
+
+	def connect(self) -> Connection:
+		try:
+			return connect(self.config)
+		except DatabaseError as error:
+			raise MigrationError(
+				f"could not open database {self.config.database_file}"
+			) from error
 
 
-def check_numbering(migrations: list[Migration]):
-	"""Refuse duplicate numbers and numbering that does not run from 1 to N."""
-
-	by_number: dict[int, list[Migration]] = {}
-	for migration in migrations:
-		by_number.setdefault(migration.number, []).append(migration)
-
-	duplicates = [
-		migration.path.name
-		for group in by_number.values()
-		if len(group) > 1
-		for migration in group
-	]
-	if duplicates:
-		raise MigrationError("duplicate migration numbers: " + ", ".join(duplicates))
-
-	out_of_sequence = [
-		migration.path.name
-		for position, migration in enumerate(migrations, start=1)
-		if migration.number != position
-	]
-	if out_of_sequence:
-		raise MigrationError(
-			"migration numbers must run from 0001 without gaps: "
-			+ ", ".join(out_of_sequence)
-		)
-
-
-def split(migration: Migration) -> list[str]:
+def split(path: Path) -> list[str]:
 	"""Split a migration file into its complete SQL statements."""
 
-	text = migration.path.read_text()
 	statements = []
 	statement = ""
-	for line in text.splitlines(keepends=True):
+	for line in path.read_text().splitlines(keepends=True):
 		statement += line
 		if sqlite3.complete_statement(statement):
 			if strip_leading_comments(statement).strip(" \t\r\n;"):
@@ -158,13 +309,13 @@ def split(migration: Migration) -> list[str]:
 			statement = ""
 
 	if strip_leading_comments(statement):
-		raise MigrationError(f"{migration.path.name}: incomplete final statement")
+		raise MigrationError(f"{path.name}: incomplete final statement")
 
 	for statement in statements:
 		keyword = first_keyword(statement)
 		if keyword in TRANSACTION_KEYWORDS:
 			raise MigrationError(
-				f"{migration.path.name}: {keyword} is not allowed, "
+				f"{path.name}: {keyword} is not allowed, "
 				f"the runner owns the transaction: {summarize(statement)}"
 			)
 
@@ -199,26 +350,6 @@ def summarize(statement: str) -> str:
 	return text if len(text) <= 80 else text[:77] + "..."
 
 
-def require_database(config: Config):
-	"""Refuse to continue when the database file does not exist.
-
-	Connecting would otherwise create an empty file, leaving a stray database
-	behind when the path is mistyped.
-	"""
-
-	if not config.database_file.is_file():
-		raise MigrationError(f"database {config.database_file} does not exist")
-
-
-def open_database(config: Config) -> Connection:
-	try:
-		return connect(config)
-	except DatabaseError as error:
-		raise MigrationError(
-			f"could not open database {config.database_file}"
-		) from error
-
-
 def disable_foreign_keys(connection: Connection):
 	"""Turn foreign keys off so migrations can rebuild referenced tables.
 
@@ -246,105 +377,11 @@ def read_version(connection: Connection) -> int:
 	return row[0]
 
 
-def pending(migrations: list[Migration], current: int) -> list[Migration]:
-	"""Select the migrations after the current version.
-
-	A version beyond the latest migration means the database was migrated by
-	newer code, which this code cannot safely run against.
-	"""
-
-	if current > len(migrations):
-		raise MigrationError(
-			f"database is at version {current}, "
-			f"newer than the latest migration {len(migrations):04d}"
-		)
-	return migrations[current:]
-
-
-def next_migration(
-	connection: Connection,
-	migrations: list[Migration],
-) -> Migration | None:
-	"""Begin a transaction for the next pending migration, if there is one.
-
-	The version is read inside the write transaction, so a concurrent runner
-	cannot apply the same migration twice.
-	"""
-
+def commit(connection: Connection, migration: Migration):
 	try:
-		connection.begin()
+		connection.commit()
 	except DatabaseError as error:
-		raise MigrationError("could not begin a transaction") from error
-
-	try:
-		remaining = pending(migrations, read_version(connection))
-	except BaseException:
-		rollback(connection)
-		raise
-
-	if not remaining:
-		rollback(connection)
-		return None
-	return remaining[0]
-
-
-def run(connection: Connection, migration: Migration):
-	"""Run one migration in the open transaction and commit it with its version."""
-
-	try:
-		for statement in migration.statements:
-			execute(connection, migration, statement)
-		check_foreign_keys(connection, migration)
-		try:
-			connection.control(
-				f"PRAGMA user_version = {migration.number}",
-				"version update",
-			)
-			connection.commit()
-		except DatabaseError as error:
-			raise MigrationError(
-				f"{migration.path.name}: could not record version {migration.number}"
-			) from error
-	except BaseException:
-		rollback(connection)
-		raise
-
-
-def execute(connection: Connection, migration: Migration, statement: str):
-	try:
-		connection.execute(statement).close()
-	except DatabaseError as error:
-		raise MigrationError(
-			f"{migration.path.name}: statement failed: {summarize(statement)}"
-		) from error
-
-	if not connection.in_transaction:
-		raise MigrationError(
-			f"{migration.path.name}: statement ended the transaction early: "
-			f"{summarize(statement)}"
-		)
-
-
-def check_foreign_keys(connection: Connection, migration: Migration):
-	try:
-		cursor = connection.execute("PRAGMA foreign_key_check")
-		try:
-			violations = cursor.fetch_all()
-		finally:
-			cursor.close()
-	except DatabaseError as error:
-		raise MigrationError(
-			f"{migration.path.name}: could not check foreign keys"
-		) from error
-
-	if violations:
-		details = "; ".join(
-			f"{table} row {rowid} references missing {parent} (foreign key {index})"
-			for table, rowid, parent, index in violations
-		)
-		raise MigrationError(
-			f"{migration.path.name}: foreign key violations: {details}"
-		)
+		raise MigrationError(f"{migration.path.name}: could not commit") from error
 
 
 def rollback(connection: Connection):
