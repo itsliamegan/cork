@@ -103,10 +103,11 @@ def prune(s3, archive: Archive, keep: int, dry: bool):
 
 
 def snapshot(config: Config) -> bytes:
-	"""Copy the live database with SQLite's online backup API, and read the copy.
+	"""Copy the live database with VACUUM INTO, and read the copy.
 
-	The backup API produces a consistent snapshot while Cork keeps running.
-	Copying the live file directly could capture a write partway through.
+	VACUUM INTO produces a consistent snapshot while Cork keeps running, and
+	rebuilds it compactly, leaving out the free pages a direct page copy
+	would carry over from deletes and updates.
 	"""
 
 	source_uri = f"{config.database.database_file.resolve().as_uri()}?mode=ro"
@@ -114,14 +115,15 @@ def snapshot(config: Config) -> bytes:
 		destination_file = Path(directory, "snapshot.sqlite")
 		source = sqlite3.connect(source_uri, uri=True)
 		try:
-			destination = sqlite3.connect(destination_file)
-			try:
-				source.backup(destination)
-				(result,) = destination.execute("PRAGMA quick_check").fetchone()
-			finally:
-				destination.close()
+			source.execute("VACUUM INTO ?", (str(destination_file),))
 		finally:
 			source.close()
+
+		destination = sqlite3.connect(destination_file)
+		try:
+			(result,) = destination.execute("PRAGMA quick_check").fetchone()
+		finally:
+			destination.close()
 
 		if result != "ok":
 			raise SystemExit(f"backup: error: snapshot failed quick_check: {result}")
