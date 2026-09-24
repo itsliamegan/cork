@@ -36,9 +36,9 @@
 		>
 			<article class="pin">
 				<section class="pin-details">
-					{% render ExternalLink(pin.url, new_tab=open_in_new_tab, class="pin-link") %}<h3 class="pin-title">{{ pin.title }}</h3>{% endrender %}
+					{% render ExternalLink(url=pin.url, new_tab=open_in_new_tab, class="pin-link") %}<h3 class="pin-title">{{ pin.title }}</h3>{% endrender %}
 					<section class="pin-meta">
-						{% render ExternalLink(pin.url, new_tab=open_in_new_tab, class="pin-url") %}{{ pin.display_url() }}{% endrender %}
+						{% render ExternalLink(url=pin.url, new_tab=open_in_new_tab, class="pin-url") %}{{ pin.display_url() }}{% endrender %}
 						<time class="pin-date" datetime="{{ pin.created_at }}">{{ pin.created_at | date }}</time>
 						<span class="pin-board-count">
 							{% if row.board_count %}{{ row.board_count }} board{% if row.board_count != 1 %}s{% endif %}{% else %}No boards{% endif %}
@@ -46,15 +46,15 @@
 					</section>
 				</section>
 				<section class="pin-actions">
-					{% render ActionMenu("pin-" ~ pin.id) %}
+					{% render ActionMenu(name="pin-" ~ pin.id) %}
 					<li><a class="menu-item" href="{{ urls.route("pins.show", {"id": pin.id}) }}">View</a></li>
 					<li><a class="menu-item" href="{{ urls.route("pins.edit", {"id": pin.id}) }}">Edit</a></li>
 					<li><button class="menu-item menu-item--danger" command="show-modal" commandfor="pin-{{ pin.id }}-delete-dialog">Delete</button></li>
 					{% endrender %}
 					{% render ConfirmDialog(
-						"pin-" ~ pin.id ~ "-delete",
-						urls.route("pins.delete", {"id": pin.id}),
-						"Delete",
+						name="pin-" ~ pin.id ~ "-delete",
+						action=urls.route("pins.delete", {"id": pin.id}),
+						confirm="Delete",
 						method="DELETE",
 					) %}Are you sure you want to delete this pin? This action cannot be undone.{% endrender %}
 				</section>

@@ -42,9 +42,9 @@
 			<article class="pin">
 				{{ ReorderHandle() }}
 				<section class="pin-details">
-					{% render ExternalLink(pin.url, new_tab=open_in_new_tab, class="pin-link") %}<h3 class="pin-title">{{ pin.title }}</h3>{% endrender %}
+					{% render ExternalLink(url=pin.url, new_tab=open_in_new_tab, class="pin-link") %}<h3 class="pin-title">{{ pin.title }}</h3>{% endrender %}
 					<section class="pin-meta">
-						{% render ExternalLink(pin.url, new_tab=open_in_new_tab, class="pin-url") %}{{ pin.display_url() }}{% endrender %}
+						{% render ExternalLink(url=pin.url, new_tab=open_in_new_tab, class="pin-url") %}{{ pin.display_url() }}{% endrender %}
 						<time class="pin-date" datetime="{{ pin.created_at }}">
 							{{ pin.created_at | date }}
 						</time>
@@ -60,16 +60,16 @@
 
 				{% if pin.creator_id == auth.user.id or row.can_remove %}
 				<section class="pin-actions">
-					{% render ActionMenu("placement-" ~ placement.id) %}
+					{% render ActionMenu(name="placement-" ~ placement.id) %}
 					<li><a class="menu-item" href="{{ urls.route("pins.show", {"id": pin.id}) }}">View</a></li>
 					{% if pin.creator_id == auth.user.id %}<li><a class="menu-item" href="{{ urls.route("pins.edit", {"id": pin.id}) }}">Edit</a></li>{% endif %}
 					{% if row.can_remove %}<li><button class="menu-item menu-item--danger" command="show-modal" commandfor="placement-{{ placement.id }}-remove-dialog">Remove</button></li>{% endif %}
 					{% endrender %}
 					{% if row.can_remove %}
 					{% render ConfirmDialog(
-						"placement-" ~ placement.id ~ "-remove",
-						urls.route("placements.delete", {"id": placement.id}),
-						"Remove",
+						name="placement-" ~ placement.id ~ "-remove",
+						action=urls.route("placements.delete", {"id": placement.id}),
+						confirm="Remove",
 						method="DELETE",
 					) %}Are you sure you want to remove this pin from this board? It will remain in Pins and on any other boards.{% endrender %}
 					{% endif %}

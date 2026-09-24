@@ -49,7 +49,11 @@
 		{% endif %}
 	</div>
 
-	{% render ConfirmDialog("recovery", urls.route("recoveries.create"), "Replace") %}Are you sure you want to replace your recovery code? Your current code will stop working.{% endrender %}
+	{% render ConfirmDialog(
+		name="recovery",
+		action=urls.route("recoveries.create"),
+		confirm="Replace",
+	) %}Are you sure you want to replace your recovery code? Your current code will stop working.{% endrender %}
 
 	<header class="frame-header">
 		<h3 class="frame-title">Session</h3>

@@ -15,15 +15,15 @@
 		</section>
 		{% if component.owned %}
 		<section class="board-actions">
-			{% render ActionMenu("board-" ~ board.id) %}
+			{% render ActionMenu(name="board-" ~ board.id) %}
 			<li><a class="menu-item" href="{{ urls.route("boards.edit", {"id": board.id}) }}">Edit</a></li>
 			<li><button class="menu-item menu-item--danger" command="show-modal" commandfor="board-{{ board.id }}-delete-dialog">Delete</button></li>
 			{% endrender %}
 
 			{% render ConfirmDialog(
-				"board-" ~ board.id ~ "-delete",
-				urls.route("boards.delete", {"id": board.id}),
-				"Delete",
+				name="board-" ~ board.id ~ "-delete",
+				action=urls.route("boards.delete", {"id": board.id}),
+				confirm="Delete",
 				method="DELETE",
 			) %}Delete this board? Its pins will remain in Pins and on any other boards. This action cannot be undone.{% endrender %}
 		</section>
