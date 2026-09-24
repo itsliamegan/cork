@@ -1,7 +1,7 @@
 <section class="pin-detail-panel">
 	<div class="pin-detail-row">
 		<span class="pin-detail-label">URL</span>
-		{% render ExternalLink(url=pin.url, new_tab=new_tab, class="pin-detail-value pin-detail-url") %}{{ pin.url }}{% endrender %}
+		{{ ExternalLink(url=pin.url, new_tab=new_tab, class="pin-detail-value pin-detail-url") }}
 	</div>
 	<div class="pin-detail-row">
 		<span class="pin-detail-label">Note</span>

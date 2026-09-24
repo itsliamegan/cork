@@ -19,7 +19,7 @@
 		<h3 class="frame-title">Details</h3>
 	</header>
 	<section class="frame-item pin-detail">
-		{% render ExternalLink(url=pin.url, new_tab=open_in_new_tab, class="pin-detail-url") %}{{ pin.url }}{% endrender %}
+		{{ ExternalLink(url=pin.url, new_tab=open_in_new_tab, class="pin-detail-url") }}
 		<p class="pin-detail-meta">
 			<span>Saved by {{ creator.name }}</span>
 			<time datetime="{{ pin.created_at }}">{{ pin.created_at | date }}</time>

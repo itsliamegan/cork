@@ -1,1 +1,1 @@
-<a href="{{ url }}" {{ attributes.merge(target=new_tab and "_blank", rel=new_tab and "noopener noreferrer") }}>{{ content }}</a>
+<a href="{{ url }}" {{ attributes.merge(target=new_tab and "_blank", rel=new_tab and "noopener noreferrer") }}>{{ content or url }}</a>
