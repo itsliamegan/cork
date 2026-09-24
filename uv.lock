@@ -83,7 +83,6 @@ source = { editable = "../helios" }
 dependencies = [
     { name = "jinja2" },
     { name = "python-dotenv" },
-    { name = "ruff" },
     { name = "werkzeug" },
 ]
 
@@ -91,13 +90,13 @@ dependencies = [
 requires-dist = [
     { name = "jinja2", specifier = "==3.1.*" },
     { name = "python-dotenv", specifier = ">=1.2.2" },
-    { name = "ruff", specifier = ">=0.16.6" },
     { name = "werkzeug", specifier = "==3.1.*" },
 ]
 
 [package.metadata.requires-dev]
 dev = [
     { name = "luna", editable = "../luna" },
+    { name = "ruff", specifier = ">=0.16.6" },
     { name = "time-machine", specifier = ">=3.5.1" },
     { name = "ty", specifier = ">=0.0.80" },
 ]
