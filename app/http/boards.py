@@ -9,7 +9,7 @@ from helios.http import Request, Response, Status, URL
 from helios.routing import URLs
 from helios.view import Views
 
-from app import Access, Board, Ordering, Pin, Placement, Removal, Share, User
+from app import Access, Board, Ordering, Ownership, Pin, Placement, Removal, Share, User
 
 
 def _board_return_url(ctx: Context, raw_url: str | None, id: UUID) -> URL:
@@ -143,8 +143,9 @@ def edit(req: Request, ctx: Context, id: UUID) -> Response:
 	store = ctx.get(Store)
 	auth = ctx.get(Authenticator)
 	views = ctx.get(Views)
+	ownership = Ownership(ctx)
 
-	board = Board.find_owned(ctx, id)
+	board = ownership.find_board(id)
 	shared_user_ids = {
 		share.user_id for share in store.find_by(Share, board_id=board.id)
 	}
@@ -163,8 +164,9 @@ def edit(req: Request, ctx: Context, id: UUID) -> Response:
 
 def update(req: Request, ctx: Context, id: UUID) -> Response:
 	store = ctx.get(Store)
+	ownership = Ownership(ctx)
 
-	board = Board.find_owned(ctx, id)
+	board = ownership.find_board(id)
 	form = Form(
 		[
 			Field("title", parser.Required(parser.Str())),
@@ -198,8 +200,9 @@ def update(req: Request, ctx: Context, id: UUID) -> Response:
 def delete(req: Request, ctx: Context, id: UUID) -> Response:
 	store = ctx.get(Store)
 	urls = ctx.get(URLs)
+	ownership = Ownership(ctx)
 
-	board = Board.find_owned(ctx, id)
+	board = ownership.find_board(id)
 	store.delete(board)
 
 	return Response.redirect(urls.route("boards.index"))

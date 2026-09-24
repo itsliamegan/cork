@@ -11,7 +11,7 @@ from helios.http import Request, Response, Status, URL
 from helios.routing import URLs
 from helios.view import Views
 
-from app import Access, Pin, Placement, Share, User
+from app import Access, Ownership, Pin, Placement, Share, User
 from app.views.pins.placements import PlacementOption
 
 
@@ -224,8 +224,9 @@ def edit(req: Request, ctx: Context, id: UUID) -> Response:
 	store = ctx.get(Store)
 	views = ctx.get(Views)
 	access = Access(ctx)
+	ownership = Ownership(ctx)
 
-	pin = Pin.find_owned(ctx, id)
+	pin = ownership.find_pin(id)
 	placements = pin.find_placements(store)
 	accessible_placements = []
 	for placement in placements:
@@ -253,8 +254,9 @@ def update(req: Request, ctx: Context, id: UUID) -> Response:
 	auth = ctx.get(Authenticator)
 	user = cast(User, auth.user)
 	access = Access(ctx)
+	ownership = Ownership(ctx)
 
-	pin = Pin.find_owned(ctx, id)
+	pin = ownership.find_pin(id)
 	placements = pin.find_placements(store)
 
 	form = Form(
@@ -301,8 +303,9 @@ def update(req: Request, ctx: Context, id: UUID) -> Response:
 def delete(req: Request, ctx: Context, id: UUID) -> Response:
 	store = ctx.get(Store)
 	urls = ctx.get(URLs)
+	ownership = Ownership(ctx)
 
-	pin = Pin.find_owned(ctx, id)
+	pin = ownership.find_pin(id)
 	store.delete(pin)
 
 	return Response.redirect(urls.route("pins.index"))
