@@ -9,7 +9,7 @@ from helios.http import Request, Response, Status, URL
 from helios.routing import URLs
 from helios.view import Views
 
-from app import Board, Ordering, Pin, Placement, Removal, Share, User
+from app import Access, Board, Ordering, Pin, Placement, Removal, Share, User
 
 
 def _board_return_url(ctx: Context, raw_url: str | None, id: UUID) -> URL:
@@ -41,8 +41,9 @@ def index(req: Request, ctx: Context) -> Response:
 	auth = ctx.get(Authenticator)
 	views = ctx.get(Views)
 	user = cast(User, auth.user)
+	access = Access(ctx)
 
-	boards = Ordering.arrange(ctx, Board.find_all_accessible(ctx))
+	boards = Ordering.arrange(ctx, access.find_boards())
 	shared_board_ids = {
 		share.board_id
 		for share in store.query(Share)
@@ -110,8 +111,9 @@ def new(req: Request, ctx: Context) -> Response:
 def show(req: Request, ctx: Context, id: UUID) -> Response:
 	store = ctx.get(Store)
 	views = ctx.get(Views)
+	access = Access(ctx)
 
-	board = Board.find_accessible(ctx, id)
+	board = access.find_board(id)
 	placements = store.find_by(Placement, board_id=board.id)
 	pin_ids = [placement.pin_id for placement in placements]
 	pins_by_id = {pin.id: pin for pin in store.query(Pin).where_in(id=pin_ids).all()}

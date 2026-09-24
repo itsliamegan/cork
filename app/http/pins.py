@@ -11,7 +11,7 @@ from helios.http import Request, Response, Status, URL
 from helios.routing import URLs
 from helios.view import Views
 
-from app import Board, Pin, Placement, Share, User
+from app import Access, Pin, Placement, Share, User
 from app.views.pins.placements import PlacementOption
 
 
@@ -36,6 +36,8 @@ def _pin_return_url(
 	placements: list[Placement],
 ) -> URL:
 	urls = ctx.get(URLs)
+	access = Access(ctx)
+
 	fallback = urls.route("pins.show", {"id": pin.id})
 	match = urls.match(raw_url)
 	if match is not None and match.route.name == "pins.index":
@@ -44,7 +46,7 @@ def _pin_return_url(
 	if board_id is None:
 		return fallback
 	try:
-		Board.find_accessible(ctx, board_id)
+		access.find_board(board_id)
 	except NotFoundError:
 		return fallback
 	return urls.route("boards.show", {"id": board_id})
@@ -54,7 +56,9 @@ def build_placement_options(ctx: Context) -> list[PlacementOption]:
 	store = ctx.get(Store)
 	auth = ctx.get(Authenticator)
 	user = cast(User, auth.user)
-	boards = Board.find_all_accessible(ctx)
+	access = Access(ctx)
+
+	boards = access.find_boards()
 	board_ids = {board.id for board in boards}
 	shares_by_board_id: dict[UUID, list[Share]] = {board.id: [] for board in boards}
 	for share in store.query(Share).where_in(board_id=board_ids).all():
@@ -107,6 +111,7 @@ def create(req: Request, ctx: Context) -> Response:
 	auth = ctx.get(Authenticator)
 	urls = ctx.get(URLs)
 	user = cast(User, auth.user)
+	access = Access(ctx)
 
 	form = Form(
 		[
@@ -123,7 +128,7 @@ def create(req: Request, ctx: Context) -> Response:
 
 	board_ids = list(dict.fromkeys(input["board_id"]))
 	try:
-		boards = [Board.find_accessible(ctx, board_id) for board_id in board_ids]
+		boards = [access.find_board(board_id) for board_id in board_ids]
 	except NotFoundError:
 		return Response.text("400 Bad Request", status=Status.BAD_REQUEST)
 
@@ -151,6 +156,7 @@ def create(req: Request, ctx: Context) -> Response:
 def new(req: Request, ctx: Context) -> Response:
 	views = ctx.get(Views)
 	urls = ctx.get(URLs)
+	access = Access(ctx)
 
 	board_id = req.url.query.get("board_id")
 	if isinstance(board_id, str):
@@ -158,7 +164,7 @@ def new(req: Request, ctx: Context) -> Response:
 			id = UUID(board_id)
 		except ValueError:
 			raise http.error.NotFoundError()
-		board = Board.find_accessible(ctx, id)
+		board = access.find_board(id)
 		selected_board_ids = {board.id}
 		return_to = urls.route("boards.show", {"id": board.id})
 	else:
@@ -180,14 +186,15 @@ def new(req: Request, ctx: Context) -> Response:
 def show(req: Request, ctx: Context, id: UUID) -> Response:
 	store = ctx.get(Store)
 	views = ctx.get(Views)
+	access = Access(ctx)
 
-	pin = Pin.find_accessible(ctx, id)
+	pin = access.find_pin(id)
 	placements = pin.find_placements(store)
 	accessible_placements = []
 	accessible_boards = []
 	for placement in placements:
 		try:
-			board = Board.find_accessible(ctx, placement.board_id)
+			board = access.find_board(placement.board_id)
 		except NotFoundError:
 			continue
 		accessible_placements.append(placement)
@@ -216,13 +223,14 @@ def show(req: Request, ctx: Context, id: UUID) -> Response:
 def edit(req: Request, ctx: Context, id: UUID) -> Response:
 	store = ctx.get(Store)
 	views = ctx.get(Views)
+	access = Access(ctx)
 
 	pin = Pin.find_owned(ctx, id)
 	placements = pin.find_placements(store)
 	accessible_placements = []
 	for placement in placements:
 		try:
-			Board.find_accessible(ctx, placement.board_id)
+			access.find_board(placement.board_id)
 		except NotFoundError:
 			continue
 		accessible_placements.append(placement)
@@ -244,6 +252,7 @@ def update(req: Request, ctx: Context, id: UUID) -> Response:
 	store = ctx.get(Store)
 	auth = ctx.get(Authenticator)
 	user = cast(User, auth.user)
+	access = Access(ctx)
 
 	pin = Pin.find_owned(ctx, id)
 	placements = pin.find_placements(store)
@@ -263,9 +272,7 @@ def update(req: Request, ctx: Context, id: UUID) -> Response:
 
 	board_ids = set(input["board_id"])
 	try:
-		boards_by_id = {
-			board_id: Board.find_accessible(ctx, board_id) for board_id in board_ids
-		}
+		boards_by_id = {board_id: access.find_board(board_id) for board_id in board_ids}
 	except NotFoundError:
 		return Response.text("400 Bad Request", status=Status.BAD_REQUEST)
 
@@ -273,7 +280,7 @@ def update(req: Request, ctx: Context, id: UUID) -> Response:
 	accessible_placements = []
 	for placement in placements:
 		try:
-			Board.find_accessible(ctx, placement.board_id)
+			access.find_board(placement.board_id)
 		except NotFoundError:
 			continue
 		accessible_placements.append(placement)

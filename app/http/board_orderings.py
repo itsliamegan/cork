@@ -6,13 +6,14 @@ from helios.database import Store
 from helios.form import Field, Form, parser
 from helios.http import Request, Response, Status
 
-from app import Board, Ordering, User
+from app import Access, Ordering, User
 
 
 def update(req: Request, ctx: Context) -> Response:
 	store = ctx.get(Store)
 	auth = ctx.get(Authenticator)
 	user = cast(User, auth.user)
+	access = Access(ctx)
 
 	form = Form([Field("board_id", parser.List(parser.UUID()))])
 	input, errs = form.validate(req.input)
@@ -23,7 +24,7 @@ def update(req: Request, ctx: Context) -> Response:
 	if len(board_ids) != len(set(board_ids)):
 		return Response.text("400 Bad Request", status=Status.BAD_REQUEST)
 
-	accessible_board_ids = {board.id for board in Board.find_all_accessible(ctx)}
+	accessible_board_ids = {board.id for board in access.find_boards()}
 	if set(board_ids) != accessible_board_ids:
 		return Response.text("400 Bad Request", status=Status.BAD_REQUEST)
 

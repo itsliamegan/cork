@@ -3,6 +3,7 @@ from typing import cast
 from helios.app import Context
 from helios.auth import Authenticator
 
+from app.access import Access
 from app.board import Board
 from app.pin import Pin
 from app.placement import Placement
@@ -19,7 +20,7 @@ class Removal:
 		auth = ctx.get(Authenticator)
 		user = cast(User, auth.user)
 
-		return self.board.is_accessible(ctx) and user.id in {
+		return Access(ctx).allows_board(self.board) and user.id in {
 			self.pin.creator_id,
 			self.placement.adder_id,
 			self.board.creator_id,

@@ -1,3 +1,4 @@
+from app.access import Access
 from app.board import Board
 from app.invite import Invite
 from app.ordering import Ordering
@@ -9,6 +10,7 @@ from app.share import Share
 from app.user import User
 
 __all__ = [
+	"Access",
 	"Board",
 	"Invite",
 	"Ordering",

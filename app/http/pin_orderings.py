@@ -5,12 +5,14 @@ from helios.database import Store
 from helios.form import Field, Form, parser
 from helios.http import Request, Response, Status
 
-from app import Board, Placement
+from app import Access, Placement
 
 
 def update(req: Request, ctx: Context, id: UUID) -> Response:
 	store = ctx.get(Store)
-	Board.find_accessible(ctx, id)
+	access = Access(ctx)
+
+	access.find_board(id)
 
 	form = Form([Field("placement_id", parser.List(parser.UUID()))])
 	input, errors = form.validate(req.input)
