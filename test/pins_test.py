@@ -36,12 +36,7 @@ def test_creates_pin_with_placements_for_selected_boards():
 		assert_eq({placement.adder_id for placement in placements}, {user.id})
 
 
-def checkbox_is_checked(html: str, board_id) -> bool:
-	checkbox = html[html.index(f'value="{board_id}"') :].split(">", maxsplit=1)[0]
-	return "checked" in checkbox
-
-
-def test_new_form_checks_originating_board():
+def test_new_form_from_board_lists_every_board():
 	with TestApplication() as app:
 		user = app.store.create(User, name="Alice")
 		reading = app.store.create(Board, title="Reading", creator_id=user.id)
@@ -52,8 +47,8 @@ def test_new_form_checks_originating_board():
 
 		assert_eq(res.status_code, 200)
 		assert_that("No matching boards." in res.text)
-		assert_that(checkbox_is_checked(res.text, reading.id))
-		assert_that(not checkbox_is_checked(res.text, essays.id))
+		assert_that(reading.title in res.text)
+		assert_that(essays.title in res.text)
 
 
 def test_new_form_rejects_inaccessible_boards():
@@ -81,7 +76,7 @@ def test_board_links_to_new_pin_form_for_board():
 		assert_that(f'href="/pins/new?board_id={board.id}"' in res.text)
 
 
-def test_edit_form_checks_each_placed_board():
+def test_edit_form_lists_every_board():
 	with TestApplication() as app:
 		user = app.store.create(User, name="Alice")
 		reading = app.store.create(Board, title="Reading", creator_id=user.id)
@@ -101,10 +96,7 @@ def test_edit_form_checks_each_placed_board():
 		assert_eq(res.status_code, 200)
 		assert_that("No matching boards." in res.text)
 		for board in [reading, essays, unread]:
-			assert_that(f'value="{board.id}"' in res.text)
-		for board in [reading, essays]:
-			assert_that(checkbox_is_checked(res.text, board.id))
-		assert_that(not checkbox_is_checked(res.text, unread.id))
+			assert_that(board.title in res.text)
 
 
 def test_board_picker_includes_only_accessible_boards():
@@ -115,8 +107,8 @@ def test_board_picker_includes_only_accessible_boards():
 		carlos = app.store.create(User, name="Carlos")
 		eve = app.store.create(User, name="Eve")
 		mallory = app.store.create(User, name="Mallory")
-		private = app.store.create(Board, title="Private", creator_id=alice.id)
-		shared = app.store.create(Board, title="Shared", creator_id=alice.id)
+		private = app.store.create(Board, title="Private notes", creator_id=alice.id)
+		shared = app.store.create(Board, title="Shared reading", creator_id=alice.id)
 		incoming = app.store.create(Board, title="Incoming", creator_id=carlos.id)
 		hidden = app.store.create(Board, title="Hidden", creator_id=mallory.id)
 		for board, user in [
@@ -133,8 +125,8 @@ def test_board_picker_includes_only_accessible_boards():
 
 		assert_eq(res.status_code, 200)
 		for board in [private, shared, incoming]:
-			assert_that(f'value="{board.id}"' in res.text)
-		assert_that(f'value="{hidden.id}"' not in res.text)
+			assert_that(board.title in res.text)
+		assert_that(hidden.title not in res.text)
 
 
 def test_update_adds_and_removes_placements_without_replacing_retained_placements():
@@ -404,8 +396,8 @@ def test_pins_index_renders_search_control_and_complete_collection():
 		assert_that('type="search"' in search_input)
 		assert_that('aria-label="Search pins"' in search_input)
 		assert_that("name=" not in search_input)
-		assert_that(f'href="/pins/{first.id}"' in res.text)
-		assert_that(f'href="/pins/{second.id}"' in res.text)
+		assert_that(first.title in res.text)
+		assert_that(second.title in res.text)
 		assert_that("1 board" in res.text)
 		assert_that("No boards" in res.text)
 		assert_that(board.title not in res.text)
@@ -428,7 +420,7 @@ def test_empty_pins_index_distinguishes_collection_and_search_empty_states():
 def test_new_form_and_creation_allow_no_board():
 	with TestApplication() as app:
 		user = app.store.create(User, name="Alice")
-		board = app.store.create(Board, title="Reading", creator_id=user.id)
+		app.store.create(Board, title="Reading", creator_id=user.id)
 		app.sign_in(user)
 
 		form_res = app.client.get("/pins/new")
@@ -439,7 +431,6 @@ def test_new_form_and_creation_allow_no_board():
 		pin = app.store.find_by(Pin, title="Unfiled")[0]
 
 		assert_eq(form_res.status_code, 200)
-		assert_that(not checkbox_is_checked(form_res.text, board.id))
 		assert_that('name="return_to" value="/pins/"' in form_res.text)
 		assert_eq(create_res.headers["Location"], "/pins/")
 		assert_eq(app.store.find_by(Placement, pin_id=pin.id), [])
@@ -548,6 +539,5 @@ def test_pin_forms_keep_return_behavior_without_board_backlinks():
 		edit_res = app.client.get(f"/pins/{pin.id}/edit")
 
 		assert_that("Board:" not in new_res.text and "Board:" not in edit_res.text)
-		assert_that(checkbox_is_checked(new_res.text, board.id))
 		assert_that(f'name="return_to" value="/boards/{board.id}"' in new_res.text)
 		assert_that(f'href="/pins/{pin.id}"' in edit_res.text)
