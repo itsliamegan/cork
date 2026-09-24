@@ -1,6 +1,6 @@
 from helios.auth import Authenticator
 from helios.http import Method, Response
-from helios.routing import Group, Pattern, Route
+from helios.routing import Group, Pattern, Route, URLs
 
 from app.http import (
 	board_orderings,
@@ -19,9 +19,10 @@ from app.http import (
 
 def ensure_signed_in(req, ctx, **params):
 	auth = ctx.get(Authenticator)
+	urls = ctx.get(URLs)
 
 	if not auth.is_signed_in():
-		return Response.redirect("/sessions/new")
+		return Response.redirect(urls.route("sessions.new"))
 
 
 routes = [

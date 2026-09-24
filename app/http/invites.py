@@ -6,7 +6,7 @@ from helios.auth import Authenticator
 from helios.database import Store
 from helios.flash import Flashes
 from helios.form import Field, Form, parser
-from helios.http import Request, Response, URL
+from helios.http import Request, Response
 from helios.routing import URLs
 from helios.view import Views
 
@@ -17,12 +17,13 @@ def create(req: Request, ctx: Context) -> Response:
 	store = ctx.get(Store)
 	auth = ctx.get(Authenticator)
 	flash = ctx.get(Flashes)
+	urls = ctx.get(URLs)
 
 	form = Form([Field("targeted", parser.Bool())])
 	input, errs = form.validate(req.input)
 	if errs:
 		flash["invite_error"] = "Choose an invite type."
-		return Response.redirect(URL("/settings"))
+		return Response.redirect(urls.route("settings.show"))
 
 	creator = cast(User, auth.user)
 	invite = Invite.create(
@@ -32,7 +33,7 @@ def create(req: Request, ctx: Context) -> Response:
 	)
 	flash["invite_id"] = str(invite.id)
 	flash["invite_token"] = invite.token.value
-	return Response.redirect(URL(f"/invites/{invite.id}"))
+	return Response.redirect(urls.route("invites.show", {"id": invite.id}))
 
 
 def show(req: Request, ctx: Context, id: UUID) -> Response:
@@ -40,6 +41,7 @@ def show(req: Request, ctx: Context, id: UUID) -> Response:
 	auth = ctx.get(Authenticator)
 	flash = ctx.get(Flashes)
 	views = ctx.get(Views)
+	urls = ctx.get(URLs)
 
 	creator = cast(User, auth.user)
 	invite = Invite.find_created_by(store, id, creator)
@@ -48,10 +50,9 @@ def show(req: Request, ctx: Context, id: UUID) -> Response:
 		or flash["invite_id"] != str(invite.id)
 		or "invite_token" not in flash
 	):
-		return Response.redirect(URL("/settings"))
+		return Response.redirect(urls.route("settings.show"))
 
 	token = flash["invite_token"]
-	urls = ctx.get(URLs)
 	return views.render(
 		"invites.show",
 		{

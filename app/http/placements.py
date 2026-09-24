@@ -2,7 +2,8 @@ from uuid import UUID
 
 from helios.app import Context
 from helios.database import NotFoundError, Store
-from helios.http import Request, Response, URL
+from helios.http import Request, Response
+from helios.routing import URLs
 
 from app.data import (
 	Board,
@@ -14,6 +15,7 @@ from app.data import (
 
 def delete(req: Request, ctx: Context, id: UUID) -> Response:
 	store = ctx.get(Store)
+	urls = ctx.get(URLs)
 	placement = store.find_one(Placement, id)
 	pin = store.find_one(Pin, placement.pin_id)
 	board = store.find_one(Board, placement.board_id)
@@ -21,4 +23,4 @@ def delete(req: Request, ctx: Context, id: UUID) -> Response:
 		raise NotFoundError(Placement, id)
 
 	store.delete(placement)
-	return Response.redirect(URL(f"/boards/{board.id}"))
+	return Response.redirect(urls.route("boards.show", {"id": board.id}))

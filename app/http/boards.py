@@ -6,6 +6,7 @@ from helios.auth import Authenticator
 from helios.database import Store
 from helios.form import Field, Form, parser
 from helios.http import Request, Response, Status, URL
+from helios.routing import URLs
 from helios.view import Views
 
 from app.data import (
@@ -90,6 +91,7 @@ def index(req: Request, ctx: Context) -> Response:
 def create(req: Request, ctx: Context) -> Response:
 	store = ctx.get(Store)
 	auth = ctx.get(Authenticator)
+	urls = ctx.get(URLs)
 	user = cast(User, auth.user)
 
 	form = Form(
@@ -110,7 +112,7 @@ def create(req: Request, ctx: Context) -> Response:
 	for user_id in selected_user_ids:
 		store.create(Share, board_id=board.id, user_id=user_id)
 
-	return Response.redirect(URL(f"/boards/{board.id}"))
+	return Response.redirect(urls.route("boards.show", {"id": board.id}))
 
 
 def new(req: Request, ctx: Context) -> Response:
@@ -217,8 +219,9 @@ def update(req: Request, ctx: Context, id: UUID) -> Response:
 
 def delete(req: Request, ctx: Context, id: UUID) -> Response:
 	store = ctx.get(Store)
+	urls = ctx.get(URLs)
 
 	board = find_owned(ctx, Board, id)
 	store.delete(board)
 
-	return Response.redirect(URL("/boards/"))
+	return Response.redirect(urls.route("boards.index"))

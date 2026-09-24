@@ -3,7 +3,8 @@ from helios.auth import Authenticator
 from helios.database import Store
 from helios.flash import Flashes
 from helios.form import Field, Form, parser
-from helios.http import Request, Response, URL
+from helios.http import Request, Response
+from helios.routing import URLs
 from helios.view import Views
 
 from app.data import Invite, Recovery, User
@@ -13,9 +14,10 @@ def create(req: Request, ctx: Context) -> Response:
 	auth = ctx.get(Authenticator)
 	store = ctx.get(Store)
 	flash = ctx.get(Flashes)
+	urls = ctx.get(URLs)
 
 	if auth.is_signed_in():
-		return Response.redirect(URL("/"))
+		return Response.redirect(urls.route("home.show"))
 
 	form = Form(
 		[
@@ -26,36 +28,40 @@ def create(req: Request, ctx: Context) -> Response:
 	input, errs = form.validate(req.input)
 	if errs:
 		flash["redemption_error"] = "This invite link is invalid."
-		return Response.redirect(URL("/redemptions/new"))
+		return Response.redirect(urls.route("redemptions.new"))
 
 	token = input["token"]
 	invite = Invite.find_valid(store, token)
 	if invite is None:
-		return Response.redirect(URL("/redemptions/new", {"token": token}))
+		return Response.redirect(urls.route("redemptions.new", query={"token": token}))
 
 	name = (input["name"] or "").strip()
 	if invite.target_id is None:
 		if name == "":
 			flash["redemption_error"] = "Enter a name."
 			flash["redemption_name"] = ""
-			return Response.redirect(URL("/redemptions/new", {"token": token}))
+			return Response.redirect(
+				urls.route("redemptions.new", query={"token": token})
+			)
 
 		# The column's NOCASE collation makes this match names that differ only in
 		# ASCII case, which is also what its unique constraint rejects.
 		if store.query(User).where(name=name).first() is not None:
 			flash["redemption_error"] = "That name is already in use."
 			flash["redemption_name"] = name
-			return Response.redirect(URL("/redemptions/new", {"token": token}))
+			return Response.redirect(
+				urls.route("redemptions.new", query={"token": token})
+			)
 
 	user = invite.redeem(store, name)
 	auth.sign_in(user)
 	if invite.target_id is not None:
-		return Response.redirect(URL("/boards/"))
+		return Response.redirect(urls.route("boards.index"))
 	else:
 		recovery = Recovery.create(store, user)
 		flash["recovery_id"] = str(recovery.id)
 		flash["recovery_code"] = recovery.code.plaintext
-		return Response.redirect(URL(f"/recoveries/{recovery.id}"))
+		return Response.redirect(urls.route("recoveries.show", {"id": recovery.id}))
 
 
 def new(req: Request, ctx: Context) -> Response:
@@ -63,9 +69,10 @@ def new(req: Request, ctx: Context) -> Response:
 	auth = ctx.get(Authenticator)
 	store = ctx.get(Store)
 	flash = ctx.get(Flashes)
+	urls = ctx.get(URLs)
 
 	if auth.is_signed_in():
-		return Response.redirect(URL("/"))
+		return Response.redirect(urls.route("home.show"))
 
 	token = req.url.query.get("token")
 	if isinstance(token, str):

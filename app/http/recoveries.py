@@ -5,7 +5,8 @@ from helios.app import Context
 from helios.auth import Authenticator
 from helios.database import Store
 from helios.flash import Flashes
-from helios.http import Request, Response, URL
+from helios.http import Request, Response
+from helios.routing import URLs
 from helios.view import Views
 
 from app.data import Recovery, User
@@ -15,12 +16,13 @@ def create(req: Request, ctx: Context) -> Response:
 	store = ctx.get(Store)
 	auth = ctx.get(Authenticator)
 	flash = ctx.get(Flashes)
+	urls = ctx.get(URLs)
 
 	user = cast(User, auth.user)
 	recovery = Recovery.create(store, user)
 	flash["recovery_id"] = str(recovery.id)
 	flash["recovery_code"] = recovery.code.plaintext
-	return Response.redirect(URL(f"/recoveries/{recovery.id}"))
+	return Response.redirect(urls.route("recoveries.show", {"id": recovery.id}))
 
 
 def show(req: Request, ctx: Context, id: UUID) -> Response:
@@ -28,6 +30,7 @@ def show(req: Request, ctx: Context, id: UUID) -> Response:
 	auth = ctx.get(Authenticator)
 	flash = ctx.get(Flashes)
 	views = ctx.get(Views)
+	urls = ctx.get(URLs)
 
 	user = cast(User, auth.user)
 	recovery = Recovery.find_owned(store, id, user)
@@ -36,7 +39,7 @@ def show(req: Request, ctx: Context, id: UUID) -> Response:
 		or flash["recovery_id"] != str(recovery.id)
 		or "recovery_code" not in flash
 	):
-		return Response.redirect(URL("/settings"))
+		return Response.redirect(urls.route("settings.show"))
 
 	return views.render(
 		"recoveries.show",
