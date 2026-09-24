@@ -117,7 +117,7 @@ def index(req: Request, ctx: Context) -> Response:
 	)
 	pin_rows = [{"pin": pin, "board_count": board_counts[pin.id]} for pin in pins]
 
-	html = views.render(
+	return views.render(
 		"pins.index",
 		{
 			"pin_rows": pin_rows,
@@ -125,7 +125,6 @@ def index(req: Request, ctx: Context) -> Response:
 			"open_in_new_tab": user.open_in_new_tab,
 		},
 	)
-	return Response.html(html)
 
 
 def create(req: Request, ctx: Context) -> Response:
@@ -177,7 +176,7 @@ def render_new(ctx: Context, board: Board | None = None) -> Response:
 	auth = ctx.get(Authenticator)
 	views = ctx.get(Views)
 	return_to = URL(f"/boards/{board.id}") if board is not None else URL("/pins/")
-	html = views.render(
+	return views.render(
 		"pins.new",
 		{
 			"originating_board": board,
@@ -187,7 +186,6 @@ def render_new(ctx: Context, board: Board | None = None) -> Response:
 			"return_to": return_to,
 		},
 	)
-	return Response.html(html)
 
 
 def canonical_new(req: Request, ctx: Context) -> Response:
@@ -223,7 +221,7 @@ def show(req: Request, ctx: Context, id: UUID) -> Response:
 		if contextual_placement is not None
 		else None
 	)
-	html = views.render(
+	return views.render(
 		"pins.show",
 		{
 			"pin": pin,
@@ -235,7 +233,6 @@ def show(req: Request, ctx: Context, id: UUID) -> Response:
 			"open_in_new_tab": user.open_in_new_tab,
 		},
 	)
-	return Response.html(html)
 
 
 def edit(req: Request, ctx: Context, id: UUID) -> Response:
@@ -253,7 +250,7 @@ def edit(req: Request, ctx: Context, id: UUID) -> Response:
 			continue
 		accessible_placements.append(placement)
 
-	html = views.render(
+	return views.render(
 		"pins.edit",
 		{
 			"pin": pin,
@@ -265,7 +262,6 @@ def edit(req: Request, ctx: Context, id: UUID) -> Response:
 			"return_to": _pin_return_url(ctx, req.referrer, pin, placements),
 		},
 	)
-	return Response.html(html)
 
 
 def update(req: Request, ctx: Context, id: UUID) -> Response:

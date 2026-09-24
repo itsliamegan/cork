@@ -53,7 +53,7 @@ def new(req: Request, ctx: Context) -> Response:
 	error = None
 	if "session_error" in flash:
 		error = flash["session_error"]
-	return Response.html(views.render("sessions.new", {"error": error}))
+	return views.render("sessions.new", {"error": error})
 
 
 def delete(req: Request, ctx: Context) -> Response:

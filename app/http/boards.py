@@ -78,7 +78,7 @@ def index(req: Request, ctx: Context) -> Response:
 	]
 	shared_boards = [board for board in boards if board.id in shared_board_ids]
 
-	html = views.render(
+	return views.render(
 		"boards.index",
 		{
 			"private_boards": private_boards,
@@ -86,8 +86,6 @@ def index(req: Request, ctx: Context) -> Response:
 			"current_user": auth.user,
 		},
 	)
-
-	return Response.html(html)
 
 
 def create(req: Request, ctx: Context) -> Response:
@@ -121,7 +119,7 @@ def new(req: Request, ctx: Context) -> Response:
 	views = ctx.get(Views)
 	user = cast(User, auth.user)
 
-	html = views.render(
+	return views.render(
 		"boards.new",
 		{
 			"current_user": auth.user,
@@ -129,7 +127,6 @@ def new(req: Request, ctx: Context) -> Response:
 			"people": _sharing_people(ctx, user.id),
 		},
 	)
-	return Response.html(html)
 
 
 def show(req: Request, ctx: Context, id: UUID) -> Response:
@@ -155,7 +152,7 @@ def show(req: Request, ctx: Context, id: UUID) -> Response:
 	pin_rows.sort(key=lambda row: row["pin"].created_at, reverse=True)
 	pin_rows.sort(key=lambda row: row["placement"].position)
 
-	html = views.render(
+	return views.render(
 		"boards.show",
 		{
 			"board": board,
@@ -164,8 +161,6 @@ def show(req: Request, ctx: Context, id: UUID) -> Response:
 			"open_in_new_tab": user.open_in_new_tab,
 		},
 	)
-
-	return Response.html(html)
 
 
 def edit(req: Request, ctx: Context, id: UUID) -> Response:
@@ -178,7 +173,7 @@ def edit(req: Request, ctx: Context, id: UUID) -> Response:
 		share.user_id for share in store.find_by(Share, board_id=board.id)
 	}
 
-	html = views.render(
+	return views.render(
 		"boards.edit",
 		{
 			"board": board,
@@ -188,8 +183,6 @@ def edit(req: Request, ctx: Context, id: UUID) -> Response:
 			"return_to": _board_return_url(req.referrer, board.id),
 		},
 	)
-
-	return Response.html(html)
 
 
 def update(req: Request, ctx: Context, id: UUID) -> Response:

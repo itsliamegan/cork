@@ -37,7 +37,7 @@ def show(req: Request, ctx: Context) -> Response:
 	invite_error = None
 	if "invite_error" in flash:
 		invite_error = flash["invite_error"]
-	html = views.render(
+	return views.render(
 		"settings.show",
 		{
 			"current_user": user,
@@ -46,7 +46,6 @@ def show(req: Request, ctx: Context) -> Response:
 			"return_to": _settings_return_url(req.referrer),
 		},
 	)
-	return Response.html(html)
 
 
 def update(req: Request, ctx: Context) -> Response:

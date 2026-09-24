@@ -52,15 +52,11 @@ def show(req: Request, ctx: Context, id: UUID) -> Response:
 
 	token = flash["invite_token"]
 	urls = ctx.get(URLs)
-	return Response.html(
-		views.render(
-			"invites.show",
-			{
-				"current_user": creator,
-				"invite": invite,
-				"invite_link": str(
-					urls.route("redemptions.new", query={"token": token})
-				),
-			},
-		)
+	return views.render(
+		"invites.show",
+		{
+			"current_user": creator,
+			"invite": invite,
+			"invite_link": str(urls.route("redemptions.new", query={"token": token})),
+		},
 	)

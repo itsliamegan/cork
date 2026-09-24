@@ -38,12 +38,10 @@ def show(req: Request, ctx: Context, id: UUID) -> Response:
 	):
 		return Response.redirect(URL("/settings"))
 
-	return Response.html(
-		views.render(
-			"recoveries.show",
-			{
-				"current_user": user,
-				"recovery_code": flash["recovery_code"],
-			},
-		)
+	return views.render(
+		"recoveries.show",
+		{
+			"current_user": user,
+			"recovery_code": flash["recovery_code"],
+		},
 	)

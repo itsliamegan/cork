@@ -92,7 +92,7 @@ def new(req: Request, ctx: Context) -> Response:
 	else:
 		error = None
 
-	html = views.render(
+	return views.render(
 		"redemptions.new",
 		{
 			"token": token,
@@ -103,4 +103,3 @@ def new(req: Request, ctx: Context) -> Response:
 			"error": error,
 		},
 	)
-	return Response.html(html)
