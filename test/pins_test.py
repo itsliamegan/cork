@@ -273,10 +273,10 @@ def test_delete_removes_every_placement():
 
 		res = app.client.post(
 			f"/pins/{pin.id}",
-			form={"_method": "DELETE", "return_to": f"/boards/{essays.id}"},
+			form={"_method": "DELETE"},
 		)
 
-		assert_eq(res.headers["Location"], f"/boards/{essays.id}")
+		assert_eq(res.headers["Location"], "/pins/")
 		assert_eq(app.store.find_all(Pin), [])
 		assert_eq(app.store.find_all(Placement), [])
 
@@ -528,7 +528,7 @@ def test_deletes_pin():
 
 		app.client.post(
 			f"/pins/{pin.id}",
-			form={"_method": "DELETE", "return_to": f"/pins/{pin.id}"},
+			form={"_method": "DELETE"},
 		)
 
 		assert_eq(app.store.find_all(Pin), [])

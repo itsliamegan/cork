@@ -23,19 +23,13 @@ from app.data import (
 )
 
 
-def _board_return_url(raw_url: str | None, id: UUID) -> URL:
-	fallback = URL(f"/boards/{id}")
-	if not isinstance(raw_url, str):
-		return fallback
-
-	try:
-		path = URL(raw_url).path
-	except ValueError:
-		return fallback
-
-	if path == "/boards/" or path == f"/boards/{id}":
-		return URL(path)
-	return fallback
+def _board_return_url(ctx: Context, raw_url: str | None, id: UUID) -> URL:
+	urls = ctx.get(URLs)
+	match = urls.match(raw_url)
+	if match is not None and match.route.name == "boards.index":
+		return urls.route("boards.index")
+	else:
+		return urls.route("boards.show", {"id": id})
 
 
 def _sharing_people(
@@ -178,7 +172,7 @@ def edit(req: Request, ctx: Context, id: UUID) -> Response:
 			"board": board,
 			"owner": auth.user,
 			"people": _sharing_people(ctx, board.creator_id, shared_user_ids),
-			"return_to": _board_return_url(req.referrer, board.id),
+			"return_to": _board_return_url(ctx, req.referrer, board.id),
 		},
 	)
 
@@ -213,7 +207,7 @@ def update(req: Request, ctx: Context, id: UUID) -> Response:
 	board.title = input["title"]
 	store.save(board)
 
-	return_to = _board_return_url(input["return_to"], board.id)
+	return_to = _board_return_url(ctx, input["return_to"], board.id)
 	return Response.redirect(return_to)
 
 

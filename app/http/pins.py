@@ -8,6 +8,7 @@ from helios.auth import Authenticator
 from helios.database import NotFoundError, Store
 from helios.form import Field, Form, parser
 from helios.http import Request, Response, Status, URL
+from helios.routing import URLs
 from helios.view import Views
 
 from app.data import (
@@ -26,17 +27,15 @@ from app.data import (
 
 
 def _referring_board_id(
+	ctx: Context,
 	raw_url: str | None,
 	placements: list[Placement],
 ) -> UUID | None:
-	if not isinstance(raw_url, str):
-		return None
-	try:
-		path = URL(raw_url).path
-	except ValueError:
+	match = ctx.get(URLs).match(raw_url)
+	if match is None or match.route.name != "boards.show":
 		return None
 	for placement in placements:
-		if path == f"/boards/{placement.board_id}":
+		if placement.board_id == match.params["id"]:
 			return placement.board_id
 	return None
 
@@ -47,23 +46,19 @@ def _pin_return_url(
 	pin: Pin,
 	placements: list[Placement],
 ) -> URL:
-	fallback = URL(f"/pins/{pin.id}")
-	if not isinstance(raw_url, str):
-		return fallback
-	try:
-		path = URL(raw_url).path
-	except ValueError:
-		return fallback
-	if path in {"/pins/", f"/pins/{pin.id}"}:
-		return URL(path)
-	board_id = _referring_board_id(raw_url, placements)
+	urls = ctx.get(URLs)
+	fallback = urls.route("pins.show", {"id": pin.id})
+	match = urls.match(raw_url)
+	if match is not None and match.route.name == "pins.index":
+		return urls.route("pins.index")
+	board_id = _referring_board_id(ctx, raw_url, placements)
 	if board_id is None:
 		return fallback
 	try:
 		find_accessible_board(ctx, board_id)
 	except NotFoundError:
 		return fallback
-	return URL(path)
+	return urls.route("boards.show", {"id": board_id})
 
 
 def build_board_options(ctx: Context) -> list[dict[str, Board | str]]:
@@ -130,6 +125,7 @@ def index(req: Request, ctx: Context) -> Response:
 def create(req: Request, ctx: Context) -> Response:
 	store = ctx.get(Store)
 	auth = ctx.get(Authenticator)
+	urls = ctx.get(URLs)
 	user = cast(User, auth.user)
 
 	form = Form(
@@ -161,19 +157,20 @@ def create(req: Request, ctx: Context) -> Response:
 	for board in boards:
 		Placement.create(store, pin, board, user)
 
-	return_to = URL("/pins/")
-	if isinstance(input["return_to"], str):
-		try:
-			path = URL(input["return_to"]).path
-		except ValueError:
-			path = ""
-		if path == "/pins/" or path in {f"/boards/{board.id}" for board in boards}:
-			return_to = URL(path)
-	return Response.redirect(return_to)
+	match = urls.match(input["return_to"])
+	if (
+		match is not None
+		and match.route.name == "boards.show"
+		and match.params["id"] in {board.id for board in boards}
+	):
+		return Response.redirect(urls.route("boards.show", match.params))
+	else:
+		return Response.redirect(urls.route("pins.index"))
 
 
 def new(req: Request, ctx: Context) -> Response:
 	views = ctx.get(Views)
+	urls = ctx.get(URLs)
 
 	board_id = req.url.query.get("board_id")
 	if isinstance(board_id, str):
@@ -183,11 +180,11 @@ def new(req: Request, ctx: Context) -> Response:
 			raise http.error.NotFoundError()
 		board = find_accessible_board(ctx, id)
 		selected_board_ids = {board.id}
-		return_to = URL(f"/boards/{board.id}")
+		return_to = urls.route("boards.show", {"id": board.id})
 	else:
 		board = None
 		selected_board_ids = set()
-		return_to = URL("/pins/")
+		return_to = urls.route("pins.index")
 
 	return views.render(
 		"pins.new",
@@ -218,7 +215,8 @@ def show(req: Request, ctx: Context, id: UUID) -> Response:
 		accessible_placements.append(placement)
 		accessible_boards.append(board)
 	contextual_placement = find_contextual_placement(
-		accessible_placements, _referring_board_id(req.referrer, accessible_placements)
+		accessible_placements,
+		_referring_board_id(ctx, req.referrer, accessible_placements),
 	)
 	adder = (
 		store.find_one(User, contextual_placement.adder_id)
@@ -318,27 +316,9 @@ def update(req: Request, ctx: Context, id: UUID) -> Response:
 
 def delete(req: Request, ctx: Context, id: UUID) -> Response:
 	store = ctx.get(Store)
+	urls = ctx.get(URLs)
 
 	pin = find_owned(ctx, Pin, id)
-	placements = find_pin_placements(store, pin.id)
-	return_to = URL("/pins/")
-	raw_return_to = req.input.items.get("return_to")
-	if isinstance(raw_return_to, str):
-		try:
-			path = URL(raw_return_to).path
-		except ValueError:
-			path = ""
-		if path == "/pins/":
-			return_to = URL(path)
-		else:
-			board_id = _referring_board_id(raw_return_to, placements)
-			if board_id is not None:
-				try:
-					find_accessible_board(ctx, board_id)
-				except NotFoundError:
-					pass
-				else:
-					return_to = URL(path)
 	store.delete(pin)
 
-	return Response.redirect(return_to)
+	return Response.redirect(urls.route("pins.index"))

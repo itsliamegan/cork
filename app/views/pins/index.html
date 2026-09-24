@@ -59,7 +59,6 @@
 							<button class="button button--danger" type="submit" form="pin-{{ pin.id }}-delete-form">Delete</button>
 							<form id="pin-{{ pin.id }}-delete-form" action="{{ urls.route("pins.delete", {"id": pin.id}) }}" method="POST" hidden>
 								<input type="text" name="_method" value="DELETE" hidden>
-								<input type="hidden" name="return_to" value="{{ urls.route("pins.index") }}">
 							</form>
 						</footer>
 					</dialog>
