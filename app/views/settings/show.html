@@ -49,17 +49,7 @@
 		{% endif %}
 	</div>
 
-	<dialog id="recovery-dialog" class="dialog">
-		<section class="dialog-content">
-			<p>Are you sure you want to replace your recovery code? Your current code will stop working.</p>
-		</section>
-		<footer class="dialog-actions">
-			<button class="button" command="close" commandfor="recovery-dialog">Cancel</button>
-			<button class="button button--danger" type="submit" form="recovery-form" autofocus>Replace</button>
-		</footer>
-	</dialog>
-
-	<form id="recovery-form" action="{{ urls.route("recoveries.create") }}" method="POST" hidden></form>
+	{% render ConfirmDialog("recovery", urls.route("recoveries.create"), "Replace") %}Are you sure you want to replace your recovery code? Your current code will stop working.{% endrender %}
 
 	<header class="frame-header">
 		<h3 class="frame-title">Session</h3>
