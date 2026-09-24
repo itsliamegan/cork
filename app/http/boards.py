@@ -9,7 +9,7 @@ from helios.http import Request, Response, Status, URL
 from helios.routing import URLs
 from helios.view import Views
 
-from app import Board, Pin, Placement, Share, User
+from app import Board, Pin, Placement, Removal, Share, User
 
 
 def _board_return_url(ctx: Context, raw_url: str | None, id: UUID) -> URL:
@@ -122,7 +122,7 @@ def show(req: Request, ctx: Context, id: UUID) -> Response:
 			{
 				"placement": placement,
 				"pin": pin,
-				"can_remove": placement.can_remove(ctx, pin, board),
+				"can_remove": Removal(placement, pin, board).is_authorized(ctx),
 			}
 		)
 	pin_rows.sort(key=lambda row: row["pin"].created_at, reverse=True)

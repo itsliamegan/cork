@@ -1,8 +1,6 @@
-from typing import TYPE_CHECKING, cast
+from typing import TYPE_CHECKING
 from uuid import UUID
 
-from helios.app import Context
-from helios.auth import Authenticator
 from helios.database import Model, Store, attr
 
 from app.user import User
@@ -51,12 +49,3 @@ class Placement(Model):
 		if not placements:
 			return None
 		return min(placements, key=lambda placement: str(placement.id))
-
-	def can_remove(self, ctx: Context, pin: Pin, board: Board) -> bool:
-		auth = ctx.get(Authenticator)
-		user = cast(User, auth.user)
-		return board.is_accessible(ctx) and user.id in {
-			pin.creator_id,
-			self.adder_id,
-			board.creator_id,
-		}
