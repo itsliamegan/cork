@@ -12,7 +12,6 @@ class PlacementOption:
 	others: list[User]
 
 
-@dataclass
 class PinPlacements(Component):
 	template = "pins.placements"
 

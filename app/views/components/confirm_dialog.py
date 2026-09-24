@@ -1,9 +1,6 @@
-from dataclasses import dataclass
-
 from helios.view import Component
 
 
-@dataclass
 class ConfirmDialog(Component):
 	template = "components.confirm_dialog"
 

@@ -1,11 +1,8 @@
-from dataclasses import dataclass
-
 from helios.view import Component
 
 from app.data import Board, Pin, User
 
 
-@dataclass
 class PinDetails(Component):
 	template = "pins.details"
 

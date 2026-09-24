@@ -1,10 +1,7 @@
-from dataclasses import dataclass
-
 from helios.view import Attributes, Component
 from markupsafe import Markup
 
 
-@dataclass
 class ExternalLink(Component):
 	template = "components.external_link"
 
