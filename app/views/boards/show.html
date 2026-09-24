@@ -40,7 +40,15 @@
 			data-reorder-id="{{ placement.id }}"
 		>
 			<article class="pin">
-				{{ ReorderHandle() }}
+				<button
+					class="reorder-handle"
+					type="button"
+					draggable="true"
+					title="Drag to reorder"
+					data-action="dragstart->reorder#dragStart dragend->reorder#dragEnd"
+				>
+					⠿
+				</button>
 				<section class="pin-details">
 					{% render ExternalLink(url=pin.url, new_tab=open_in_new_tab, class="pin-link") %}<h3 class="pin-title">{{ pin.title }}</h3>{% endrender %}
 					<section class="pin-meta">

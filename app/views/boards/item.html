@@ -4,7 +4,15 @@
 	data-reorder-id="{{ board.id }}"
 >
 	<article class="board">
-		{{ ReorderHandle() }}
+		<button
+			class="reorder-handle"
+			type="button"
+			draggable="true"
+			title="Drag to reorder"
+			data-action="dragstart->reorder#dragStart dragend->reorder#dragEnd"
+		>
+			⠿
+		</button>
 		<section class="board-details">
 			<a class="board-link" href="{{ urls.route("boards.show", {"id": board.id}) }}">
 				<h3 class="board-title">{{ board.title }}</h3>
