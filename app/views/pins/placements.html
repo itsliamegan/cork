@@ -2,10 +2,10 @@
 	<h3 class="frame-title">Boards</h3>
 </header>
 
-<section class="board-picker" data-controller="filter">
-	<div class="board-picker-search">
+<section class="pin-placements" data-controller="filter">
+	<div class="pin-placements-search">
 		<input
-			class="form-field board-picker-search-input"
+			class="form-field pin-placements-search-input"
 			type="search"
 			placeholder="Search"
 			autocomplete="off"
@@ -13,10 +13,10 @@
 			data-action="input->filter#filter"
 		>
 	</div>
-	<fieldset class="board-picker-options">
-		{% for board_option in board_options %}
+	<fieldset class="pin-placements-options">
+		{% for board_option in options %}
 		<label
-			class="board-picker-option"
+			class="pin-placements-option"
 			data-filter-target="item"
 			data-filter-text="{{ board_option.board.title }}"
 		>
@@ -27,12 +27,12 @@
 				value="{{ board_option.board.id }}"
 				{% if board_option.board.id in selected_board_ids %}checked{% endif %}
 			>
-			<span class="board-picker-title">{{ board_option.board.title }}</span>
-			<span class="board-picker-state">{{ board_option.sharing_label }}</span>
+			<span class="pin-placements-title">{{ board_option.board.title }}</span>
+			<span class="pin-placements-state">{{ board_option.sharing_label }}</span>
 		</label>
 		{% endfor %}
 	</fieldset>
-	<p class="board-picker-empty" data-filter-target="empty" hidden>
+	<p class="pin-placements-empty" data-filter-target="empty" hidden>
 		No matching boards.
 	</p>
 </section>

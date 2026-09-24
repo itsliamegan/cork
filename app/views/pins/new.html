@@ -37,7 +37,7 @@
 		</label>
 	</section>
 
-	{% include "pins._placements" %}
+	{{ PinPlacements(board_options, selected_board_ids) }}
 
 	<footer class="frame-item form-actions">
 		<a class="button" href="{{ return_to }}">Cancel</a>

@@ -30,7 +30,7 @@
 		</label>
 	</section>
 
-	{% include "boards._sharing" %}
+	{{ BoardSharing(owner, people) }}
 
 	<footer class="frame-item form-actions">
 		<a class="button" href="{{ return_to }}">Cancel</a>
