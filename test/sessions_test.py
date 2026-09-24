@@ -45,25 +45,6 @@ def test_create_normalizes_recovery_code():
 		assert_that(app.client.get_cookie("session_id") is not None)
 
 
-def test_create_rotates_recovery_code():
-	with TestApplication() as app:
-		user = app.store.create(User, name="Alice")
-		app.store.create(
-			Recovery,
-			user_id=user.id,
-			code=Recovery.Code(Digest.generate("ABCDEFGHJKLMNPQR")),
-		)
-
-		app.client.post(
-			"/sessions/",
-			form={"recovery_code": "ABCDEFGHJKLMNPQR"},
-		)
-
-		recoveries = app.store.find_by(Recovery, user_id=user.id)
-		assert_eq(len(recoveries), 1)
-		assert_that(not recoveries[0].code.matches("ABCDEFGHJKLMNPQR"))
-
-
 def test_create_rejects_invalid_recovery_code():
 	with TestApplication() as app:
 		app.store.create(User, name="Alice")

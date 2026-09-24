@@ -21,8 +21,6 @@ MIGRATIONS_DIR = Path(ROOT_DIR, "database", "migrations")
 
 
 class TestStore:
-	"""A migrated, empty store for exercising models without the application."""
-
 	def __init__(self):
 		self.directory = TemporaryDirectory()
 		try:

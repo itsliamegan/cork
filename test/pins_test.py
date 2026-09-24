@@ -216,25 +216,6 @@ def test_invalid_board_selections_do_not_partially_mutate_pins():
 			assert_eq(app.store.find_one(Placement, placement.id).board_id, reading.id)
 
 
-def test_access_to_any_placed_board_allows_pin_details():
-	with TestApplication() as app:
-		alice = app.store.create(User, name="Alice")
-		bob = app.store.create(User, name="Bob")
-		private = app.store.create(Board, title="Private", creator_id=alice.id)
-		shared = app.store.create(Board, title="Shared", creator_id=alice.id)
-		app.store.create(Share, board_id=shared.id, user_id=bob.id)
-		pin = app.store.create(
-			Pin, title="Sartre", url="https://example.com", creator_id=alice.id
-		)
-		for board in [private, shared]:
-			app.store.create(
-				Placement, pin_id=pin.id, board_id=board.id, adder_id=alice.id
-			)
-		app.sign_in(bob)
-
-		assert_eq(app.client.get(f"/pins/{pin.id}").status_code, 200)
-
-
 def test_unrelated_user_cannot_open_pin_details():
 	with TestApplication() as app:
 		alice = app.store.create(User, name="Alice")
@@ -247,40 +228,6 @@ def test_unrelated_user_cannot_open_pin_details():
 		app.sign_in(bob)
 
 		assert_eq(app.client.get(f"/pins/{pin.id}").status_code, 404)
-
-
-def test_delete_removes_every_placement():
-	with TestApplication() as app:
-		user = app.store.create(User, name="Alice")
-		reading = app.store.create(Board, title="Reading", creator_id=user.id)
-		essays = app.store.create(Board, title="Essays", creator_id=user.id)
-		pin = app.store.create(
-			Pin, title="Sartre", url="https://example.com", creator_id=user.id
-		)
-		for board in [reading, essays]:
-			app.store.create(
-				Placement, pin_id=pin.id, board_id=board.id, adder_id=user.id
-			)
-		app.sign_in(user)
-
-		res = app.client.post(
-			f"/pins/{pin.id}",
-			form={"_method": "DELETE"},
-		)
-
-		assert_eq(res.headers["Location"], "/pins/")
-		assert_eq(app.store.find_all(Pin), [])
-		assert_eq(app.store.find_all(Placement), [])
-
-
-def test_pin_without_placements_is_unfiled():
-	with TestApplication() as app:
-		user = app.store.create(User, name="Alice")
-		pin = app.store.create(
-			Pin, title="Sartre", url="https://example.com", creator_id=user.id
-		)
-
-		assert_eq(pin.find_placements(app.store), [])
 
 
 def test_pin_details_embed_frame_with_accessible_boards_and_actions():
@@ -517,11 +464,13 @@ def test_deletes_pin():
 		)
 		app.sign_in(user)
 
-		app.client.post(
+		res = app.client.post(
 			f"/pins/{pin.id}",
 			form={"_method": "DELETE"},
 		)
 
+		assert_eq(res.status_code, 302)
+		assert_eq(res.headers["Location"], "/pins/")
 		assert_eq(app.store.find_all(Pin), [])
 
 

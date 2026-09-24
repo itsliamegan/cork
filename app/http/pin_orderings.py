@@ -14,8 +14,8 @@ def update(req: Request, ctx: Context, id: UUID) -> Response:
 	store = ctx.get(Store)
 	auth = ctx.get(Authenticator)
 	user = cast(User, auth.user)
-	access = Access(store, user)
 
+	access = Access(store, user)
 	board = access.find_board(id)
 
 	form = Form([Field("placement_id", parser.List(parser.UUID()))])

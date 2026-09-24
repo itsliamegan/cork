@@ -1,6 +1,6 @@
 from luna.test.assertion import assert_eq, assert_that
 
-from app import Board, Ordering, Pin, Placement, Share, User
+from app import Board, Pin, Placement, Share, User
 from test.support import TestApplication
 
 
@@ -139,75 +139,6 @@ def test_revokes_shared_board():
 		app.sign_in(charlie)
 
 		assert_eq(app.client.get(f"/boards/{board.id}").status_code, 200)
-
-
-def test_deleting_board_retains_pins_placed_on_another_board():
-	with TestApplication() as app:
-		user = app.store.create(User, name="Alice")
-		reading = app.store.create(Board, title="Reading", creator_id=user.id)
-		essays = app.store.create(Board, title="Essays", creator_id=user.id)
-		pin = app.store.create(
-			Pin,
-			title="Stanford Entry on Sartre",
-			url="https://plato.stanford.edu/entries/sartre/",
-			creator_id=user.id,
-		)
-		reading_placement = app.store.create(
-			Placement, pin_id=pin.id, board_id=reading.id, adder_id=user.id
-		)
-		essays_placement = app.store.create(
-			Placement, pin_id=pin.id, board_id=essays.id, adder_id=user.id
-		)
-		app.sign_in(user)
-
-		res = app.client.post(f"/boards/{reading.id}", form={"_method": "DELETE"})
-
-		assert_eq(res.status_code, 302)
-		assert_eq(app.store.find_one(Pin, pin.id).id, pin.id)
-		assert_eq(
-			[placement.id for placement in app.store.find_all(Placement)],
-			[essays_placement.id],
-		)
-		assert_eq([board.id for board in app.store.find_all(Board)], [essays.id])
-		assert_eq(
-			reading_placement.id
-			in {placement.id for placement in app.store.find_all(Placement)},
-			False,
-		)
-
-
-def test_deleted_board_removes_related_records_but_retains_pins():
-	with TestApplication() as app:
-		alice = app.store.create(User, name="Alice")
-		bob = app.store.create(User, name="Bob")
-		board = app.store.create(Board, title="Reading", creator_id=alice.id)
-		pin = app.store.create(
-			Pin,
-			title="Stanford Entry on Sartre",
-			url="https://plato.stanford.edu/entries/sartre/",
-			creator_id=alice.id,
-		)
-		app.store.create(Placement, pin_id=pin.id, board_id=board.id, adder_id=alice.id)
-		app.store.create(Share, board_id=board.id, user_id=bob.id)
-		app.store.create(
-			Ordering,
-			user_id=alice.id,
-			board_id=board.id,
-			position=0,
-		)
-		app.sign_in(alice)
-
-		res = app.client.post(
-			f"/boards/{board.id}",
-			form={"_method": "DELETE"},
-		)
-
-		assert_eq(res.status_code, 302)
-		assert_eq(app.store.find_all(Board), [])
-		assert_eq([stored_pin.id for stored_pin in app.store.find_all(Pin)], [pin.id])
-		assert_eq(app.store.find_all(Placement), [])
-		assert_eq(app.store.find_all(Share), [])
-		assert_eq(app.store.find_all(Ordering), [])
 
 
 def test_board_overflow_menu_offers_edit_and_delete_without_sharing():

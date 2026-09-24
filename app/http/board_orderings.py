@@ -13,7 +13,6 @@ def update(req: Request, ctx: Context) -> Response:
 	store = ctx.get(Store)
 	auth = ctx.get(Authenticator)
 	user = cast(User, auth.user)
-	access = Access(store, user)
 
 	form = Form([Field("board_id", parser.List(parser.UUID()))])
 	input, errs = form.validate(req.input)
@@ -24,6 +23,7 @@ def update(req: Request, ctx: Context) -> Response:
 	if len(board_ids) != len(set(board_ids)):
 		return Response.text("400 Bad Request", status=Status.BAD_REQUEST)
 
+	access = Access(store, user)
 	accessible_board_ids = {board.id for board in access.find_boards()}
 	if set(board_ids) != accessible_board_ids:
 		return Response.text("400 Bad Request", status=Status.BAD_REQUEST)

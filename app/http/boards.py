@@ -42,8 +42,8 @@ def index(req: Request, ctx: Context) -> Response:
 	auth = ctx.get(Authenticator)
 	views = ctx.get(Views)
 	user = cast(User, auth.user)
-	access = Access(store, user)
 
+	access = Access(store, user)
 	boards = Ordering.arrange(store, user, access.find_boards())
 	shared_board_ids = {
 		share.board_id
@@ -114,8 +114,8 @@ def show(req: Request, ctx: Context, id: UUID) -> Response:
 	auth = ctx.get(Authenticator)
 	views = ctx.get(Views)
 	user = cast(User, auth.user)
-	access = Access(store, user)
 
+	access = Access(store, user)
 	board = access.find_board(id)
 	placements = store.find_by(Placement, board_id=board.id)
 	pin_ids = [placement.pin_id for placement in placements]
@@ -147,8 +147,8 @@ def edit(req: Request, ctx: Context, id: UUID) -> Response:
 	auth = ctx.get(Authenticator)
 	views = ctx.get(Views)
 	user = cast(User, auth.user)
-	ownership = Ownership(store, user)
 
+	ownership = Ownership(store, user)
 	board = ownership.find_board(id)
 	shared_user_ids = {
 		share.user_id for share in store.find_by(Share, board_id=board.id)
@@ -170,8 +170,8 @@ def update(req: Request, ctx: Context, id: UUID) -> Response:
 	store = ctx.get(Store)
 	auth = ctx.get(Authenticator)
 	user = cast(User, auth.user)
-	ownership = Ownership(store, user)
 
+	ownership = Ownership(store, user)
 	board = ownership.find_board(id)
 	form = Form(
 		[
@@ -208,8 +208,8 @@ def delete(req: Request, ctx: Context, id: UUID) -> Response:
 	auth = ctx.get(Authenticator)
 	urls = ctx.get(URLs)
 	user = cast(User, auth.user)
-	ownership = Ownership(store, user)
 
+	ownership = Ownership(store, user)
 	board = ownership.find_board(id)
 	store.delete(board)
 
