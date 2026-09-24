@@ -12,11 +12,6 @@ from helios.routing import URLs
 from helios.view import Views
 
 from app import Board, Pin, Placement, Share, User
-from app.data import (
-	find_accessible_pin,
-	find_owned,
-	find_pin_placements,
-)
 from app.views.pins.placements import PlacementOption
 
 
@@ -186,8 +181,8 @@ def show(req: Request, ctx: Context, id: UUID) -> Response:
 	store = ctx.get(Store)
 	views = ctx.get(Views)
 
-	pin = find_accessible_pin(ctx, id)
-	placements = find_pin_placements(store, pin.id)
+	pin = Pin.find_accessible(ctx, id)
+	placements = pin.find_placements(store)
 	accessible_placements = []
 	accessible_boards = []
 	for placement in placements:
@@ -222,8 +217,8 @@ def edit(req: Request, ctx: Context, id: UUID) -> Response:
 	store = ctx.get(Store)
 	views = ctx.get(Views)
 
-	pin = find_owned(ctx, Pin, id)
-	placements = find_pin_placements(store, pin.id)
+	pin = Pin.find_owned(ctx, id)
+	placements = pin.find_placements(store)
 	accessible_placements = []
 	for placement in placements:
 		try:
@@ -250,8 +245,8 @@ def update(req: Request, ctx: Context, id: UUID) -> Response:
 	auth = ctx.get(Authenticator)
 	user = cast(User, auth.user)
 
-	pin = find_owned(ctx, Pin, id)
-	placements = find_pin_placements(store, pin.id)
+	pin = Pin.find_owned(ctx, id)
+	placements = pin.find_placements(store)
 
 	form = Form(
 		[
@@ -300,7 +295,7 @@ def delete(req: Request, ctx: Context, id: UUID) -> Response:
 	store = ctx.get(Store)
 	urls = ctx.get(URLs)
 
-	pin = find_owned(ctx, Pin, id)
+	pin = Pin.find_owned(ctx, id)
 	store.delete(pin)
 
 	return Response.redirect(urls.route("pins.index"))
