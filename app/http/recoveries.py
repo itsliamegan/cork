@@ -41,7 +41,6 @@ def show(req: Request, ctx: Context, id: UUID) -> Response:
 	return views.render(
 		"recoveries.show",
 		{
-			"current_user": user,
 			"recovery_code": flash["recovery_code"],
 		},
 	)

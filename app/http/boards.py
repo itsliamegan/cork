@@ -83,7 +83,6 @@ def index(req: Request, ctx: Context) -> Response:
 		{
 			"private_boards": private_boards,
 			"shared_boards": shared_boards,
-			"current_user": auth.user,
 		},
 	)
 
@@ -122,7 +121,6 @@ def new(req: Request, ctx: Context) -> Response:
 	return views.render(
 		"boards.new",
 		{
-			"current_user": auth.user,
 			"owner": auth.user,
 			"people": _sharing_people(ctx, user.id),
 		},
@@ -157,7 +155,6 @@ def show(req: Request, ctx: Context, id: UUID) -> Response:
 		{
 			"board": board,
 			"pin_rows": pin_rows,
-			"current_user": auth.user,
 			"open_in_new_tab": user.open_in_new_tab,
 		},
 	)
@@ -177,7 +174,6 @@ def edit(req: Request, ctx: Context, id: UUID) -> Response:
 		"boards.edit",
 		{
 			"board": board,
-			"current_user": auth.user,
 			"owner": auth.user,
 			"people": _sharing_people(ctx, board.creator_id, shared_user_ids),
 			"return_to": _board_return_url(req.referrer, board.id),

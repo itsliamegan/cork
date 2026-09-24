@@ -55,7 +55,6 @@ def show(req: Request, ctx: Context, id: UUID) -> Response:
 	return views.render(
 		"invites.show",
 		{
-			"current_user": creator,
 			"invite": invite,
 			"invite_link": str(urls.route("redemptions.new", query={"token": token})),
 		},

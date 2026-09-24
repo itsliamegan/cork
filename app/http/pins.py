@@ -121,7 +121,6 @@ def index(req: Request, ctx: Context) -> Response:
 		"pins.index",
 		{
 			"pin_rows": pin_rows,
-			"current_user": user,
 			"open_in_new_tab": user.open_in_new_tab,
 		},
 	)
@@ -173,7 +172,6 @@ def create(req: Request, ctx: Context) -> Response:
 
 
 def render_new(ctx: Context, board: Board | None = None) -> Response:
-	auth = ctx.get(Authenticator)
 	views = ctx.get(Views)
 	return_to = URL(f"/boards/{board.id}") if board is not None else URL("/pins/")
 	return views.render(
@@ -182,7 +180,6 @@ def render_new(ctx: Context, board: Board | None = None) -> Response:
 			"originating_board": board,
 			"board_options": build_board_options(ctx),
 			"selected_board_ids": {board.id} if board is not None else set(),
-			"current_user": auth.user,
 			"return_to": return_to,
 		},
 	)
@@ -229,7 +226,6 @@ def show(req: Request, ctx: Context, id: UUID) -> Response:
 			"creator": store.find_one(User, pin.creator_id),
 			"adder": adder,
 			"is_unfiled": not placements,
-			"current_user": user,
 			"open_in_new_tab": user.open_in_new_tab,
 		},
 	)
@@ -237,7 +233,6 @@ def show(req: Request, ctx: Context, id: UUID) -> Response:
 
 def edit(req: Request, ctx: Context, id: UUID) -> Response:
 	store = ctx.get(Store)
-	auth = ctx.get(Authenticator)
 	views = ctx.get(Views)
 
 	pin = find_owned(ctx, Pin, id)
@@ -258,7 +253,6 @@ def edit(req: Request, ctx: Context, id: UUID) -> Response:
 			"selected_board_ids": {
 				placement.board_id for placement in accessible_placements
 			},
-			"current_user": auth.user,
 			"return_to": _pin_return_url(ctx, req.referrer, pin, placements),
 		},
 	)

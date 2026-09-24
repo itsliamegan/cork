@@ -40,7 +40,6 @@ def show(req: Request, ctx: Context) -> Response:
 	return views.render(
 		"settings.show",
 		{
-			"current_user": user,
 			"invite_error": invite_error,
 			"has_recovery": Recovery.exists_for(store, user),
 			"return_to": _settings_return_url(req.referrer),
