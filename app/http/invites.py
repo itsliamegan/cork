@@ -56,6 +56,8 @@ def show(req: Request, ctx: Context, id: UUID) -> Response:
 		"invites.show",
 		{
 			"invite": invite,
-			"invite_link": str(urls.route("redemptions.new", query={"token": token})),
+			"invite_link": str(
+				urls.route("redemptions.new", query={"token": token}, absolute=True)
+			),
 		},
 	)

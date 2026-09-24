@@ -7,9 +7,9 @@
 <header id="page-header">
 	<h2 id="page-title">{{ pin.title }}</h2>
 
-	{% if pin.creator_id == current_user.id %}
+	{% if pin.creator_id == auth.user.id %}
 	<section id="page-actions">
-		<a class="button" href="/pins/{{ pin.id }}/edit">Edit</a>
+		<a class="button" href="{{ urls.route("pins.edit", {"id": pin.id}) }}">Edit</a>
 	</section>
 	{% endif %}
 </header>

@@ -1,3 +1,3 @@
-<a class="board-chip" href="/boards/{{ board.id }}" data-turbo-frame="_top">
+<a class="board-chip" href="{{ urls.route("boards.show", {"id": board.id}) }}" data-turbo-frame="_top">
 	{{ board.title }}
 </a>

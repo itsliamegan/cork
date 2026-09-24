@@ -8,7 +8,7 @@
 	<h2 id="page-title">Edit pin</h2>
 </header>
 
-<form class="frame" method="POST" action="/pins/{{ pin.id }}" autocomplete="off">
+<form class="frame" method="POST" action="{{ urls.route("pins.update", {"id": pin.id}) }}" autocomplete="off">
 	<input type="text" name="_method" value="PUT" hidden>
 	<input type="hidden" name="return_to" value="{{ return_to }}">
 

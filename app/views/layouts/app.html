@@ -12,24 +12,24 @@
 <nav id="site-nav">
 	<a
 		class="site-nav-link {% if active_nav == "boards" %} site-nav-link--active {% endif %}"
-		href="/boards/"
+		href="{{ urls.route("boards.index") }}"
 		>
 		Boards
 	</a>
 	<a
 		class="site-nav-link {% if active_nav == "pins" %} site-nav-link--active {% endif %}"
-		href="/pins/"
+		href="{{ urls.route("pins.index") }}"
 		>
 		Pins
 	</a>
 </nav>
 
 <section id="site-actions">
-	<span class="site-identity">{{ current_user.name }}</span>
+	<span class="site-identity">{{ auth.user.name }}</span>
 	<span class="site-action-separator">/</span>
 	<a
 		class="site-action {% if active_nav == "settings" %} site-action--active {% endif %}"
-		href="/settings"
+		href="{{ urls.route("settings.show") }}"
 		>
 		Settings
 	</a>

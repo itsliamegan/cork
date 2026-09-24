@@ -14,7 +14,7 @@
 	</header>
 	<p class="frame-item">
 		{% if invite.target_id %}
-		Open on another device to sign in as {{ current_user.name }}.
+		Open on another device to sign in as {{ auth.user.name }}.
 		{% else %}
 		Send to someone to let them create an account.
 		{% endif %}
@@ -27,7 +27,7 @@
 		<span class="form-field-note">Expires {{ invite.expires_at|date }}</span>
 	</div>
 	<footer class="frame-item form-actions">
-		<a class="button" href="/settings">Back</a>
+		<a class="button" href="{{ urls.route("settings.show") }}">Back</a>
 	</footer>
 </section>
 {% endblock %}

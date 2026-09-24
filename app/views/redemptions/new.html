@@ -8,7 +8,7 @@
 	<h2 id="page-title">{% if invite.target_id %}New session{% else %}New account{% endif %}</h2>
 </header>
 
-<form class="frame" action="/redemptions/" method="POST">
+<form class="frame" action="{{ urls.route("redemptions.create") }}" method="POST">
 	<input type="hidden" name="token" value="{{ token }}">
 	{% if invite.target_id %}
 	<header class="frame-header">

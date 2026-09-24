@@ -1,7 +1,7 @@
 {% extends "layouts.app" %}
 {% set active_nav = "boards" %}
 
-{% macro board_item(board, current_user) %}
+{% macro board_item(board, user) %}
 <li
 	class="frame-item frame-item--reorderable"
 	data-reorder-target="item"
@@ -18,14 +18,14 @@
 			⠿
 		</button>
 		<section class="board-details">
-			<a class="board-link" href="/boards/{{ board.id }}">
+			<a class="board-link" href="{{ urls.route("boards.show", {"id": board.id}) }}">
 				<h3 class="board-title">{{ board.title }}</h3>
 			</a>
 			<time class="board-date" datetime="{{ board.created_at }}">
 				{{ board.created_at | date }}
 			</time>
 		</section>
-		{% if board.creator_id == current_user.id %}
+		{% if board.creator_id == user.id %}
 		<section class="board-actions">
 			<button
 				class="button button--icon"
@@ -36,7 +36,7 @@
 			</button>
 
 			<menu class="menu" id="board-{{ board.id }}-actions" popover>
-				<li><a class="menu-item" href="/boards/{{ board.id }}/edit">Edit</a></li>
+				<li><a class="menu-item" href="{{ urls.route("boards.edit", {"id": board.id}) }}">Edit</a></li>
 				<li><button class="menu-item menu-item--danger" command="show-modal" commandfor="board-{{ board.id }}-delete-dialog">Delete</button></li>
 			</menu>
 
@@ -47,7 +47,7 @@
 				<footer class="dialog-actions">
 					<button class="button" command="close" commandfor="board-{{ board.id }}-delete-dialog">Cancel</button>
 					<button class="button button--danger" type="submit" form="board-{{ board.id }}-delete-form">Delete</button>
-					<form id="board-{{ board.id }}-delete-form" action="/boards/{{ board.id }}" method="POST" hidden>
+					<form id="board-{{ board.id }}-delete-form" action="{{ urls.route("boards.delete", {"id": board.id}) }}" method="POST" hidden>
 						<input type="text" name="_method" value="DELETE" hidden>
 					</form>
 				</footer>
@@ -66,14 +66,14 @@
 	<h2 id="page-title">Boards</h2>
 
 	<section id="page-actions">
-		<a class="button button--action" href="/boards/new">New board</a>
+		<a class="button button--action" href="{{ urls.route("boards.new") }}">New board</a>
 	</section>
 </header>
 
 <section
 	class="frame"
 	data-controller="reorder"
-	data-reorder-url-value="/orderings"
+	data-reorder-url-value="{{ urls.route("orderings.update") }}"
 	data-reorder-field-value="board_id"
 >
 	<header class="frame-header">
@@ -86,7 +86,7 @@
 		data-action="dragover->reorder#dragOver dragleave->reorder#dragLeave drop->reorder#drop"
 	>
 		{% for board in private_boards %}
-		{{ board_item(board, current_user) }}
+		{{ board_item(board, auth.user) }}
 		{% else %}
 		<li class="frame-item frame-empty">No private boards.</li>
 		{% endfor %}
@@ -102,7 +102,7 @@
 		data-action="dragover->reorder#dragOver dragleave->reorder#dragLeave drop->reorder#drop"
 	>
 		{% for board in shared_boards %}
-		{{ board_item(board, current_user) }}
+		{{ board_item(board, auth.user) }}
 		{% else %}
 		<li class="frame-item frame-empty">No shared boards.</li>
 		{% endfor %}

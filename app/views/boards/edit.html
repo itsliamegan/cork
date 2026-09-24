@@ -8,7 +8,7 @@
 	<h2 id="page-title">Edit board</h2>
 </header>
 
-<form class="frame" action="/boards/{{ board.id }}" method="POST" autocomplete="off">
+<form class="frame" action="{{ urls.route("boards.update", {"id": board.id}) }}" method="POST" autocomplete="off">
 	<input type="text" name="_method" value="PUT" hidden>
 	<input type="hidden" name="return_to" value="{{ return_to }}">
 

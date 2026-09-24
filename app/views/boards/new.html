@@ -8,7 +8,7 @@
 	<h2 id="page-title">New board</h2>
 </header>
 
-<form class="frame" action="/boards/" method="POST" autocomplete="off">
+<form class="frame" action="{{ urls.route("boards.create") }}" method="POST" autocomplete="off">
 	<header class="frame-header">
 		<h3 class="frame-title">Details</h3>
 	</header>
@@ -23,7 +23,7 @@
 	{% include "boards._sharing" %}
 
 	<footer class="frame-item form-actions">
-		<a class="button" href="/boards/">Cancel</a>
+		<a class="button" href="{{ urls.route("boards.index") }}">Cancel</a>
 		<button class="button button--action" type="submit">Save</button>
 	</footer>
 </form>

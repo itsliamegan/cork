@@ -8,17 +8,17 @@
 	<h2 id="page-title">{{ board.title }}</h2>
 
 	<section id="page-actions">
-		{% if board.creator_id == current_user.id %}
-		<a class="button" href="/boards/{{ board.id }}/edit">Edit</a>
+		{% if board.creator_id == auth.user.id %}
+		<a class="button" href="{{ urls.route("boards.edit", {"id": board.id}) }}">Edit</a>
 		{% endif %}
-		<a class="button button--action" href="/boards/{{ board.id }}/pins/new">New pin</a>
+		<a class="button button--action" href="{{ urls.route("pins.new", {"id": board.id}) }}">New pin</a>
 	</section>
 </header>
 
 <section
 	class="frame"
 	data-controller="reorder"
-	data-reorder-url-value="/boards/{{ board.id }}/placements"
+	data-reorder-url-value="{{ urls.route("placements.update_order", {"board_id": board.id}) }}"
 	data-reorder-field-value="placement_id"
 >
 	<header class="frame-header">
@@ -68,7 +68,7 @@
 						</time>
 						<a
 							class="pin-details-link"
-							href="/pins/{{ pin.id }}"
+							href="{{ urls.route("pins.show", {"id": pin.id}) }}"
 							data-turbo-frame="pin-{{ pin.id }}-details"
 							data-pin-details-target="link"
 							data-action="click->pin-details#toggle"
@@ -76,12 +76,12 @@
 					</section>
 				</section>
 
-				{% if pin.creator_id == current_user.id or row.can_remove %}
+				{% if pin.creator_id == auth.user.id or row.can_remove %}
 				<section class="pin-actions">
 					<button class="button button--icon" command="toggle-popover" commandfor="placement-{{ placement.id }}-actions">&#8942;</button>
 					<menu class="menu" id="placement-{{ placement.id }}-actions" popover>
-						<li><a class="menu-item" href="/pins/{{ pin.id }}">View</a></li>
-						{% if pin.creator_id == current_user.id %}<li><a class="menu-item" href="/pins/{{ pin.id }}/edit">Edit</a></li>{% endif %}
+						<li><a class="menu-item" href="{{ urls.route("pins.show", {"id": pin.id}) }}">View</a></li>
+						{% if pin.creator_id == auth.user.id %}<li><a class="menu-item" href="{{ urls.route("pins.edit", {"id": pin.id}) }}">Edit</a></li>{% endif %}
 						{% if row.can_remove %}<li><button class="menu-item menu-item--danger" command="show-modal" commandfor="placement-{{ placement.id }}-dialog">Remove</button></li>{% endif %}
 					</menu>
 					{% if row.can_remove %}
@@ -90,7 +90,7 @@
 						<footer class="dialog-actions">
 							<button class="button" command="close" commandfor="placement-{{ placement.id }}-dialog">Cancel</button>
 							<button class="button button--danger" type="submit" form="placement-{{ placement.id }}-delete-form" autofocus>Remove</button>
-							<form id="placement-{{ placement.id }}-delete-form" action="/placements/{{ placement.id }}" method="POST" hidden>
+							<form id="placement-{{ placement.id }}-delete-form" action="{{ urls.route("placements.delete", {"id": placement.id}) }}" method="POST" hidden>
 								<input type="text" name="_method" value="DELETE" hidden>
 							</form>
 						</footer>

@@ -4,7 +4,7 @@
 	<h2 id="page-title">New pin</h2>
 </header>
 
-<form class="frame" method="POST" action="/pins/" autocomplete="off">
+<form class="frame" method="POST" action="{{ urls.route("pins.create") }}" autocomplete="off">
 	<input type="hidden" name="return_to" value="{{ return_to }}" />
 	<header class="frame-header">
 		<h3 class="frame-title">Details</h3>

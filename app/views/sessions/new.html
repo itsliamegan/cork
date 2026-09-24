@@ -13,7 +13,7 @@
 
 <details class="recovery-prompt"{% if error %} open{% endif %}>
 	<summary>Have a recovery code?</summary>
-	<form class="frame" action="/sessions/" method="POST">
+	<form class="frame" action="{{ urls.route("sessions.create") }}" method="POST">
 		<section class="form-items">
 			<label class="frame-item form-item">
 				<span class="form-label">Code</span>

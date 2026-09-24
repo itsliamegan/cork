@@ -15,7 +15,7 @@
 
 	<div class="frame-item setting-item">
 		<span class="setting-label">Signed in as</span>
-		<span class="setting-value">{{ current_user.name }}</span>
+		<span class="setting-value">{{ auth.user.name }}</span>
 	</div>
 
 	<header class="frame-header">
@@ -26,16 +26,16 @@
 	<div class="frame-item form-field-error">{{ invite_error }}</div>
 	{% endif %}
 
-	<form class="frame-item setting-item" action="/invites/" method="POST">
+	<form class="frame-item setting-item" action="{{ urls.route("invites.create") }}" method="POST">
 		<span class="setting-label">Invite someone</span>
 		<span class="setting-note">New account</span>
 		<button class="button" type="submit">Create link</button>
 	</form>
 
-	<form class="frame-item setting-item" action="/invites/" method="POST">
+	<form class="frame-item setting-item" action="{{ urls.route("invites.create") }}" method="POST">
 		<input type="hidden" name="targeted" value="on">
 		<span class="setting-label">Link another device</span>
-		<span class="setting-note">Sign in as {{ current_user.name }}</span>
+		<span class="setting-note">Sign in as {{ auth.user.name }}</span>
 		<button class="button" type="submit">Create link</button>
 	</form>
 
@@ -59,13 +59,13 @@
 		</footer>
 	</dialog>
 
-	<form id="recovery-form" action="/recoveries/" method="POST" hidden></form>
+	<form id="recovery-form" action="{{ urls.route("recoveries.create") }}" method="POST" hidden></form>
 
 	<header class="frame-header">
 		<h3 class="frame-title">Session</h3>
 	</header>
 
-	<form class="frame-item setting-item" action="/sessions/" method="POST" data-turbo="false">
+	<form class="frame-item setting-item" action="{{ urls.route("sessions.delete") }}" method="POST" data-turbo="false">
 		<input type="hidden" name="_method" value="DELETE">
 		<span class="setting-label">This browser</span>
 		<span class="setting-note">Active</span>
@@ -76,7 +76,7 @@
 		<h3 class="frame-title">Preferences</h3>
 	</header>
 
-	<form action="/settings" method="POST">
+	<form action="{{ urls.route("settings.update") }}" method="POST">
 		<input type="text" name="_method" value="PUT" hidden>
 		<input type="hidden" name="return_to" value="{{ return_to }}">
 		<label class="frame-item setting-option">
@@ -84,7 +84,7 @@
 				class="form-field"
 				type="checkbox"
 				name="open_in_new_tab"
-				{% if current_user.open_in_new_tab %}checked{% endif %}
+				{% if auth.user.open_in_new_tab %}checked{% endif %}
 			>
 			<span class="setting-details">
 				<strong>Open pin links in a new tab</strong>
