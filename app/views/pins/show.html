@@ -38,12 +38,7 @@
 	<header class="frame-header">
 		<h3 class="frame-title">Boards</h3>
 	</header>
-	<section class="frame-item board-chips">
-		{% for board in accessible_boards %}
-		{% include "boards._chip" %}
-		{% endfor %}
-		{% if is_unfiled %}<span class="pin-unfiled">Not on any boards</span>{% endif %}
-	</section>
+	{{ BoardChips(accessible_boards, is_unfiled, class="frame-item") }}
 </section>
 
 <turbo-frame id="pin-{{ pin.id }}-details" hidden>

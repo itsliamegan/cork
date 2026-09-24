@@ -1,0 +1,6 @@
+<span {{ attributes.merge(class="board-chips") }}>
+	{% for board in boards %}
+	{{ BoardChip(board) }}
+	{% endfor %}
+	{% if is_unfiled %}<span class="pin-unfiled">Not on any boards</span>{% endif %}
+</span>
