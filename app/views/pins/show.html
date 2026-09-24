@@ -19,7 +19,7 @@
 		<h3 class="frame-title">Details</h3>
 	</header>
 	<section class="frame-item pin-detail">
-		{{ ExternalLink(url=pin.url, new_tab=open_in_new_tab, class="pin-detail-url") }}
+		{{ ExternalLink(url=pin.url, new_tab=auth.user.open_in_new_tab, class="pin-detail-url") }}
 		<p class="pin-detail-meta">
 			<span>Saved by {{ creator.name }}</span>
 			<time datetime="{{ pin.created_at }}">{{ pin.created_at | date }}</time>
@@ -47,7 +47,7 @@
 		boards=accessible_boards,
 		adder=adder,
 		is_unfiled=is_unfiled,
-		new_tab=open_in_new_tab,
+		new_tab=auth.user.open_in_new_tab,
 	) }}
 </turbo-frame>
 {% endblock %}

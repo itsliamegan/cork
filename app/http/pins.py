@@ -109,7 +109,6 @@ def index(req: Request, ctx: Context) -> Response:
 		"pins.index",
 		{
 			"pin_rows": pin_rows,
-			"open_in_new_tab": user.open_in_new_tab,
 		},
 	)
 
@@ -191,9 +190,7 @@ def new(req: Request, ctx: Context) -> Response:
 
 def show(req: Request, ctx: Context, id: UUID) -> Response:
 	store = ctx.get(Store)
-	auth = ctx.get(Authenticator)
 	views = ctx.get(Views)
-	user = cast(User, auth.user)
 
 	pin = find_accessible_pin(ctx, id)
 	placements = find_pin_placements(store, pin.id)
@@ -223,7 +220,6 @@ def show(req: Request, ctx: Context, id: UUID) -> Response:
 			"creator": store.find_one(User, pin.creator_id),
 			"adder": adder,
 			"is_unfiled": not placements,
-			"open_in_new_tab": user.open_in_new_tab,
 		},
 	)
 

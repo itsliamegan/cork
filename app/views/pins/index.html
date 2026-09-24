@@ -36,9 +36,9 @@
 		>
 			<article class="pin">
 				<section class="pin-details">
-					{% render ExternalLink(url=pin.url, new_tab=open_in_new_tab, class="pin-link") %}<h3 class="pin-title">{{ pin.title }}</h3>{% endrender %}
+					{% render ExternalLink(url=pin.url, new_tab=auth.user.open_in_new_tab, class="pin-link") %}<h3 class="pin-title">{{ pin.title }}</h3>{% endrender %}
 					<section class="pin-meta">
-						{% render ExternalLink(url=pin.url, new_tab=open_in_new_tab, class="pin-url") %}{{ pin.display_url() }}{% endrender %}
+						{% render ExternalLink(url=pin.url, new_tab=auth.user.open_in_new_tab, class="pin-url") %}{{ pin.display_url() }}{% endrender %}
 						<time class="pin-date" datetime="{{ pin.created_at }}">{{ pin.created_at | date }}</time>
 						<span class="pin-board-count">
 							{% if row.board_count %}{{ row.board_count }} board{% if row.board_count != 1 %}s{% endif %}{% else %}No boards{% endif %}

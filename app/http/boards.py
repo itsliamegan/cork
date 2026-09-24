@@ -120,9 +120,7 @@ def new(req: Request, ctx: Context) -> Response:
 
 def show(req: Request, ctx: Context, id: UUID) -> Response:
 	store = ctx.get(Store)
-	auth = ctx.get(Authenticator)
 	views = ctx.get(Views)
-	user = cast(User, auth.user)
 
 	board = find_accessible_board(ctx, id)
 	placements = store.find_by(Placement, board_id=board.id)
@@ -146,7 +144,6 @@ def show(req: Request, ctx: Context, id: UUID) -> Response:
 		{
 			"board": board,
 			"pin_rows": pin_rows,
-			"open_in_new_tab": user.open_in_new_tab,
 		},
 	)
 
