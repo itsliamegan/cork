@@ -1,10 +1,15 @@
+from typing import TYPE_CHECKING, cast
 from uuid import UUID
 
+from helios.app import Context
+from helios.auth import Authenticator
 from helios.database import Model, Store, attr
 
-from app.board import Board
-from app.pin import Pin
 from app.user import User
+
+if TYPE_CHECKING:
+	from app.board import Board
+	from app.pin import Pin
 
 
 class Placement(Model):
@@ -32,3 +37,26 @@ class Placement(Model):
 			board_id=board.id,
 			adder_id=adder.id,
 		)
+
+	@classmethod
+	def find_contextual(
+		cls,
+		placements: list[Placement],
+		board_id: UUID | None = None,
+	) -> Placement | None:
+		if board_id is not None:
+			for placement in placements:
+				if placement.board_id == board_id:
+					return placement
+		if not placements:
+			return None
+		return min(placements, key=lambda placement: str(placement.id))
+
+	def can_remove(self, ctx: Context, pin: Pin, board: Board) -> bool:
+		auth = ctx.get(Authenticator)
+		user = cast(User, auth.user)
+		return board.is_accessible(ctx) and user.id in {
+			pin.creator_id,
+			self.adder_id,
+			board.creator_id,
+		}

@@ -14,7 +14,6 @@ from helios.view import Views
 from app import Board, Pin, Placement, Share, User
 from app.data import (
 	find_accessible_pin,
-	find_contextual_placement,
 	find_owned,
 	find_pin_placements,
 )
@@ -198,7 +197,7 @@ def show(req: Request, ctx: Context, id: UUID) -> Response:
 			continue
 		accessible_placements.append(placement)
 		accessible_boards.append(board)
-	contextual_placement = find_contextual_placement(
+	contextual_placement = Placement.find_contextual(
 		accessible_placements,
 		_referring_board_id(ctx, req.referrer, accessible_placements),
 	)

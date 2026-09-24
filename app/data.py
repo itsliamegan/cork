@@ -28,34 +28,6 @@ def find_pin_placements(store: Store, pin_id: UUID) -> list[Placement]:
 	return store.find_by(Placement, pin_id=pin_id)
 
 
-def find_contextual_placement(
-	placements: list[Placement],
-	board_id: UUID | None = None,
-) -> Placement | None:
-	if board_id is not None:
-		for placement in placements:
-			if placement.board_id == board_id:
-				return placement
-	if not placements:
-		return None
-	return min(placements, key=lambda placement: str(placement.id))
-
-
-def can_remove_placement(
-	ctx: Context,
-	placement: Placement,
-	pin: Pin,
-	board: Board,
-) -> bool:
-	auth = ctx.get(Authenticator)
-	user = cast(User, auth.user)
-	return board.is_accessible(ctx) and user.id in {
-		pin.creator_id,
-		placement.adder_id,
-		board.creator_id,
-	}
-
-
 def find_accessible_pin(ctx: Context, id: UUID) -> Pin:
 	store = ctx.get(Store)
 	auth = ctx.get(Authenticator)
