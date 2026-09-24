@@ -1,0 +1,61 @@
+name: Deploy
+
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      DEPLOY_KEY: ${{ secrets.DEPLOY_KEY }}
+      DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+      DEPLOY_PORT: ${{ secrets.DEPLOY_PORT }}
+      DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+
+    steps:
+      - name: "Check out repository"
+        uses: actions/checkout@v4
+
+      - name: "Install uv"
+        run: |
+          curl -LsSf https://astral.sh/uv/install.sh | sh
+          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
+
+      - name: "Clone local dependencies"
+        run: |
+          git clone https://github.com/itsliamegan/luna ../luna
+          git clone https://github.com/itsliamegan/helios ../helios
+
+      - name: "Install and test"
+        run: |
+          uv sync --locked
+          uv run -m luna.test.runner
+
+      - name: "Set up SSH key"
+        run: |
+          mkdir -p ~/.ssh
+          echo "$DEPLOY_KEY" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+
+      - name: "Deploy to VPS"
+        run: |
+          ssh \
+          -o StrictHostKeyChecking=no \
+          -p "$DEPLOY_PORT" \
+          "$DEPLOY_USER@$DEPLOY_HOST" '
+            set -e
+
+            cd /srv
+            git -C luna pull
+            git -C helios pull
+            git -C cork pull
+
+            cd /srv/cork
+            uv sync --no-default-groups --group backup
+            sudo systemctl stop cork.socket cork.service
+            sudo systemctl start cork-backup.service
+            sudo -u cork /srv/cork/.venv/bin/python bin/migrate.py apply
+            sudo systemctl start cork.socket cork.service
+          '
