@@ -46,17 +46,19 @@
 					</section>
 				</section>
 				<section class="pin-actions">
-					{% render ActionMenu(name="pin-" ~ pin.id) %}
-					<li><a class="menu-item" href="{{ urls.route("pins.show", {"id": pin.id}) }}">View</a></li>
-					<li><a class="menu-item" href="{{ urls.route("pins.edit", {"id": pin.id}) }}">Edit</a></li>
-					<li><button class="menu-item menu-item--danger" command="show-modal" commandfor="pin-{{ pin.id }}-delete-dialog">Delete</button></li>
-					{% endrender %}
-					{% render ConfirmDialog(
+					{% set delete_dialog = ConfirmDialog(
 						name="pin-" ~ pin.id ~ "-delete",
 						action=urls.route("pins.delete", {"id": pin.id}),
 						confirm="Delete",
+						content="Are you sure you want to delete this pin? This action cannot be undone.",
 						method="DELETE",
-					) %}Are you sure you want to delete this pin? This action cannot be undone.{% endrender %}
+					) %}
+					{% render ActionMenu(name="pin-" ~ pin.id) %}
+					<li><a class="menu-item" href="{{ urls.route("pins.show", {"id": pin.id}) }}">View</a></li>
+					<li><a class="menu-item" href="{{ urls.route("pins.edit", {"id": pin.id}) }}">Edit</a></li>
+					<li>{% render ConfirmTrigger(dialog=delete_dialog, class="menu-item menu-item--danger") %}Delete{% endrender %}</li>
+					{% endrender %}
+					{{ delete_dialog }}
 				</section>
 			</article>
 		</li>

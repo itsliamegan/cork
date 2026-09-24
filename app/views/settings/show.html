@@ -39,21 +39,20 @@
 		<button class="button" type="submit">Create link</button>
 	</form>
 
-	<div class="frame-item setting-item">
-		<span class="setting-label">Recovery code</span>
-		<span class="setting-note">Sign in without an active session or link</span>
-		{% if has_recovery %}
-		<button class="button" command="show-modal" commandfor="recovery-dialog">Generate code</button>
-		{% else %}
-		<button class="button" type="submit" form="recovery-form">Generate code</button>
-		{% endif %}
-	</div>
-
-	{% render ConfirmDialog(
+	{% set recovery_dialog = ConfirmDialog(
 		name="recovery",
 		action=urls.route("recoveries.create"),
 		confirm="Replace",
-	) %}Are you sure you want to replace your recovery code? Your current code will stop working.{% endrender %}
+		content="Are you sure you want to replace your recovery code? Your current code will stop working.",
+		required=has_recovery,
+	) %}
+	<div class="frame-item setting-item">
+		<span class="setting-label">Recovery code</span>
+		<span class="setting-note">Sign in without an active session or link</span>
+		{% render ConfirmTrigger(dialog=recovery_dialog, class="button") %}Generate code{% endrender %}
+	</div>
+
+	{{ recovery_dialog }}
 
 	<header class="frame-header">
 		<h3 class="frame-title">Session</h3>

@@ -6,6 +6,7 @@ from app.views.boards.item import BoardItem
 from app.views.boards.sharing import BoardSharing
 from app.views.components.action_menu import ActionMenu
 from app.views.components.confirm_dialog import ConfirmDialog
+from app.views.components.confirm_trigger import ConfirmTrigger
 from app.views.components.external_link import ExternalLink
 from app.views.components.reorder_handle import ReorderHandle
 from app.views.pins.details import PinDetails
@@ -18,6 +19,7 @@ components: list[type[Component]] = [
 	BoardItem,
 	BoardSharing,
 	ConfirmDialog,
+	ConfirmTrigger,
 	ExternalLink,
 	PinDetails,
 	PinPlacements,
