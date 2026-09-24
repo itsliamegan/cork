@@ -1,16 +1,20 @@
+from typing import cast
 from uuid import UUID
 
 from helios.app import Context
+from helios.auth import Authenticator
 from helios.database import Store
 from helios.form import Field, Form, parser
 from helios.http import Request, Response, Status
 
-from app import Access, Placement
+from app import Access, Placement, User
 
 
 def update(req: Request, ctx: Context, id: UUID) -> Response:
 	store = ctx.get(Store)
-	access = Access(ctx)
+	auth = ctx.get(Authenticator)
+	user = cast(User, auth.user)
+	access = Access(store, user)
 
 	board = access.find_board(id)
 

@@ -13,7 +13,7 @@ def update(req: Request, ctx: Context) -> Response:
 	store = ctx.get(Store)
 	auth = ctx.get(Authenticator)
 	user = cast(User, auth.user)
-	access = Access(ctx)
+	access = Access(store, user)
 
 	form = Form([Field("board_id", parser.List(parser.UUID()))])
 	input, errs = form.validate(req.input)

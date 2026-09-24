@@ -1,8 +1,5 @@
-from typing import cast
 from uuid import UUID
 
-from helios.app import Context
-from helios.auth import Authenticator
 from helios.database import NotFoundError, Store
 
 from app.board import Board
@@ -12,11 +9,7 @@ from app.user import User
 
 
 class Access:
-	def __init__(self, ctx: Context):
-		store = ctx.get(Store)
-		auth = ctx.get(Authenticator)
-		user = cast(User, auth.user)
-
+	def __init__(self, store: Store, user: User):
 		self.store = store
 		self.user = user
 
