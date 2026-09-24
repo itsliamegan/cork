@@ -8,7 +8,7 @@ from app.views.boards.chips import BoardChips
 from app.views.components.confirm_dialog import ConfirmDialog
 from app.views.components.confirm_trigger import ConfirmTrigger
 from app.views.components.external_link import ExternalLink
-from app.views.pins.placements import BoardOption, PinPlacements
+from app.views.pins.placements import PinPlacements, PlacementOption
 from test.support import TestApplication
 
 
@@ -104,13 +104,13 @@ def test_pin_placements_label_private_and_shared_boards():
 		bob = User(name="bob")
 		placements = PinPlacements(
 			options=[
-				BoardOption(
+				PlacementOption(
 					board=Board(title="Notes", creator_id=viewer_id),
-					shared_with=[],
+					others=[],
 				),
-				BoardOption(
+				PlacementOption(
 					board=Board(title="Reading", creator_id=viewer_id),
-					shared_with=[carmen, bob],
+					others=[carmen, bob],
 				),
 			],
 			selected_board_ids=set(),

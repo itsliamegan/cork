@@ -14,23 +14,23 @@
 		>
 	</div>
 	<fieldset class="pin-placements-options">
-		{% for board_option in options %}
+		{% for option in options %}
 		<label
 			class="pin-placements-option"
 			data-filter-target="item"
-			data-filter-text="{{ board_option.board.title }}"
+			data-filter-text="{{ option.board.title }}"
 		>
 			<input
 				class="form-field"
 				type="checkbox"
 				name="board_id"
-				value="{{ board_option.board.id }}"
-				{% if board_option.board.id in selected_board_ids %}checked{% endif %}
+				value="{{ option.board.id }}"
+				{% if option.board.id in selected_board_ids %}checked{% endif %}
 			>
-			<span class="pin-placements-title">{{ board_option.board.title }}</span>
+			<span class="pin-placements-title">{{ option.board.title }}</span>
 			<span class="pin-placements-state">
-				{%- if board_option.shared_with -%}
-				Shared · {{ board_option.shared_with | map(attribute="name") | sort | join(", ") }}
+				{%- if option.others -%}
+				Shared · {{ option.others | map(attribute="name") | sort | join(", ") }}
 				{%- else -%}
 				Private
 				{%- endif -%}

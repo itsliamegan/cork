@@ -7,14 +7,14 @@ from app.data import Board, User
 
 
 @dataclass
-class BoardOption:
+class PlacementOption:
 	board: Board
-	shared_with: list[User]
+	others: list[User]
 
 
 @dataclass
 class PinPlacements(Component):
 	template = "pins.placements"
 
-	options: list[BoardOption]
+	options: list[PlacementOption]
 	selected_board_ids: set[UUID]

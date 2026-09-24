@@ -8,16 +8,16 @@
 		<span class="sharing-name">{{ owner.name }}</span>
 		<span class="sharing-role">Owner</span>
 	</label>
-	{% for person in people %}
+	{% for user in users %}
 	<label class="frame-item sharing-item">
 		<input
 			class="form-field"
 			type="checkbox"
 			name="user_id"
-			value="{{ person.user.id }}"
-			{% if person.has_access %}checked{% endif %}
+			value="{{ user.id }}"
+			{% if user.id in shared_user_ids %}checked{% endif %}
 		>
-		<span class="sharing-name">{{ person.user.name }}</span>
+		<span class="sharing-name">{{ user.name }}</span>
 	</label>
 	{% endfor %}
 </fieldset>

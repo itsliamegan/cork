@@ -23,7 +23,7 @@ from app.data import (
 	find_owned,
 	find_pin_placements,
 )
-from app.views.pins.placements import BoardOption
+from app.views.pins.placements import PlacementOption
 
 
 def _referring_board_id(
@@ -61,7 +61,7 @@ def _pin_return_url(
 	return urls.route("boards.show", {"id": board_id})
 
 
-def build_board_options(ctx: Context) -> list[BoardOption]:
+def build_placement_options(ctx: Context) -> list[PlacementOption]:
 	store = ctx.get(Store)
 	auth = ctx.get(Authenticator)
 	user = cast(User, auth.user)
@@ -78,14 +78,14 @@ def build_board_options(ctx: Context) -> list[BoardOption]:
 	users_by_id = {
 		viewer.id: viewer for viewer in store.query(User).where_in(id=viewer_ids).all()
 	}
-	board_options = []
+	placement_options = []
 	for board in boards:
 		visible_user_ids = {share.user_id for share in shares_by_board_id[board.id]}
 		visible_user_ids.add(board.creator_id)
 		visible_user_ids.discard(user.id)
-		shared_with = [users_by_id[user_id] for user_id in visible_user_ids]
-		board_options.append(BoardOption(board=board, shared_with=shared_with))
-	return board_options
+		others = [users_by_id[user_id] for user_id in visible_user_ids]
+		placement_options.append(PlacementOption(board=board, others=others))
+	return placement_options
 
 
 def index(req: Request, ctx: Context) -> Response:
@@ -182,7 +182,7 @@ def new(req: Request, ctx: Context) -> Response:
 		"pins.new",
 		{
 			"originating_board": board,
-			"board_options": build_board_options(ctx),
+			"placement_options": build_placement_options(ctx),
 			"selected_board_ids": selected_board_ids,
 			"return_to": return_to,
 		},
@@ -246,7 +246,7 @@ def edit(req: Request, ctx: Context, id: UUID) -> Response:
 		"pins.edit",
 		{
 			"pin": pin,
-			"board_options": build_board_options(ctx),
+			"placement_options": build_placement_options(ctx),
 			"selected_board_ids": {
 				placement.board_id for placement in accessible_placements
 			},
