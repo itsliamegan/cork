@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING
 from uuid import UUID
 
-from helios.database import Model, Store, attr
+from helios.database import Model, Store
 
 from app.user import User
 
@@ -13,10 +13,10 @@ if TYPE_CHECKING:
 class Placement(Model):
 	table = "placements"
 
-	pin_id = attr(UUID)
-	board_id = attr(UUID)
-	adder_id = attr(UUID)
-	position = attr(int, default=0)
+	pin_id: UUID
+	board_id: UUID
+	adder_id: UUID
+	position: int = 0
 
 	@classmethod
 	def create(

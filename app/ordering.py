@@ -4,7 +4,7 @@ from uuid import UUID
 
 from helios.app import Context
 from helios.auth import Authenticator
-from helios.database import Model, Store, attr
+from helios.database import Model, Store
 
 from app.board import Board
 from app.user import User
@@ -13,9 +13,9 @@ from app.user import User
 class Ordering(Model):
 	table = "orderings"
 
-	user_id = attr(UUID)
-	board_id = attr(UUID)
-	position = attr(int)
+	user_id: UUID
+	board_id: UUID
+	position: int
 
 	@classmethod
 	def arrange(cls, ctx: Context, boards: list[Board]) -> list[Board]:

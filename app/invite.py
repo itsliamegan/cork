@@ -2,7 +2,7 @@ from datetime import UTC, datetime, timedelta
 import secrets
 from uuid import UUID
 
-from helios.database import Model, NotFoundError, Scalar, Store, attr
+from helios.database import Model, NotFoundError, Scalar, Store, attribute
 
 from app.user import User
 
@@ -19,25 +19,25 @@ class Invite(Model):
 			return cls(secrets.token_urlsafe(32))
 
 		@classmethod
-		def check(cls, val: object):
-			if not isinstance(val, cls):
-				raise TypeError(f"expected a Token, got {type(val).__name__}")
+		def check(cls, value: object):
+			if not isinstance(value, cls):
+				raise TypeError(f"expected a Token, got {type(value).__name__}")
 
 		@classmethod
-		def encode(cls, val: Invite.Token) -> Scalar:
-			cls.check(val)
-			return val.value
+		def encode(cls, value: Invite.Token) -> Scalar:
+			cls.check(value)
+			return value.value
 
 		@classmethod
-		def decode(cls, val: Scalar) -> Invite.Token:
-			if not isinstance(val, str):
-				raise TypeError(f"expected a string, got {type(val).__name__}")
-			return cls(val)
+		def decode(cls, value: Scalar) -> Invite.Token:
+			if not isinstance(value, str):
+				raise TypeError(f"expected a string, got {type(value).__name__}")
+			return cls(value)
 
-	token = attr(Token)
-	creator_id = attr(UUID)
-	target_id = attr(UUID, nullable=True)
-	expires_at = attr(datetime)
+	token: Token = attribute(type=Token)
+	creator_id: UUID
+	target_id: UUID | None
+	expires_at: datetime
 
 	@classmethod
 	def create(

@@ -1,10 +1,10 @@
 from uuid import UUID
 
-from helios.database import Model, attr
+from helios.database import Model
 
 
 class Board(Model):
 	table = "boards"
 
-	title = attr(str)
-	creator_id = attr(UUID)
+	title: str
+	creator_id: UUID
