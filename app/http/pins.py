@@ -20,7 +20,9 @@ def _referring_board_id(
 	raw_url: str | None,
 	placements: list[Placement],
 ) -> UUID | None:
-	match = ctx.get(URLs).match(raw_url)
+	urls = ctx.get(URLs)
+
+	match = urls.match(raw_url)
 	if match is None or match.route.name != "boards.show":
 		return None
 	for placement in placements:

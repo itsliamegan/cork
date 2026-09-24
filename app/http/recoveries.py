@@ -17,8 +17,8 @@ def create(req: Request, ctx: Context) -> Response:
 	auth = ctx.get(Authenticator)
 	flash = ctx.get(Flashes)
 	urls = ctx.get(URLs)
-
 	user = cast(User, auth.user)
+
 	recovery = Recovery.create(store, user)
 	flash["recovery_id"] = str(recovery.id)
 	flash["recovery_code"] = recovery.code.plaintext
@@ -31,8 +31,8 @@ def show(req: Request, ctx: Context, id: UUID) -> Response:
 	flash = ctx.get(Flashes)
 	views = ctx.get(Views)
 	urls = ctx.get(URLs)
-
 	user = cast(User, auth.user)
+
 	recovery = Recovery.find_owned(store, id, user)
 	if (
 		"recovery_id" not in flash

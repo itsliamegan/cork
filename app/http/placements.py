@@ -11,6 +11,7 @@ from app import Board, Pin, Placement, Removal
 def delete(req: Request, ctx: Context, id: UUID) -> Response:
 	store = ctx.get(Store)
 	urls = ctx.get(URLs)
+
 	placement = store.find_one(Placement, id)
 	pin = store.find_one(Pin, placement.pin_id)
 	board = store.find_one(Board, placement.board_id)

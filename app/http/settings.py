@@ -22,6 +22,7 @@ RETURNABLE_ROUTES = {
 
 def _settings_return_url(ctx: Context, raw_url: str | None) -> URL:
 	urls = ctx.get(URLs)
+
 	match = urls.match(raw_url)
 	if match is not None and match.route.name in RETURNABLE_ROUTES:
 		return urls.route(match.route.name, match.params)

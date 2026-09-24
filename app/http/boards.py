@@ -14,6 +14,7 @@ from app import Access, Board, Ordering, Ownership, Pin, Placement, Removal, Sha
 
 def _board_return_url(ctx: Context, raw_url: str | None, id: UUID) -> URL:
 	urls = ctx.get(URLs)
+
 	match = urls.match(raw_url)
 	if match is not None and match.route.name == "boards.index":
 		return urls.route("boards.index")

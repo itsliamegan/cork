@@ -11,8 +11,8 @@ from app import Recovery
 
 
 def create(req: Request, ctx: Context) -> Response:
-	auth = ctx.get(Authenticator)
 	store = ctx.get(Store)
+	auth = ctx.get(Authenticator)
 	flash = ctx.get(Flashes)
 	urls = ctx.get(URLs)
 
