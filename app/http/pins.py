@@ -201,14 +201,10 @@ def show(req: Request, ctx: Context, id: UUID) -> Response:
 			continue
 		accessible_placements.append(placement)
 		accessible_boards.append(board)
-	contextual_placement = Placement.find_contextual(
+	adder = Placement.find_adder(
+		store,
 		accessible_placements,
 		_referring_board_id(ctx, req.referrer, accessible_placements),
-	)
-	adder = (
-		store.find_one(User, contextual_placement.adder_id)
-		if contextual_placement is not None
-		else None
 	)
 	return views.render(
 		"pins.show",

@@ -37,15 +37,16 @@ class Placement(Model):
 		)
 
 	@classmethod
-	def find_contextual(
+	def find_adder(
 		cls,
+		store: Store,
 		placements: list[Placement],
 		board_id: UUID | None = None,
-	) -> Placement | None:
-		if board_id is not None:
-			for placement in placements:
-				if placement.board_id == board_id:
-					return placement
+	) -> User | None:
 		if not placements:
 			return None
-		return min(placements, key=lambda placement: str(placement.id))
+		placement = next(
+			(placement for placement in placements if placement.board_id == board_id),
+			min(placements, key=lambda placement: str(placement.id)),
+		)
+		return store.find_one(User, placement.adder_id)
