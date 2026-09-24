@@ -12,7 +12,7 @@ def update(req: Request, ctx: Context, id: UUID) -> Response:
 	store = ctx.get(Store)
 	access = Access(ctx)
 
-	access.find_board(id)
+	board = access.find_board(id)
 
 	form = Form([Field("placement_id", parser.List(parser.UUID()))])
 	input, errors = form.validate(req.input)
@@ -23,7 +23,7 @@ def update(req: Request, ctx: Context, id: UUID) -> Response:
 	if len(placement_ids) != len(set(placement_ids)):
 		return Response.text("400 Bad Request", status=Status.BAD_REQUEST)
 
-	placements = store.find_by(Placement, board_id=id)
+	placements = store.find_by(Placement, board_id=board.id)
 	placements_by_id = {placement.id: placement for placement in placements}
 	if set(placement_ids) != set(placements_by_id):
 		return Response.text("400 Bad Request", status=Status.BAD_REQUEST)
