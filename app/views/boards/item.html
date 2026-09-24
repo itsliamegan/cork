@@ -23,19 +23,17 @@
 		</section>
 		{% if component.owned %}
 		<section class="board-actions">
-			{% set delete_dialog = ConfirmDialog(
+			{% render ActionMenu(name="board-" ~ board.id) %}
+			<li><a class="menu-item" href="{{ urls.route("boards.edit", {"id": board.id}) }}">Edit</a></li>
+			<li>{% render ConfirmButton(
 				name="board-" ~ board.id ~ "-delete",
 				action=urls.route("boards.delete", {"id": board.id}),
 				confirm="Delete",
-				content="Delete this board? Its pins will remain in Pins and on any other boards. This action cannot be undone.",
+				message="Delete this board? Its pins will remain in Pins and on any other boards. This action cannot be undone.",
 				method="DELETE",
-			) %}
-			{% render ActionMenu(name="board-" ~ board.id) %}
-			<li><a class="menu-item" href="{{ urls.route("boards.edit", {"id": board.id}) }}">Edit</a></li>
-			<li>{% render ConfirmTrigger(dialog=delete_dialog, class="menu-item menu-item--danger") %}Delete{% endrender %}</li>
+				class="menu-item menu-item--danger",
+			) %}Delete{% endrender %}</li>
 			{% endrender %}
-
-			{{ delete_dialog }}
 		</section>
 		{% endif %}
 	</article>

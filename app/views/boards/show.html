@@ -68,19 +68,18 @@
 
 				{% if pin.creator_id == auth.user.id or row.can_remove %}
 				<section class="pin-actions">
-					{% set remove_dialog = ConfirmDialog(
-						name="placement-" ~ placement.id ~ "-remove",
-						action=urls.route("placements.delete", {"id": placement.id}),
-						confirm="Remove",
-						content="Are you sure you want to remove this pin from this board? It will remain in Pins and on any other boards.",
-						method="DELETE",
-					) %}
 					{% render ActionMenu(name="placement-" ~ placement.id) %}
 					<li><a class="menu-item" href="{{ urls.route("pins.show", {"id": pin.id}) }}">View</a></li>
 					{% if pin.creator_id == auth.user.id %}<li><a class="menu-item" href="{{ urls.route("pins.edit", {"id": pin.id}) }}">Edit</a></li>{% endif %}
-					{% if row.can_remove %}<li>{% render ConfirmTrigger(dialog=remove_dialog, class="menu-item menu-item--danger") %}Remove{% endrender %}</li>{% endif %}
+					{% if row.can_remove %}<li>{% render ConfirmButton(
+						name="placement-" ~ placement.id ~ "-remove",
+						action=urls.route("placements.delete", {"id": placement.id}),
+						confirm="Remove",
+						message="Are you sure you want to remove this pin from this board? It will remain in Pins and on any other boards.",
+						method="DELETE",
+						class="menu-item menu-item--danger",
+					) %}Remove{% endrender %}</li>{% endif %}
 					{% endrender %}
-					{% if row.can_remove %}{{ remove_dialog }}{% endif %}
 				</section>
 				{% endif %}
 			</article>

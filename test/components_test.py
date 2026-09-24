@@ -5,8 +5,7 @@ from luna.test.assertion import assert_not, assert_raises, assert_that
 
 from app.data import Board, User
 from app.views.boards.chips import BoardChips
-from app.views.components.confirm_dialog import ConfirmDialog
-from app.views.components.confirm_trigger import ConfirmTrigger
+from app.views.components.confirm_button import ConfirmButton
 from app.views.components.external_link import ExternalLink
 from app.views.pins.placements import PinPlacements, PlacementOption
 from test.support import TestApplication
@@ -53,26 +52,25 @@ def test_external_link_without_content_shows_its_url():
 		assert_that(">https://example.com/sartre</a>" in html)
 
 
-def test_confirm_trigger_opens_its_dialog():
+def test_confirm_button_opens_the_dialog_it_renders():
 	with TestApplication() as app:
 		engine = app.container.get(Engine)
-		dialog = ConfirmDialog(
+		button = ConfirmButton(
 			name="pin-delete",
 			action="/pins/1",
 			confirm="Delete",
-			content="Delete this pin?",
+			message="Delete this pin?",
 			method="DELETE",
 		)
-		trigger = ConfirmTrigger(dialog=dialog)
 
-		dialog_html = engine.render(dialog)
-		trigger_html = engine.render(trigger)
+		html = engine.render(button)
 
-		assert_that(f'id="{dialog.dialog_id}"' in dialog_html)
-		assert_that(f'commandfor="{dialog.dialog_id}"' in trigger_html)
-		assert_that(f'form="{dialog.form_id}"' in dialog_html)
-		assert_that(f'<form id="{dialog.form_id}"' in dialog_html)
-		assert_that('name="_method" value="DELETE"' in dialog_html)
+		assert_that('command="show-modal" commandfor="pin-delete-dialog"' in html)
+		assert_that('<dialog id="pin-delete-dialog"' in html)
+		assert_that('form="pin-delete-form"' in html)
+		assert_that('<form id="pin-delete-form" action="/pins/1"' in html)
+		assert_that('name="_method" value="DELETE"' in html)
+		assert_that("Delete this pin?" in html)
 
 
 def test_pin_placements_label_private_and_shared_boards():

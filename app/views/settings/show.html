@@ -39,19 +39,17 @@
 		<button class="button" type="submit">Create link</button>
 	</form>
 
-	{% set recovery_dialog = ConfirmDialog(
-		name="recovery",
-		action=urls.route("recoveries.create"),
-		confirm="Generate",
-		content="Generate a new recovery code? If you already have one, it will stop working.",
-	) %}
 	<div class="frame-item setting-item">
 		<span class="setting-label">Recovery code</span>
 		<span class="setting-note">Sign in without an active session or link</span>
-		{% render ConfirmTrigger(dialog=recovery_dialog, class="button") %}Generate code{% endrender %}
+		{% render ConfirmButton(
+			name="recovery",
+			action=urls.route("recoveries.create"),
+			confirm="Generate",
+			message="Generate a new recovery code? If you already have one, it will stop working.",
+			class="button",
+		) %}Generate code{% endrender %}
 	</div>
-
-	{{ recovery_dialog }}
 
 	<header class="frame-header">
 		<h3 class="frame-title">Session</h3>

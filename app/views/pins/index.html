@@ -46,19 +46,18 @@
 					</section>
 				</section>
 				<section class="pin-actions">
-					{% set delete_dialog = ConfirmDialog(
-						name="pin-" ~ pin.id ~ "-delete",
-						action=urls.route("pins.delete", {"id": pin.id}),
-						confirm="Delete",
-						content="Are you sure you want to delete this pin? This action cannot be undone.",
-						method="DELETE",
-					) %}
 					{% render ActionMenu(name="pin-" ~ pin.id) %}
 					<li><a class="menu-item" href="{{ urls.route("pins.show", {"id": pin.id}) }}">View</a></li>
 					<li><a class="menu-item" href="{{ urls.route("pins.edit", {"id": pin.id}) }}">Edit</a></li>
-					<li>{% render ConfirmTrigger(dialog=delete_dialog, class="menu-item menu-item--danger") %}Delete{% endrender %}</li>
+					<li>{% render ConfirmButton(
+						name="pin-" ~ pin.id ~ "-delete",
+						action=urls.route("pins.delete", {"id": pin.id}),
+						confirm="Delete",
+						message="Are you sure you want to delete this pin? This action cannot be undone.",
+						method="DELETE",
+						class="menu-item menu-item--danger",
+					) %}Delete{% endrender %}</li>
 					{% endrender %}
-					{{ delete_dialog }}
 				</section>
 			</article>
 		</li>

@@ -1,1 +1,3 @@
+{% set dialog = component.dialog -%}
 <button {{ attributes.merge(type="button", command="show-modal", commandfor=dialog.dialog_id) }}>{{ content }}</button>
+{{ dialog }}
