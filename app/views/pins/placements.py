@@ -3,7 +3,7 @@ from uuid import UUID
 
 from helios.view import Component
 
-from app.data import Board, User
+from app import Board, User
 
 
 @dataclass

@@ -11,7 +11,8 @@ It is built on the [Helios](https://tangled.org/liamegan.com/helios) framework.
 - `app/main.py`: sets up the devserver.
 - `app/http/__init__.py`: the `routes` and `guards` lists.
 - `app/http/*.py`: handlebrs, one module per resource.
-- `app/data.py`: models and the `models` list.
+- `app/__init__.py`: re-exports every model and the `models` list.
+- `app/*.py` (e.g. `app/pin.py`): models, one module per class.
 - `app/views/`: Jinja templates, addressed by dotted path: `boards/show.html`
   is rendered as `"boards.show"`.
 - `app/assets/`, `public/static/`: styles and scripts.

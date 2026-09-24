@@ -9,8 +9,8 @@ from helios.session.file import Driver
 import helios.view
 from helios.wsgi import Application
 
+from app import User, models
 from app.config import Config
-from app.data import User, models
 from app.http import routes
 from app.views import components
 

@@ -7,12 +7,12 @@ from helios.http import Request, Response
 from helios.routing import URLs
 from helios.view import Views
 
-from app.data import Invite, Recovery, User
+from app import Invite, Recovery, User
 
 
 def create(req: Request, ctx: Context) -> Response:
-	auth = ctx.get(Authenticator)
 	store = ctx.get(Store)
+	auth = ctx.get(Authenticator)
 	flash = ctx.get(Flashes)
 	urls = ctx.get(URLs)
 
@@ -65,10 +65,10 @@ def create(req: Request, ctx: Context) -> Response:
 
 
 def new(req: Request, ctx: Context) -> Response:
-	views = ctx.get(Views)
-	auth = ctx.get(Authenticator)
 	store = ctx.get(Store)
+	auth = ctx.get(Authenticator)
 	flash = ctx.get(Flashes)
+	views = ctx.get(Views)
 	urls = ctx.get(URLs)
 
 	if auth.is_signed_in():

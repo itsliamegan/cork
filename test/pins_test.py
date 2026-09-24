@@ -3,7 +3,7 @@ from uuid import uuid4
 from helios.database import NotFoundError
 from luna.test.assertion import assert_eq, assert_raises, assert_that
 
-from app.data import Board, Pin, Placement, Share, User, find_pin_placements
+from app import Board, Pin, Placement, Share, User
 from test.support import TestApplication
 
 
@@ -280,7 +280,7 @@ def test_pin_without_placements_is_unfiled():
 			Pin, title="Sartre", url="https://example.com", creator_id=user.id
 		)
 
-		assert_eq(find_pin_placements(app.store, pin.id), [])
+		assert_eq(pin.find_placements(app.store), [])
 
 
 def test_pin_details_embed_frame_with_accessible_boards_and_actions():

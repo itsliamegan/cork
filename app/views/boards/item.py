@@ -1,6 +1,6 @@
 from helios.view import Component
 
-from app.data import Board, User
+from app import Board, User
 
 
 class BoardItem(Component):

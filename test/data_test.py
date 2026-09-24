@@ -3,7 +3,7 @@ from uuid import uuid4
 from helios.database import DatabaseError
 from luna.test.assertion import assert_eq, assert_that
 
-from app.data import Pin, User
+from app import Pin, User
 from test.support import TestApplication
 
 

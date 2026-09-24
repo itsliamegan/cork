@@ -9,8 +9,8 @@ from helios.database.sqlite import connect
 from helios.wsgi.test import TestClient
 from luna.test.assertion import assert_eq
 
+from app import User, models
 from app.config import Config, ROOT_DIR
-from app.data import User, models
 from app.wsgi import Application
 from lib.migrate import Migrations, Migrator
 

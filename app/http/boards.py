@@ -9,22 +9,12 @@ from helios.http import Request, Response, Status, URL
 from helios.routing import URLs
 from helios.view import Views
 
-from app.data import (
-	Board,
-	Pin,
-	Placement,
-	Share,
-	User,
-	can_remove_placement,
-	find_accessible_board,
-	find_all_accessible_boards,
-	find_owned,
-	order_accessible_boards,
-)
+from app import Access, Board, Ordering, Ownership, Pin, Placement, Removal, Share, User
 
 
 def _board_return_url(ctx: Context, raw_url: str | None, id: UUID) -> URL:
 	urls = ctx.get(URLs)
+
 	match = urls.match(raw_url)
 	if match is not None and match.route.name == "boards.index":
 		return urls.route("boards.index")
@@ -52,8 +42,9 @@ def index(req: Request, ctx: Context) -> Response:
 	auth = ctx.get(Authenticator)
 	views = ctx.get(Views)
 	user = cast(User, auth.user)
+	access = Access(ctx)
 
-	boards = order_accessible_boards(ctx, find_all_accessible_boards(ctx))
+	boards = Ordering.arrange(ctx, access.find_boards())
 	shared_board_ids = {
 		share.board_id
 		for share in store.query(Share)
@@ -121,8 +112,9 @@ def new(req: Request, ctx: Context) -> Response:
 def show(req: Request, ctx: Context, id: UUID) -> Response:
 	store = ctx.get(Store)
 	views = ctx.get(Views)
+	access = Access(ctx)
 
-	board = find_accessible_board(ctx, id)
+	board = access.find_board(id)
 	placements = store.find_by(Placement, board_id=board.id)
 	pin_ids = [placement.pin_id for placement in placements]
 	pins_by_id = {pin.id: pin for pin in store.query(Pin).where_in(id=pin_ids).all()}
@@ -133,7 +125,7 @@ def show(req: Request, ctx: Context, id: UUID) -> Response:
 			{
 				"placement": placement,
 				"pin": pin,
-				"can_remove": can_remove_placement(ctx, placement, pin, board),
+				"can_remove": Removal(placement, pin, board).is_authorized(ctx),
 			}
 		)
 	pin_rows.sort(key=lambda row: row["pin"].created_at, reverse=True)
@@ -152,8 +144,9 @@ def edit(req: Request, ctx: Context, id: UUID) -> Response:
 	store = ctx.get(Store)
 	auth = ctx.get(Authenticator)
 	views = ctx.get(Views)
+	ownership = Ownership(ctx)
 
-	board = find_owned(ctx, Board, id)
+	board = ownership.find_board(id)
 	shared_user_ids = {
 		share.user_id for share in store.find_by(Share, board_id=board.id)
 	}
@@ -172,8 +165,9 @@ def edit(req: Request, ctx: Context, id: UUID) -> Response:
 
 def update(req: Request, ctx: Context, id: UUID) -> Response:
 	store = ctx.get(Store)
+	ownership = Ownership(ctx)
 
-	board = find_owned(ctx, Board, id)
+	board = ownership.find_board(id)
 	form = Form(
 		[
 			Field("title", parser.Required(parser.Str())),
@@ -207,8 +201,9 @@ def update(req: Request, ctx: Context, id: UUID) -> Response:
 def delete(req: Request, ctx: Context, id: UUID) -> Response:
 	store = ctx.get(Store)
 	urls = ctx.get(URLs)
+	ownership = Ownership(ctx)
 
-	board = find_owned(ctx, Board, id)
+	board = ownership.find_board(id)
 	store.delete(board)
 
 	return Response.redirect(urls.route("boards.index"))

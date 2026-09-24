@@ -3,7 +3,7 @@ from uuid import uuid4
 from helios.view import Attributes, Engine
 from luna.test.assertion import assert_not, assert_raises, assert_that
 
-from app.data import Board, User
+from app import Board, User
 from app.views.boards.chips import BoardChips
 from app.views.components.confirm_button import ConfirmButton
 from app.views.components.external_link import ExternalLink
