@@ -12,10 +12,6 @@ from helios.view import Views
 from app import Board, Pin, Placement, Share, User
 from app.data import (
 	can_remove_placement,
-	find_accessible_board,
-	find_all_accessible_boards,
-	find_owned,
-	order_accessible_boards,
 )
 
 
@@ -49,7 +45,7 @@ def index(req: Request, ctx: Context) -> Response:
 	views = ctx.get(Views)
 	user = cast(User, auth.user)
 
-	boards = order_accessible_boards(ctx, find_all_accessible_boards(ctx))
+	boards = Board.order_accessible(ctx, Board.find_all_accessible(ctx))
 	shared_board_ids = {
 		share.board_id
 		for share in store.query(Share)
@@ -118,7 +114,7 @@ def show(req: Request, ctx: Context, id: UUID) -> Response:
 	store = ctx.get(Store)
 	views = ctx.get(Views)
 
-	board = find_accessible_board(ctx, id)
+	board = Board.find_accessible(ctx, id)
 	placements = store.find_by(Placement, board_id=board.id)
 	pin_ids = [placement.pin_id for placement in placements]
 	pins_by_id = {pin.id: pin for pin in store.query(Pin).where_in(id=pin_ids).all()}
@@ -149,7 +145,7 @@ def edit(req: Request, ctx: Context, id: UUID) -> Response:
 	auth = ctx.get(Authenticator)
 	views = ctx.get(Views)
 
-	board = find_owned(ctx, Board, id)
+	board = Board.find_owned(ctx, id)
 	shared_user_ids = {
 		share.user_id for share in store.find_by(Share, board_id=board.id)
 	}
@@ -169,7 +165,7 @@ def edit(req: Request, ctx: Context, id: UUID) -> Response:
 def update(req: Request, ctx: Context, id: UUID) -> Response:
 	store = ctx.get(Store)
 
-	board = find_owned(ctx, Board, id)
+	board = Board.find_owned(ctx, id)
 	form = Form(
 		[
 			Field("title", parser.Required(parser.Str())),
@@ -204,7 +200,7 @@ def delete(req: Request, ctx: Context, id: UUID) -> Response:
 	store = ctx.get(Store)
 	urls = ctx.get(URLs)
 
-	board = find_owned(ctx, Board, id)
+	board = Board.find_owned(ctx, id)
 	store.delete(board)
 
 	return Response.redirect(urls.route("boards.index"))

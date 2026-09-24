@@ -6,8 +6,7 @@ from helios.database import Store
 from helios.form import Field, Form, parser
 from helios.http import Request, Response, Status
 
-from app import Ordering, User
-from app.data import find_all_accessible_boards
+from app import Board, Ordering, User
 
 
 def update(req: Request, ctx: Context) -> Response:
@@ -24,7 +23,7 @@ def update(req: Request, ctx: Context) -> Response:
 	if len(board_ids) != len(set(board_ids)):
 		return Response.text("400 Bad Request", status=Status.BAD_REQUEST)
 
-	accessible_board_ids = {board.id for board in find_all_accessible_boards(ctx)}
+	accessible_board_ids = {board.id for board in Board.find_all_accessible(ctx)}
 	if set(board_ids) != accessible_board_ids:
 		return Response.text("400 Bad Request", status=Status.BAD_REQUEST)
 

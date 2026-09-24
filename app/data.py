@@ -1,4 +1,3 @@
-from datetime import datetime
 from typing import cast
 from uuid import UUID
 
@@ -7,7 +6,6 @@ from helios.auth import Authenticator
 from helios.database import NotFoundError, Store
 
 from app.board import Board
-from app.ordering import Ordering
 from app.pin import Pin
 from app.placement import Placement
 from app.share import Share
@@ -43,24 +41,6 @@ def find_contextual_placement(
 	return min(placements, key=lambda placement: str(placement.id))
 
 
-def can_access_board(ctx: Context, board: Board) -> bool:
-	auth = ctx.get(Authenticator)
-	user = cast(User, auth.user)
-	if board.creator_id == user.id:
-		return True
-	share = (
-		ctx.get(Store).query(Share).where(board_id=board.id, user_id=user.id).first()
-	)
-	return share is not None
-
-
-def find_accessible_board(ctx: Context, id: UUID) -> Board:
-	board = ctx.get(Store).find_one(Board, id)
-	if not can_access_board(ctx, board):
-		raise NotFoundError(Board, id)
-	return board
-
-
 def can_remove_placement(
 	ctx: Context,
 	placement: Placement,
@@ -69,7 +49,7 @@ def can_remove_placement(
 ) -> bool:
 	auth = ctx.get(Authenticator)
 	user = cast(User, auth.user)
-	return can_access_board(ctx, board) and user.id in {
+	return board.is_accessible(ctx) and user.id in {
 		pin.creator_id,
 		placement.adder_id,
 		board.creator_id,
@@ -93,48 +73,3 @@ def find_accessible_pin(ctx: Context, id: UUID) -> Pin:
 	if owned_board is None and share is None:
 		raise NotFoundError(Pin, id)
 	return pin
-
-
-def find_all_accessible_boards(ctx: Context) -> list[Board]:
-	store = ctx.get(Store)
-	auth = ctx.get(Authenticator)
-	user = cast(User, auth.user)
-	shared_board_ids = {
-		share.board_id for share in store.find_by(Share, user_id=user.id)
-	}
-	owned_boards = store.find_by(Board, creator_id=user.id)
-	shared_boards = store.query(Board).where_in(id=shared_board_ids).all()
-	return [*owned_boards, *shared_boards]
-
-
-def order_accessible_boards(ctx: Context, boards: list[Board]) -> list[Board]:
-	def created_at(board: Board) -> datetime:
-		if board.created_at is None:
-			raise ValueError("cannot order an unsaved board")
-		return board.created_at
-
-	board_ids = {board.id for board in boards}
-	positions = {}
-	store = ctx.get(Store)
-	auth = ctx.get(Authenticator)
-	user = cast(User, auth.user)
-	for ordering in store.find_by(Ordering, user_id=user.id):
-		if ordering.board_id not in board_ids:
-			continue
-		position = positions.get(ordering.board_id)
-		if position is None or ordering.position < position:
-			positions[ordering.board_id] = ordering.position
-
-	unpositioned = sorted(
-		(board for board in boards if board.id not in positions),
-		key=created_at,
-		reverse=True,
-	)
-	positioned = sorted(
-		(board for board in boards if board.id in positions),
-		key=created_at,
-		reverse=True,
-	)
-	positioned.sort(key=lambda board: positions[board.id])
-
-	return [*unpositioned, *positioned]
