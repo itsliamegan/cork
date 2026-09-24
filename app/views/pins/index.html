@@ -49,14 +49,16 @@
 					{% render ActionMenu(name="pin-" ~ pin.id) %}
 					<li><a class="menu-item" href="{{ urls.route("pins.show", {"id": pin.id}) }}">View</a></li>
 					<li><a class="menu-item" href="{{ urls.route("pins.edit", {"id": pin.id}) }}">Edit</a></li>
-					<li>{% render ConfirmButton(
-						name="pin-" ~ pin.id ~ "-delete",
-						action=urls.route("pins.delete", {"id": pin.id}),
-						confirm="Delete",
-						message="Are you sure you want to delete this pin? This action cannot be undone.",
-						method="DELETE",
-						class="menu-item menu-item--danger",
-					) %}Delete{% endrender %}</li>
+					<li>
+						{% render ConfirmButton(
+							name="pin-" ~ pin.id ~ "-delete",
+							action=urls.route("pins.delete", {"id": pin.id}),
+							confirm="Delete",
+							message="Are you sure you want to delete this pin? This action cannot be undone.",
+							method="DELETE",
+							class="menu-item menu-item--danger",
+						) %}Delete{% endrender %}
+					</li>
 					{% endrender %}
 				</section>
 			</article>

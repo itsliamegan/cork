@@ -25,14 +25,16 @@
 		<section class="board-actions">
 			{% render ActionMenu(name="board-" ~ board.id) %}
 			<li><a class="menu-item" href="{{ urls.route("boards.edit", {"id": board.id}) }}">Edit</a></li>
-			<li>{% render ConfirmButton(
-				name="board-" ~ board.id ~ "-delete",
-				action=urls.route("boards.delete", {"id": board.id}),
-				confirm="Delete",
-				message="Delete this board? Its pins will remain in Pins and on any other boards. This action cannot be undone.",
-				method="DELETE",
-				class="menu-item menu-item--danger",
-			) %}Delete{% endrender %}</li>
+			<li>
+				{% render ConfirmButton(
+					name="board-" ~ board.id ~ "-delete",
+					action=urls.route("boards.delete", {"id": board.id}),
+					confirm="Delete",
+					message="Are you sure you want to delete this board? Its pins will remain in Pins and on any other boards. This action cannot be undone.",
+					method="DELETE",
+					class="menu-item menu-item--danger",
+				) %}Delete{% endrender %}
+			</li>
 			{% endrender %}
 		</section>
 		{% endif %}
