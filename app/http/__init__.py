@@ -25,7 +25,7 @@ def ensure_signed_in(req, ctx, **params):
 		return Response.redirect(urls.route("sessions.new"))
 
 
-routes = [
+routes: list[Route | Group] = [
 	Group(
 		prefix="/sessions",
 		routes=[

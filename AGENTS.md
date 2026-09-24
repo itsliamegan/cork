@@ -19,5 +19,5 @@ file represents a current working state, not a historical record.
 - `mise run serve`: Run a devserver on port 4000 with the reloader watching views
   and assets. This should always already be running in the background, never
   start one yourself.
-- `mise run lint`: Run Ruff for formatting & linting. This should be run before
-  considering any changes finished.
+- `mise run lint`: Run Ruff for formatting & linting and Ty for type checking.
+  This should be run before considering any changes finished.

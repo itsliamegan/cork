@@ -12,4 +12,5 @@ test = "uv run -m luna.test.runner"
 lint = [
 	"ruff format",
 	"ruff check --fix",
+	"ty check",
 ]

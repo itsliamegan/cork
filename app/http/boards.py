@@ -1,4 +1,4 @@
-from typing import cast
+from typing import Any, cast
 from uuid import UUID
 
 from helios.app import Context
@@ -133,7 +133,7 @@ def show(req: Request, ctx: Context, id: UUID) -> Response:
 	placements = store.find_by(Placement, board_id=board.id)
 	pin_ids = [placement.pin_id for placement in placements]
 	pins_by_id = {pin.id: pin for pin in store.query(Pin).where_in(id=pin_ids).all()}
-	pin_rows = []
+	pin_rows: list[dict[str, Any]] = []
 	for placement in placements:
 		pin = pins_by_id[placement.pin_id]
 		pin_rows.append(

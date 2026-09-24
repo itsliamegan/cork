@@ -64,6 +64,7 @@ def _pin_return_url(
 def build_board_options(ctx: Context) -> list[dict[str, Board | str]]:
 	store = ctx.get(Store)
 	auth = ctx.get(Authenticator)
+	user = cast(User, auth.user)
 	boards = find_all_accessible_boards(ctx)
 	board_ids = {board.id for board in boards}
 	shares_by_board_id: dict[UUID, list[Share]] = {board.id: [] for board in boards}
@@ -75,7 +76,8 @@ def build_board_options(ctx: Context) -> list[dict[str, Board | str]]:
 		share.user_id for shares in shares_by_board_id.values() for share in shares
 	)
 	users_by_id = {
-		user.id: user.name for user in store.query(User).where_in(id=viewer_ids).all()
+		viewer.id: viewer.name
+		for viewer in store.query(User).where_in(id=viewer_ids).all()
 	}
 	board_options = []
 	for board in boards:
@@ -84,9 +86,9 @@ def build_board_options(ctx: Context) -> list[dict[str, Board | str]]:
 			sharing_label = "Private"
 		else:
 			visible_user_ids = {share.user_id for share in shares}
-			if board.creator_id != auth.user.id:
+			if board.creator_id != user.id:
 				visible_user_ids.add(board.creator_id)
-			visible_user_ids.discard(auth.user.id)
+			visible_user_ids.discard(user.id)
 			viewer_names = sorted(
 				(users_by_id[user_id] for user_id in visible_user_ids),
 				key=str.casefold,

@@ -70,7 +70,7 @@ class Recovery(Model):
 	@classmethod
 	def create(cls, store: Store, user: User) -> Recovery:
 		code = cls.Code.generate()
-		while cls.find_by_code(store, code.plaintext) is not None:
+		while cls.find_by_code(store, cast(str, code.plaintext)) is not None:
 			code = cls.Code.generate()
 		for recovery in store.find_by(cls, user_id=user.id):
 			store.delete(recovery)
@@ -172,7 +172,7 @@ class Invite(Model):
 
 	def redeem(self, store: Store, name: str) -> User:
 		if self.target_id is not None:
-			user = self.find_target(store)
+			user = store.find_one(User, self.target_id)
 		else:
 			user = store.create(User, name=name)
 		store.delete(self)
@@ -285,20 +285,18 @@ def find_contextual_placement(
 	return min(placements, key=lambda placement: str(placement.id))
 
 
-def can_access_board(ctx, board: Board) -> bool:
+def can_access_board(ctx: Context, board: Board) -> bool:
 	auth = ctx.get(Authenticator)
-	if board.creator_id == auth.user.id:
+	user = cast(User, auth.user)
+	if board.creator_id == user.id:
 		return True
 	share = (
-		ctx.get(Store)
-		.query(Share)
-		.where(board_id=board.id, user_id=auth.user.id)
-		.first()
+		ctx.get(Store).query(Share).where(board_id=board.id, user_id=user.id).first()
 	)
 	return share is not None
 
 
-def find_accessible_board(ctx, id: UUID) -> Board:
+def find_accessible_board(ctx: Context, id: UUID) -> Board:
 	board = ctx.get(Store).find_one(Board, id)
 	if not can_access_board(ctx, board):
 		raise NotFoundError(Board, id)
@@ -320,39 +318,38 @@ def can_remove_placement(
 	}
 
 
-def find_accessible_pin(ctx, id: UUID) -> Pin:
+def find_accessible_pin(ctx: Context, id: UUID) -> Pin:
 	store = ctx.get(Store)
 	auth = ctx.get(Authenticator)
+	user = cast(User, auth.user)
 	pin = store.find_one(Pin, id)
-	if pin.creator_id == auth.user.id:
+	if pin.creator_id == user.id:
 		return pin
 	board_ids = [placement.board_id for placement in find_pin_placements(store, pin.id)]
 	owned_board = (
-		store.query(Board).where_in(id=board_ids).where(creator_id=auth.user.id).first()
+		store.query(Board).where_in(id=board_ids).where(creator_id=user.id).first()
 	)
 	share = (
-		store.query(Share)
-		.where_in(board_id=board_ids)
-		.where(user_id=auth.user.id)
-		.first()
+		store.query(Share).where_in(board_id=board_ids).where(user_id=user.id).first()
 	)
 	if owned_board is None and share is None:
 		raise NotFoundError(Pin, id)
 	return pin
 
 
-def find_all_accessible_boards(ctx) -> list[Board]:
+def find_all_accessible_boards(ctx: Context) -> list[Board]:
 	store = ctx.get(Store)
 	auth = ctx.get(Authenticator)
+	user = cast(User, auth.user)
 	shared_board_ids = {
-		share.board_id for share in store.find_by(Share, user_id=auth.user.id)
+		share.board_id for share in store.find_by(Share, user_id=user.id)
 	}
-	owned_boards = store.find_by(Board, creator_id=auth.user.id)
+	owned_boards = store.find_by(Board, creator_id=user.id)
 	shared_boards = store.query(Board).where_in(id=shared_board_ids).all()
 	return [*owned_boards, *shared_boards]
 
 
-def order_accessible_boards(ctx, boards: list[Board]) -> list[Board]:
+def order_accessible_boards(ctx: Context, boards: list[Board]) -> list[Board]:
 	def created_at(board: Board) -> datetime:
 		if board.created_at is None:
 			raise ValueError("cannot order an unsaved board")
@@ -362,7 +359,8 @@ def order_accessible_boards(ctx, boards: list[Board]) -> list[Board]:
 	positions = {}
 	store = ctx.get(Store)
 	auth = ctx.get(Authenticator)
-	for ordering in store.find_by(Ordering, user_id=auth.user.id):
+	user = cast(User, auth.user)
+	for ordering in store.find_by(Ordering, user_id=user.id):
 		if ordering.board_id not in board_ids:
 			continue
 		position = positions.get(ordering.board_id)
