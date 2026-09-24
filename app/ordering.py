@@ -1,4 +1,3 @@
-from datetime import datetime
 from typing import cast
 from uuid import UUID
 
@@ -23,11 +22,6 @@ class Ordering(Model):
 		auth = ctx.get(Authenticator)
 		user = cast(User, auth.user)
 
-		def created_at(board: Board) -> datetime:
-			if board.created_at is None:
-				raise ValueError("cannot order an unsaved board")
-			return board.created_at
-
 		board_ids = {board.id for board in boards}
 		positions = {}
 		for ordering in store.find_by(cls, user_id=user.id):
@@ -39,12 +33,12 @@ class Ordering(Model):
 
 		unpositioned = sorted(
 			(board for board in boards if board.id not in positions),
-			key=created_at,
+			key=lambda board: (board.created_at is not None, board.created_at),
 			reverse=True,
 		)
 		positioned = sorted(
 			(board for board in boards if board.id in positions),
-			key=created_at,
+			key=lambda board: (board.created_at is not None, board.created_at),
 			reverse=True,
 		)
 		positioned.sort(key=lambda board: positions[board.id])
