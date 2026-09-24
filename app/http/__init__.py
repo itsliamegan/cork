@@ -141,12 +141,6 @@ routes = [
 						placements.update_order,
 						name="placements.update_order",
 					),
-					Route(
-						Method.GET,
-						Pattern("/{id:uuid}/pins/new"),
-						pins.new,
-						name="pins.new",
-					),
 				],
 			),
 			Group(
@@ -154,12 +148,7 @@ routes = [
 				routes=[
 					Route(Method.GET, Pattern("/"), pins.index, name="pins.index"),
 					Route(Method.POST, Pattern("/"), pins.create, name="pins.create"),
-					Route(
-						Method.GET,
-						Pattern("/new"),
-						pins.canonical_new,
-						name="pins.canonical_new",
-					),
+					Route(Method.GET, Pattern("/new"), pins.new, name="pins.new"),
 					Route(
 						Method.GET, Pattern("/{id:uuid}"), pins.show, name="pins.show"
 					),

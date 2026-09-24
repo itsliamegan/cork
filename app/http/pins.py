@@ -2,6 +2,7 @@ from collections import Counter
 from typing import cast
 from uuid import UUID
 
+from helios import http
 from helios.app import Context
 from helios.auth import Authenticator
 from helios.database import NotFoundError, Store
@@ -171,26 +172,32 @@ def create(req: Request, ctx: Context) -> Response:
 	return Response.redirect(return_to)
 
 
-def render_new(ctx: Context, board: Board | None = None) -> Response:
+def new(req: Request, ctx: Context) -> Response:
 	views = ctx.get(Views)
-	return_to = URL(f"/boards/{board.id}") if board is not None else URL("/pins/")
+
+	board_id = req.url.query.get("board_id")
+	if isinstance(board_id, str):
+		try:
+			id = UUID(board_id)
+		except ValueError:
+			raise http.error.NotFoundError()
+		board = find_accessible_board(ctx, id)
+		selected_board_ids = {board.id}
+		return_to = URL(f"/boards/{board.id}")
+	else:
+		board = None
+		selected_board_ids = set()
+		return_to = URL("/pins/")
+
 	return views.render(
 		"pins.new",
 		{
 			"originating_board": board,
 			"board_options": build_board_options(ctx),
-			"selected_board_ids": {board.id} if board is not None else set(),
+			"selected_board_ids": selected_board_ids,
 			"return_to": return_to,
 		},
 	)
-
-
-def canonical_new(req: Request, ctx: Context) -> Response:
-	return render_new(ctx)
-
-
-def new(req: Request, ctx: Context, id: UUID) -> Response:
-	return render_new(ctx, find_accessible_board(ctx, id))
 
 
 def show(req: Request, ctx: Context, id: UUID) -> Response:

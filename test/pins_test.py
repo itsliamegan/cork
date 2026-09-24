@@ -48,12 +48,37 @@ def test_new_form_checks_originating_board():
 		essays = app.store.create(Board, title="Essays", creator_id=user.id)
 		app.sign_in(user)
 
-		res = app.client.get(f"/boards/{reading.id}/pins/new")
+		res = app.client.get(f"/pins/new?board_id={reading.id}")
 
 		assert_eq(res.status_code, 200)
 		assert_that("No matching boards." in res.text)
 		assert_that(checkbox_is_checked(res.text, reading.id))
 		assert_that(not checkbox_is_checked(res.text, essays.id))
+
+
+def test_new_form_rejects_inaccessible_boards():
+	with TestApplication() as app:
+		alice = app.store.create(User, name="Alice")
+		eve = app.store.create(User, name="Eve")
+		hidden = app.store.create(Board, title="Hidden", creator_id=eve.id)
+		app.sign_in(alice)
+
+		hidden_res = app.client.get(f"/pins/new?board_id={hidden.id}")
+		malformed_res = app.client.get("/pins/new?board_id=not-a-board")
+
+		assert_eq(hidden_res.status_code, 404)
+		assert_eq(malformed_res.status_code, 404)
+
+
+def test_board_links_to_new_pin_form_for_board():
+	with TestApplication() as app:
+		user = app.store.create(User, name="Alice")
+		board = app.store.create(Board, title="Reading", creator_id=user.id)
+		app.sign_in(user)
+
+		res = app.client.get(f"/boards/{board.id}")
+
+		assert_that(f'href="/pins/new?board_id={board.id}"' in res.text)
 
 
 def test_edit_form_checks_each_placed_board():
@@ -104,7 +129,7 @@ def test_board_picker_includes_only_accessible_boards():
 			app.store.create(Share, board_id=board.id, user_id=user.id)
 		app.sign_in(alice)
 
-		res = app.client.get(f"/boards/{private.id}/pins/new")
+		res = app.client.get(f"/pins/new?board_id={private.id}")
 
 		assert_eq(res.status_code, 200)
 		for board in [private, shared, incoming]:
@@ -400,7 +425,7 @@ def test_empty_pins_index_distinguishes_collection_and_search_empty_states():
 		assert_that("No matching pins." in res.text)
 
 
-def test_canonical_new_form_and_creation_allow_no_board():
+def test_new_form_and_creation_allow_no_board():
 	with TestApplication() as app:
 		user = app.store.create(User, name="Alice")
 		board = app.store.create(Board, title="Reading", creator_id=user.id)
@@ -519,7 +544,7 @@ def test_pin_forms_keep_return_behavior_without_board_backlinks():
 		app.store.create(Placement, pin_id=pin.id, board_id=board.id, adder_id=user.id)
 		app.sign_in(user)
 
-		new_res = app.client.get(f"/boards/{board.id}/pins/new")
+		new_res = app.client.get(f"/pins/new?board_id={board.id}")
 		edit_res = app.client.get(f"/pins/{pin.id}/edit")
 
 		assert_that("Board:" not in new_res.text and "Board:" not in edit_res.text)

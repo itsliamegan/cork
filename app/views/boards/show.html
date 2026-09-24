@@ -11,7 +11,7 @@
 		{% if board.creator_id == auth.user.id %}
 		<a class="button" href="{{ urls.route("boards.edit", {"id": board.id}) }}">Edit</a>
 		{% endif %}
-		<a class="button button--action" href="{{ urls.route("pins.new", {"id": board.id}) }}">New pin</a>
+		<a class="button button--action" href="{{ urls.route("pins.new", query={"board_id": board.id}) }}">New pin</a>
 	</section>
 </header>
 
