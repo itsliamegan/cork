@@ -33,6 +33,17 @@ indent-style = "tab"
 nested-string-quote-style = "preferred"
 quote-style = "double"
 
+[tool.ruff.lint]
+ignore = [
+	"RUF012",
+]
+
+[tool.ruff.lint.flake8-bugbear]
+extend-immutable-calls = [
+	"helios.view.Attributes",
+	"markupsafe.Markup",
+]
+
 [tool.ruff.lint.isort]
 case-sensitive = true
 known-first-party = ["app", "lib"]

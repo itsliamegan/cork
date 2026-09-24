@@ -1,13 +1,7 @@
 <section class="pin-detail-panel">
 	<div class="pin-detail-row">
 		<span class="pin-detail-label">URL</span>
-		<a
-			class="pin-detail-value pin-detail-url"
-			href="{{ pin.url }}"
-			{% if open_in_new_tab %}target="_blank" rel="noopener noreferrer"{% endif %}
-		>
-			{{ pin.url }}
-		</a>
+		{% render ExternalLink(pin.url, new_tab=open_in_new_tab, class="pin-detail-value pin-detail-url") %}{{ pin.url }}{% endrender %}
 	</div>
 	<div class="pin-detail-row">
 		<span class="pin-detail-label">Note</span>

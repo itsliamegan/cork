@@ -50,19 +50,9 @@
 					⠿
 				</button>
 				<section class="pin-details">
-					<a
-						class="pin-link"
-						href="{{ pin.url }}"
-						{% if open_in_new_tab %}target="_blank" rel="noopener noreferrer"{% endif %}
-					>
-						<h3 class="pin-title">{{ pin.title }}</h3>
-					</a>
+					{% render ExternalLink(pin.url, new_tab=open_in_new_tab, class="pin-link") %}<h3 class="pin-title">{{ pin.title }}</h3>{% endrender %}
 					<section class="pin-meta">
-						<a
-							class="pin-url"
-							href="{{ pin.url }}"
-							{% if open_in_new_tab %}target="_blank" rel="noopener noreferrer"{% endif %}
-						>{{ pin.display_url() }}</a>
+						{% render ExternalLink(pin.url, new_tab=open_in_new_tab, class="pin-url") %}{{ pin.display_url() }}{% endrender %}
 						<time class="pin-date" datetime="{{ pin.created_at }}">
 							{{ pin.created_at | date }}
 						</time>
