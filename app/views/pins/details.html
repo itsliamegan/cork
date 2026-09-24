@@ -1,7 +1,7 @@
 <section class="pin-detail-panel">
 	<div class="pin-detail-row">
 		<span class="pin-detail-label">URL</span>
-		{% render ExternalLink(pin.url, new_tab=open_in_new_tab, class="pin-detail-value pin-detail-url") %}{{ pin.url }}{% endrender %}
+		{% render ExternalLink(pin.url, new_tab=new_tab, class="pin-detail-value pin-detail-url") %}{{ pin.url }}{% endrender %}
 	</div>
 	<div class="pin-detail-row">
 		<span class="pin-detail-label">Note</span>
@@ -19,6 +19,6 @@
 	{% endif %}
 	<div class="pin-detail-row">
 		<span class="pin-detail-label">Boards</span>
-		{{ BoardChips(accessible_boards, is_unfiled, class="pin-detail-value") }}
+		{{ BoardChips(boards, is_unfiled, class="pin-detail-value") }}
 	</div>
 </section>

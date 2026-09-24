@@ -42,6 +42,6 @@
 </section>
 
 <turbo-frame id="pin-{{ pin.id }}-details" hidden>
-	{% include "pins._details" %}
+	{{ PinDetails(pin, accessible_boards, adder, is_unfiled, new_tab=open_in_new_tab) }}
 </turbo-frame>
 {% endblock %}
