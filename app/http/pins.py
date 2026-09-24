@@ -12,7 +12,6 @@ from helios.routing import URLs
 from helios.view import Views
 
 from app.data import (
-	Board,
 	Pin,
 	Placement,
 	Share,
@@ -24,6 +23,7 @@ from app.data import (
 	find_owned,
 	find_pin_placements,
 )
+from app.views.pins.placements import BoardOption
 
 
 def _referring_board_id(
@@ -61,7 +61,7 @@ def _pin_return_url(
 	return urls.route("boards.show", {"id": board_id})
 
 
-def build_board_options(ctx: Context) -> list[dict[str, Board | str]]:
+def build_board_options(ctx: Context) -> list[BoardOption]:
 	store = ctx.get(Store)
 	auth = ctx.get(Authenticator)
 	user = cast(User, auth.user)
@@ -76,25 +76,15 @@ def build_board_options(ctx: Context) -> list[dict[str, Board | str]]:
 		share.user_id for shares in shares_by_board_id.values() for share in shares
 	)
 	users_by_id = {
-		viewer.id: viewer.name
-		for viewer in store.query(User).where_in(id=viewer_ids).all()
+		viewer.id: viewer for viewer in store.query(User).where_in(id=viewer_ids).all()
 	}
 	board_options = []
 	for board in boards:
-		shares = shares_by_board_id[board.id]
-		if not shares:
-			sharing_label = "Private"
-		else:
-			visible_user_ids = {share.user_id for share in shares}
-			if board.creator_id != user.id:
-				visible_user_ids.add(board.creator_id)
-			visible_user_ids.discard(user.id)
-			viewer_names = sorted(
-				(users_by_id[user_id] for user_id in visible_user_ids),
-				key=str.casefold,
-			)
-			sharing_label = f"Shared · {", ".join(viewer_names)}"
-		board_options.append({"board": board, "sharing_label": sharing_label})
+		visible_user_ids = {share.user_id for share in shares_by_board_id[board.id]}
+		visible_user_ids.add(board.creator_id)
+		visible_user_ids.discard(user.id)
+		shared_with = [users_by_id[user_id] for user_id in visible_user_ids]
+		board_options.append(BoardOption(board=board, shared_with=shared_with))
 	return board_options
 
 

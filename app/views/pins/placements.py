@@ -3,12 +3,18 @@ from uuid import UUID
 
 from helios.view import Component
 
-from app.data import Board
+from app.data import Board, User
+
+
+@dataclass
+class BoardOption:
+	board: Board
+	shared_with: list[User]
 
 
 @dataclass
 class PinPlacements(Component):
 	template = "pins.placements"
 
-	options: list[dict[str, Board | str]]
+	options: list[BoardOption]
 	selected_board_ids: set[UUID]

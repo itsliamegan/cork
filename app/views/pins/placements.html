@@ -28,7 +28,13 @@
 				{% if board_option.board.id in selected_board_ids %}checked{% endif %}
 			>
 			<span class="pin-placements-title">{{ board_option.board.title }}</span>
-			<span class="pin-placements-state">{{ board_option.sharing_label }}</span>
+			<span class="pin-placements-state">
+				{%- if board_option.shared_with -%}
+				Shared · {{ board_option.shared_with | map(attribute="name") | sort | join(", ") }}
+				{%- else -%}
+				Private
+				{%- endif -%}
+			</span>
 		</label>
 		{% endfor %}
 	</fieldset>

@@ -21,6 +21,7 @@ from app.data import (
 	find_owned,
 	order_accessible_boards,
 )
+from app.views.boards.sharing import SharingPerson
 
 
 def _board_return_url(ctx: Context, raw_url: str | None, id: UUID) -> URL:
@@ -36,14 +37,17 @@ def _sharing_people(
 	ctx: Context,
 	owner_id: UUID,
 	shared_user_ids: set[UUID] | None = None,
-) -> list[dict]:
+) -> list[SharingPerson]:
 	store = ctx.get(Store)
 
 	if shared_user_ids is None:
 		shared_user_ids = set()
 	users = [user for user in store.find_all(User) if user.id != owner_id]
 	users.sort(key=lambda user: user.name.casefold())
-	return [{"user": user, "has_access": user.id in shared_user_ids} for user in users]
+	return [
+		SharingPerson(user=user, has_access=user.id in shared_user_ids)
+		for user in users
+	]
 
 
 def _are_sharable_users(store: Store, user_ids: set[UUID], owner_id: UUID) -> bool:
