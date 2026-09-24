@@ -1,6 +1,6 @@
 from luna.test.assertion import assert_eq, assert_that
 
-from app.data import Board, Ordering, User
+from app import Board, Ordering, User
 from test.support import TestApplication
 
 

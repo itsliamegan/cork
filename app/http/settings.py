@@ -9,7 +9,7 @@ from helios.http import Request, Response, Status, URL
 from helios.routing import URLs
 from helios.view import Views
 
-from app.data import User
+from app import User
 
 RETURNABLE_ROUTES = {
 	"home.show",

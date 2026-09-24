@@ -2,7 +2,7 @@ from html.parser import HTMLParser
 
 from luna.test.assertion import assert_eq
 
-from app.data import Board, Pin, Placement, Recovery, Share, User
+from app import Board, Pin, Placement, Recovery, Share, User
 from test.support import TestApplication
 
 REFERENCE_ATTRIBUTES = {

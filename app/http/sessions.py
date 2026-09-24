@@ -7,7 +7,7 @@ from helios.http import Request, Response
 from helios.routing import URLs
 from helios.view import Views
 
-from app.data import Recovery
+from app import Recovery
 
 
 def create(req: Request, ctx: Context) -> Response:

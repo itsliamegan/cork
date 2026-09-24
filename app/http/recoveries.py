@@ -9,7 +9,7 @@ from helios.http import Request, Response
 from helios.routing import URLs
 from helios.view import Views
 
-from app.data import Recovery, User
+from app import Recovery, User
 
 
 def create(req: Request, ctx: Context) -> Response:

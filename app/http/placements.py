@@ -5,12 +5,8 @@ from helios.database import NotFoundError, Store
 from helios.http import Request, Response
 from helios.routing import URLs
 
-from app.data import (
-	Board,
-	Pin,
-	Placement,
-	can_remove_placement,
-)
+from app import Board, Pin, Placement
+from app.data import can_remove_placement
 
 
 def delete(req: Request, ctx: Context, id: UUID) -> Response:

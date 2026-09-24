@@ -1,6 +1,6 @@
 from helios.view import Component
 
-from app.data import Board, Pin, User
+from app import Board, Pin, User
 
 
 class PinDetails(Component):

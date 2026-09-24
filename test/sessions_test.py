@@ -5,7 +5,7 @@ from uuid import uuid4
 from helios.auth.password import Digest
 from luna.test.assertion import assert_eq, assert_that
 
-from app.data import Recovery, User
+from app import Recovery, User
 from test.support import TestApplication
 
 

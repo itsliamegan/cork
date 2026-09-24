@@ -3,7 +3,8 @@ from uuid import uuid4
 from helios.database import NotFoundError
 from luna.test.assertion import assert_eq, assert_raises, assert_that
 
-from app.data import Board, Pin, Placement, Share, User, find_pin_placements
+from app import Board, Pin, Placement, Share, User
+from app.data import find_pin_placements
 from test.support import TestApplication
 
 

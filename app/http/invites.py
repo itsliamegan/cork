@@ -10,7 +10,7 @@ from helios.http import Request, Response
 from helios.routing import URLs
 from helios.view import Views
 
-from app.data import Invite, User
+from app import Invite, User
 
 
 def create(req: Request, ctx: Context) -> Response:

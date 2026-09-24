@@ -1,6 +1,6 @@
 from helios.view import Attributes, Component
 
-from app.data import Board
+from app import Board
 
 
 class BoardChips(Component):

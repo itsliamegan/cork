@@ -11,11 +11,8 @@ from helios.http import Request, Response, Status, URL
 from helios.routing import URLs
 from helios.view import Views
 
+from app import Pin, Placement, Share, User
 from app.data import (
-	Pin,
-	Placement,
-	Share,
-	User,
 	find_accessible_board,
 	find_accessible_pin,
 	find_all_accessible_boards,

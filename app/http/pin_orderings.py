@@ -5,7 +5,8 @@ from helios.database import Store
 from helios.form import Field, Form, parser
 from helios.http import Request, Response, Status
 
-from app.data import Placement, find_accessible_board
+from app import Placement
+from app.data import find_accessible_board
 
 
 def update(req: Request, ctx: Context, id: UUID) -> Response:
