@@ -12,7 +12,6 @@ class ConfirmDialog(Component):
 	confirm: str
 	content: str
 	method: str | None = None
-	required: bool = True
 
 	@property
 	def dialog_id(self) -> str:

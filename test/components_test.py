@@ -53,7 +53,7 @@ def test_external_link_without_content_shows_its_url():
 		assert_that(">https://example.com/sartre</a>" in html)
 
 
-def test_confirm_trigger_opens_its_dialog_when_confirmation_is_required():
+def test_confirm_trigger_opens_its_dialog():
 	with TestApplication() as app:
 		engine = app.container.get(Engine)
 		dialog = ConfirmDialog(
@@ -73,27 +73,6 @@ def test_confirm_trigger_opens_its_dialog_when_confirmation_is_required():
 		assert_that(f'form="{dialog.form_id}"' in dialog_html)
 		assert_that(f'<form id="{dialog.form_id}"' in dialog_html)
 		assert_that('name="_method" value="DELETE"' in dialog_html)
-
-
-def test_confirm_trigger_submits_directly_when_confirmation_is_not_required():
-	with TestApplication() as app:
-		engine = app.container.get(Engine)
-		dialog = ConfirmDialog(
-			name="recovery",
-			action="/recoveries/",
-			confirm="Replace",
-			content="Replace your recovery code?",
-			required=False,
-		)
-		trigger = ConfirmTrigger(dialog=dialog)
-
-		dialog_html = engine.render(dialog)
-		trigger_html = engine.render(trigger)
-
-		assert_not("<dialog" in dialog_html)
-		assert_that(f'<form id="{dialog.form_id}"' in dialog_html)
-		assert_that(f'form="{dialog.form_id}"' in trigger_html)
-		assert_that('type="submit"' in trigger_html)
 
 
 def test_pin_placements_label_private_and_shared_boards():

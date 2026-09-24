@@ -1,5 +1,1 @@
-{% if dialog.required -%}
 <button {{ attributes.merge(type="button", command="show-modal", commandfor=dialog.dialog_id) }}>{{ content }}</button>
-{%- else -%}
-<button {{ attributes.merge(type="submit", form=dialog.form_id) }}>{{ content }}</button>
-{%- endif %}
