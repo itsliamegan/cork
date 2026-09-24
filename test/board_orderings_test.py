@@ -13,7 +13,7 @@ def test_orders_boards():
 		app.sign_in(alice)
 
 		res = app.client.post(
-			"/orderings",
+			"/boards/ordering",
 			form={
 				"_method": "PUT",
 				"board_id": [
@@ -70,7 +70,7 @@ def test_rejects_invalid_orderings():
 
 		for board_ids in invalid_orders:
 			res = app.client.post(
-				"/orderings",
+				"/boards/ordering",
 				form={
 					"_method": "PUT",
 					"board_id": [str(board_id) for board_id in board_ids],

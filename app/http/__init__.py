@@ -3,10 +3,11 @@ from helios.http import Method, Response
 from helios.routing import Group, Pattern, Route
 
 from app.http import (
+	board_orderings,
 	boards,
 	home,
 	invites,
-	orderings,
+	pin_orderings,
 	pins,
 	placements,
 	recoveries,
@@ -92,12 +93,6 @@ routes = [
 				],
 			),
 			Route(
-				Method.PUT,
-				Pattern("/orderings"),
-				orderings.update,
-				name="orderings.update",
-			),
-			Route(
 				Method.DELETE,
 				Pattern("/placements/{id:uuid}"),
 				placements.delete,
@@ -111,6 +106,12 @@ routes = [
 						Method.POST, Pattern("/"), boards.create, name="boards.create"
 					),
 					Route(Method.GET, Pattern("/new"), boards.new, name="boards.new"),
+					Route(
+						Method.PUT,
+						Pattern("/ordering"),
+						board_orderings.update,
+						name="board_orderings.update",
+					),
 					Route(
 						Method.GET,
 						Pattern("/{id:uuid}"),
@@ -137,9 +138,9 @@ routes = [
 					),
 					Route(
 						Method.PUT,
-						Pattern("/{board_id:uuid}/placements"),
-						placements.update_order,
-						name="placements.update_order",
+						Pattern("/{id:uuid}/pins/ordering"),
+						pin_orderings.update,
+						name="pin_orderings.update",
 					),
 				],
 			),
