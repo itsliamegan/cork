@@ -74,6 +74,43 @@ def test_signed_in_user_redirects():
 		assert_eq(res.status_code, 302)
 
 
+def test_new_renders_account_invite():
+	with TestApplication() as app:
+		creator = app.store.create(User, name="Alice")
+		invite = Invite.create(app.store, creator)
+
+		res = app.client.get(f"/redemptions/new?token={invite.token.value}")
+
+		assert_eq(res.status_code, 200)
+		assert_that("Invited by Alice" in res.text)
+
+
+def test_new_renders_targeted_invite():
+	with TestApplication() as app:
+		alice = app.store.create(User, name="Alice")
+		invite = Invite.create(app.store, alice, target=alice)
+
+		res = app.client.get(f"/redemptions/new?token={invite.token.value}")
+
+		assert_eq(res.status_code, 200)
+		assert_that("<strong>Alice</strong>" in res.text)
+
+
+def test_new_renders_name_error():
+	with TestApplication() as app:
+		creator = app.store.create(User, name="Alice")
+		invite = Invite.create(app.store, creator)
+
+		res = app.client.post(
+			"/redemptions/", form={"token": invite.token.value, "name": " alice "}
+		)
+		res = app.client.get(res.headers["Location"])
+
+		assert_eq(res.status_code, 200)
+		assert_that("That name is already in use." in res.text)
+		assert_that('value="alice"' in res.text)
+
+
 def test_account_invite_creates_user_and_recovery():
 	with TestApplication() as app:
 		creator = app.store.create(User, name="Alice")

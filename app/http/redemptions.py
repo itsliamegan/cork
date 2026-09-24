@@ -68,22 +68,39 @@ def new(req: Request, ctx: Context) -> Response:
 		return Response.redirect(URL("/"))
 
 	token = req.url.query.get("token")
-	if not isinstance(token, str):
-		return Response.html(views.render("redemptions.new"))
-
-	invite = Invite.find_valid(store, token)
-	if invite is None:
-		return Response.html(views.render("redemptions.new"))
-
-	context: dict = {"token": token, "invite": invite}
-
-	if invite.target_id is None:
-		if "redemption_name" in flash:
-			context["name"] = flash["redemption_name"]
-		if "redemption_error" in flash:
-			context["error"] = flash["redemption_error"]
-		context["creator"] = store.find_one(User, invite.creator_id)
+	if isinstance(token, str):
+		invite = Invite.find_valid(store, token)
 	else:
-		context["target"] = invite.find_target(store)
+		token = None
+		invite = None
 
-	return Response.html(views.render("redemptions.new", context))
+	creator = None
+	target = None
+	if invite is not None:
+		if invite.target_id is None:
+			creator = store.find_one(User, invite.creator_id)
+		else:
+			target = invite.find_target(store)
+
+	if "redemption_name" in flash:
+		name = flash["redemption_name"]
+	else:
+		name = ""
+
+	if "redemption_error" in flash:
+		error = flash["redemption_error"]
+	else:
+		error = None
+
+	html = views.render(
+		"redemptions.new",
+		{
+			"token": token,
+			"invite": invite,
+			"creator": creator,
+			"target": target,
+			"name": name,
+			"error": error,
+		},
+	)
+	return Response.html(html)
