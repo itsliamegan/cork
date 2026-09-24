@@ -16,18 +16,6 @@ class User(Model):
 	name = attr(str)
 	open_in_new_tab = attr(bool, default=False)
 
-	@classmethod
-	def recover(cls, store: Store, code: str) -> tuple[User, Recovery] | None:
-		recovery = Recovery.find_by_code(store, code)
-		if recovery is None:
-			return None
-		try:
-			user = store.find_one(cls, recovery.user_id)
-		except NotFoundError:
-			return None
-		new_recovery = Recovery.create(store, user)
-		return user, new_recovery
-
 
 class Recovery(Model):
 	table = "recoveries"
@@ -79,6 +67,18 @@ class Recovery(Model):
 			user_id=user.id,
 			code=code,
 		)
+
+	@classmethod
+	def redeem(cls, store: Store, code: str) -> tuple[User, Recovery] | None:
+		recovery = cls.find_by_code(store, code)
+		if recovery is None:
+			return None
+		try:
+			user = store.find_one(User, recovery.user_id)
+		except NotFoundError:
+			return None
+		new_recovery = cls.create(store, user)
+		return user, new_recovery
 
 	@classmethod
 	def find_by_code(cls, store: Store, code: str) -> Recovery | None:
