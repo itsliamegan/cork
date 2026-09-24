@@ -94,10 +94,6 @@ class Recovery(Model):
 			raise NotFoundError(cls, id)
 		return recovery
 
-	@classmethod
-	def exists_for(cls, store: Store, user: User) -> bool:
-		return store.query(cls).where(user_id=user.id).first() is not None
-
 
 class Invite(Model):
 	table = "invites"

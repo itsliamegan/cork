@@ -1,13 +1,7 @@
 <section class="pin-detail-panel">
 	<div class="pin-detail-row">
 		<span class="pin-detail-label">URL</span>
-		<a
-			class="pin-detail-value pin-detail-url"
-			href="{{ pin.url }}"
-			{% if open_in_new_tab %}target="_blank" rel="noopener noreferrer"{% endif %}
-		>
-			{{ pin.url }}
-		</a>
+		{{ ExternalLink(url=pin.url, new_tab=new_tab, class="pin-detail-value pin-detail-url") }}
 	</div>
 	<div class="pin-detail-row">
 		<span class="pin-detail-label">Note</span>
@@ -25,11 +19,6 @@
 	{% endif %}
 	<div class="pin-detail-row">
 		<span class="pin-detail-label">Boards</span>
-		<span class="pin-detail-value board-chips">
-			{% for board in accessible_boards %}
-			{% include "boards._chip" %}
-			{% endfor %}
-			{% if is_unfiled %}<span class="pin-unfiled">Not on any boards</span>{% endif %}
-		</span>
+		{{ BoardChips(boards=boards, is_unfiled=is_unfiled, class="pin-detail-value") }}
 	</div>
 </section>

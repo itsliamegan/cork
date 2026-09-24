@@ -20,7 +20,11 @@
 		</label>
 	</section>
 
-	{% include "boards._sharing" %}
+	{{ BoardSharing(
+		owner=owner,
+		users=users,
+		shared_user_ids=shared_user_ids,
+	) }}
 
 	<footer class="frame-item form-actions">
 		<a class="button" href="{{ urls.route("boards.index") }}">Cancel</a>

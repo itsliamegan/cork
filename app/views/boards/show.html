@@ -50,19 +50,9 @@
 					⠿
 				</button>
 				<section class="pin-details">
-					<a
-						class="pin-link"
-						href="{{ pin.url }}"
-						{% if open_in_new_tab %}target="_blank" rel="noopener noreferrer"{% endif %}
-					>
-						<h3 class="pin-title">{{ pin.title }}</h3>
-					</a>
+					{% render ExternalLink(url=pin.url, new_tab=auth.user.open_in_new_tab, class="pin-link") %}<h3 class="pin-title">{{ pin.title }}</h3>{% endrender %}
 					<section class="pin-meta">
-						<a
-							class="pin-url"
-							href="{{ pin.url }}"
-							{% if open_in_new_tab %}target="_blank" rel="noopener noreferrer"{% endif %}
-						>{{ pin.display_url() }}</a>
+						{% render ExternalLink(url=pin.url, new_tab=auth.user.open_in_new_tab, class="pin-url") %}{{ pin.display_url() }}{% endrender %}
 						<time class="pin-date" datetime="{{ pin.created_at }}">
 							{{ pin.created_at | date }}
 						</time>
@@ -78,24 +68,22 @@
 
 				{% if pin.creator_id == auth.user.id or row.can_remove %}
 				<section class="pin-actions">
-					<button class="button button--icon" command="toggle-popover" commandfor="placement-{{ placement.id }}-actions">&#8942;</button>
-					<menu class="menu" id="placement-{{ placement.id }}-actions" popover>
-						<li><a class="menu-item" href="{{ urls.route("pins.show", {"id": pin.id}) }}">View</a></li>
-						{% if pin.creator_id == auth.user.id %}<li><a class="menu-item" href="{{ urls.route("pins.edit", {"id": pin.id}) }}">Edit</a></li>{% endif %}
-						{% if row.can_remove %}<li><button class="menu-item menu-item--danger" command="show-modal" commandfor="placement-{{ placement.id }}-dialog">Remove</button></li>{% endif %}
-					</menu>
+					{% render ActionMenu(name="placement-" ~ placement.id) %}
+					<li><a class="menu-item" href="{{ urls.route("pins.show", {"id": pin.id}) }}">View</a></li>
+					{% if pin.creator_id == auth.user.id %}<li><a class="menu-item" href="{{ urls.route("pins.edit", {"id": pin.id}) }}">Edit</a></li>{% endif %}
 					{% if row.can_remove %}
-					<dialog id="placement-{{ placement.id }}-dialog" class="dialog">
-						<section class="dialog-content"><p>Are you sure you want to remove this pin from this board? It will remain in Pins and on any other boards.</p></section>
-						<footer class="dialog-actions">
-							<button class="button" command="close" commandfor="placement-{{ placement.id }}-dialog">Cancel</button>
-							<button class="button button--danger" type="submit" form="placement-{{ placement.id }}-delete-form" autofocus>Remove</button>
-							<form id="placement-{{ placement.id }}-delete-form" action="{{ urls.route("placements.delete", {"id": placement.id}) }}" method="POST" hidden>
-								<input type="text" name="_method" value="DELETE" hidden>
-							</form>
-						</footer>
-					</dialog>
+					<li>
+						{% render ConfirmButton(
+							name="placement-" ~ placement.id ~ "-remove",
+							action=urls.route("placements.delete", {"id": placement.id}),
+							confirm="Remove",
+							message="Are you sure you want to remove this pin from this board? It will remain in Pins and on any other boards.",
+							method="DELETE",
+							class="menu-item menu-item--danger",
+						) %}Remove{% endrender %}
+					</li>
 					{% endif %}
+					{% endrender %}
 				</section>
 				{% endif %}
 			</article>

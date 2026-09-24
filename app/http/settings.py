@@ -9,7 +9,7 @@ from helios.http import Request, Response, Status, URL
 from helios.routing import URLs
 from helios.view import Views
 
-from app.data import Recovery, User
+from app.data import User
 
 RETURNABLE_ROUTES = {
 	"home.show",
@@ -30,10 +30,7 @@ def _settings_return_url(ctx: Context, raw_url: str | None) -> URL:
 
 
 def show(req: Request, ctx: Context) -> Response:
-	store = ctx.get(Store)
-	auth = ctx.get(Authenticator)
 	flash = ctx.get(Flashes)
-	user = cast(User, auth.user)
 	views = ctx.get(Views)
 
 	invite_error = None
@@ -43,7 +40,6 @@ def show(req: Request, ctx: Context) -> Response:
 		"settings.show",
 		{
 			"invite_error": invite_error,
-			"has_recovery": Recovery.exists_for(store, user),
 			"return_to": _settings_return_url(ctx, req.referrer),
 		},
 	)

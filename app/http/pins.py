@@ -12,7 +12,6 @@ from helios.routing import URLs
 from helios.view import Views
 
 from app.data import (
-	Board,
 	Pin,
 	Placement,
 	Share,
@@ -24,6 +23,7 @@ from app.data import (
 	find_owned,
 	find_pin_placements,
 )
+from app.views.pins.placements import PlacementOption
 
 
 def _referring_board_id(
@@ -61,7 +61,7 @@ def _pin_return_url(
 	return urls.route("boards.show", {"id": board_id})
 
 
-def build_board_options(ctx: Context) -> list[dict[str, Board | str]]:
+def build_placement_options(ctx: Context) -> list[PlacementOption]:
 	store = ctx.get(Store)
 	auth = ctx.get(Authenticator)
 	user = cast(User, auth.user)
@@ -76,26 +76,16 @@ def build_board_options(ctx: Context) -> list[dict[str, Board | str]]:
 		share.user_id for shares in shares_by_board_id.values() for share in shares
 	)
 	users_by_id = {
-		viewer.id: viewer.name
-		for viewer in store.query(User).where_in(id=viewer_ids).all()
+		viewer.id: viewer for viewer in store.query(User).where_in(id=viewer_ids).all()
 	}
-	board_options = []
+	placement_options = []
 	for board in boards:
-		shares = shares_by_board_id[board.id]
-		if not shares:
-			sharing_label = "Private"
-		else:
-			visible_user_ids = {share.user_id for share in shares}
-			if board.creator_id != user.id:
-				visible_user_ids.add(board.creator_id)
-			visible_user_ids.discard(user.id)
-			viewer_names = sorted(
-				(users_by_id[user_id] for user_id in visible_user_ids),
-				key=str.casefold,
-			)
-			sharing_label = f"Shared · {", ".join(viewer_names)}"
-		board_options.append({"board": board, "sharing_label": sharing_label})
-	return board_options
+		visible_user_ids = {share.user_id for share in shares_by_board_id[board.id]}
+		visible_user_ids.add(board.creator_id)
+		visible_user_ids.discard(user.id)
+		others = [users_by_id[user_id] for user_id in visible_user_ids]
+		placement_options.append(PlacementOption(board=board, others=others))
+	return placement_options
 
 
 def index(req: Request, ctx: Context) -> Response:
@@ -119,7 +109,6 @@ def index(req: Request, ctx: Context) -> Response:
 		"pins.index",
 		{
 			"pin_rows": pin_rows,
-			"open_in_new_tab": user.open_in_new_tab,
 		},
 	)
 
@@ -192,7 +181,7 @@ def new(req: Request, ctx: Context) -> Response:
 		"pins.new",
 		{
 			"originating_board": board,
-			"board_options": build_board_options(ctx),
+			"placement_options": build_placement_options(ctx),
 			"selected_board_ids": selected_board_ids,
 			"return_to": return_to,
 		},
@@ -201,9 +190,7 @@ def new(req: Request, ctx: Context) -> Response:
 
 def show(req: Request, ctx: Context, id: UUID) -> Response:
 	store = ctx.get(Store)
-	auth = ctx.get(Authenticator)
 	views = ctx.get(Views)
-	user = cast(User, auth.user)
 
 	pin = find_accessible_pin(ctx, id)
 	placements = find_pin_placements(store, pin.id)
@@ -233,7 +220,6 @@ def show(req: Request, ctx: Context, id: UUID) -> Response:
 			"creator": store.find_one(User, pin.creator_id),
 			"adder": adder,
 			"is_unfiled": not placements,
-			"open_in_new_tab": user.open_in_new_tab,
 		},
 	)
 
@@ -256,7 +242,7 @@ def edit(req: Request, ctx: Context, id: UUID) -> Response:
 		"pins.edit",
 		{
 			"pin": pin,
-			"board_options": build_board_options(ctx),
+			"placement_options": build_placement_options(ctx),
 			"selected_board_ids": {
 				placement.board_id for placement in accessible_placements
 			},

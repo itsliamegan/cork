@@ -408,19 +408,19 @@ a {
 	font-weight: bold;
 }
 
-.board-picker-search,
+.pin-placements-search,
 .pin-index-search {
 	padding: var(--space-4) var(--space-5);
 
 	border-block-end: var(--rule-quiet) solid var(--color-border-quiet);
 }
 
-.board-picker-search-input,
+.pin-placements-search-input,
 .pin-index-search-input {
 	width: 100%;
 }
 
-.board-picker-options {
+.pin-placements-options {
 	max-height: 12rem;
 	margin: 0;
 	padding: 0;
@@ -430,7 +430,7 @@ a {
 	overscroll-behavior: contain;
 }
 
-.board-picker-option {
+.pin-placements-option {
 	display: grid;
 	grid-template-columns: auto minmax(0, 1fr) minmax(7rem, auto);
 	align-items: center;
@@ -451,17 +451,17 @@ a {
 	}
 }
 
-.board-picker-option[hidden] {
+.pin-placements-option[hidden] {
 	display: none;
 }
 
-.board-picker-title {
+.pin-placements-title {
 	min-width: 0;
 	font-weight: bold;
 	overflow-wrap: anywhere;
 }
 
-.board-picker-state {
+.pin-placements-state {
 	min-width: 0;
 
 	font-size: var(--font-size-meta);
@@ -471,7 +471,7 @@ a {
 	color: var(--color-text-muted);
 }
 
-.board-picker-empty {
+.pin-placements-empty {
 	margin: 0;
 	padding: var(--space-5);
 
@@ -569,11 +569,11 @@ a {
 		grid-template-columns: minmax(0, 1fr) auto;
 	}
 
-	.board-picker-options {
+	.pin-placements-options {
 		max-height: 14rem;
 	}
 
-	.board-picker-option {
+	.pin-placements-option {
 		grid-template-columns: auto minmax(0, 1fr) minmax(5rem, 42%);
 	}
 

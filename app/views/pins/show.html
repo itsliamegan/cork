@@ -19,13 +19,7 @@
 		<h3 class="frame-title">Details</h3>
 	</header>
 	<section class="frame-item pin-detail">
-		<a
-			class="pin-detail-url"
-			href="{{ pin.url }}"
-			{% if open_in_new_tab %}target="_blank" rel="noopener noreferrer"{% endif %}
-		>
-			{{ pin.url }}
-		</a>
+		{{ ExternalLink(url=pin.url, new_tab=auth.user.open_in_new_tab, class="pin-detail-url") }}
 		<p class="pin-detail-meta">
 			<span>Saved by {{ creator.name }}</span>
 			<time datetime="{{ pin.created_at }}">{{ pin.created_at | date }}</time>
@@ -44,15 +38,16 @@
 	<header class="frame-header">
 		<h3 class="frame-title">Boards</h3>
 	</header>
-	<section class="frame-item board-chips">
-		{% for board in accessible_boards %}
-		{% include "boards._chip" %}
-		{% endfor %}
-		{% if is_unfiled %}<span class="pin-unfiled">Not on any boards</span>{% endif %}
-	</section>
+	{{ BoardChips(boards=accessible_boards, is_unfiled=is_unfiled, class="frame-item") }}
 </section>
 
 <turbo-frame id="pin-{{ pin.id }}-details" hidden>
-	{% include "pins._details" %}
+	{{ PinDetails(
+		pin=pin,
+		boards=accessible_boards,
+		adder=adder,
+		is_unfiled=is_unfiled,
+		new_tab=auth.user.open_in_new_tab,
+	) }}
 </turbo-frame>
 {% endblock %}

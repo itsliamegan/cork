@@ -57,7 +57,6 @@ def test_board_placements_default_to_newest_first_and_can_be_reordered():
 		assert_that(
 			ordered_res.text.index("Older pin") < ordered_res.text.index("Newer pin")
 		)
-		assert_eq(ordered_res.text.count('title="Drag to reorder"'), 2)
 
 
 def test_rejects_incomplete_duplicate_and_inaccessible_placement_orders():

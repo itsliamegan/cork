@@ -32,18 +32,12 @@ def _board_return_url(ctx: Context, raw_url: str | None, id: UUID) -> URL:
 		return urls.route("boards.show", {"id": id})
 
 
-def _sharing_people(
-	ctx: Context,
-	owner_id: UUID,
-	shared_user_ids: set[UUID] | None = None,
-) -> list[dict]:
+def _sharable_users(ctx: Context, owner_id: UUID) -> list[User]:
 	store = ctx.get(Store)
 
-	if shared_user_ids is None:
-		shared_user_ids = set()
 	users = [user for user in store.find_all(User) if user.id != owner_id]
 	users.sort(key=lambda user: user.name.casefold())
-	return [{"user": user, "has_access": user.id in shared_user_ids} for user in users]
+	return users
 
 
 def _are_sharable_users(store: Store, user_ids: set[UUID], owner_id: UUID) -> bool:
@@ -118,16 +112,15 @@ def new(req: Request, ctx: Context) -> Response:
 		"boards.new",
 		{
 			"owner": auth.user,
-			"people": _sharing_people(ctx, user.id),
+			"users": _sharable_users(ctx, user.id),
+			"shared_user_ids": set(),
 		},
 	)
 
 
 def show(req: Request, ctx: Context, id: UUID) -> Response:
 	store = ctx.get(Store)
-	auth = ctx.get(Authenticator)
 	views = ctx.get(Views)
-	user = cast(User, auth.user)
 
 	board = find_accessible_board(ctx, id)
 	placements = store.find_by(Placement, board_id=board.id)
@@ -151,7 +144,6 @@ def show(req: Request, ctx: Context, id: UUID) -> Response:
 		{
 			"board": board,
 			"pin_rows": pin_rows,
-			"open_in_new_tab": user.open_in_new_tab,
 		},
 	)
 
@@ -171,7 +163,8 @@ def edit(req: Request, ctx: Context, id: UUID) -> Response:
 		{
 			"board": board,
 			"owner": auth.user,
-			"people": _sharing_people(ctx, board.creator_id, shared_user_ids),
+			"users": _sharable_users(ctx, board.creator_id),
+			"shared_user_ids": shared_user_ids,
 			"return_to": _board_return_url(ctx, req.referrer, board.id),
 		},
 	)

@@ -1,64 +1,6 @@
 {% extends "layouts.app" %}
 {% set active_nav = "boards" %}
 
-{% macro board_item(board, user) %}
-<li
-	class="frame-item frame-item--reorderable"
-	data-reorder-target="item"
-	data-reorder-id="{{ board.id }}"
->
-	<article class="board">
-		<button
-			class="reorder-handle"
-			type="button"
-			draggable="true"
-			title="Drag to reorder"
-			data-action="dragstart->reorder#dragStart dragend->reorder#dragEnd"
-		>
-			⠿
-		</button>
-		<section class="board-details">
-			<a class="board-link" href="{{ urls.route("boards.show", {"id": board.id}) }}">
-				<h3 class="board-title">{{ board.title }}</h3>
-			</a>
-			<time class="board-date" datetime="{{ board.created_at }}">
-				{{ board.created_at | date }}
-			</time>
-		</section>
-		{% if board.creator_id == user.id %}
-		<section class="board-actions">
-			<button
-				class="button button--icon"
-				command="toggle-popover"
-				commandfor="board-{{ board.id }}-actions"
-			>
-				&#8942;
-			</button>
-
-			<menu class="menu" id="board-{{ board.id }}-actions" popover>
-				<li><a class="menu-item" href="{{ urls.route("boards.edit", {"id": board.id}) }}">Edit</a></li>
-				<li><button class="menu-item menu-item--danger" command="show-modal" commandfor="board-{{ board.id }}-delete-dialog">Delete</button></li>
-			</menu>
-
-			<dialog id="board-{{ board.id }}-delete-dialog" class="dialog">
-				<section class="dialog-content">
-					<p>Delete this board? Its pins will remain in Pins and on any other boards. This action cannot be undone.</p>
-				</section>
-				<footer class="dialog-actions">
-					<button class="button" command="close" commandfor="board-{{ board.id }}-delete-dialog">Cancel</button>
-					<button class="button button--danger" type="submit" form="board-{{ board.id }}-delete-form">Delete</button>
-					<form id="board-{{ board.id }}-delete-form" action="{{ urls.route("boards.delete", {"id": board.id}) }}" method="POST" hidden>
-						<input type="text" name="_method" value="DELETE" hidden>
-					</form>
-				</footer>
-			</dialog>
-
-		</section>
-		{% endif %}
-	</article>
-</li>
-{% endmacro %}
-
 {% block title %}Cork - Boards{% endblock %}
 
 {% block content %}
@@ -86,7 +28,7 @@
 		data-action="dragover->reorder#dragOver dragleave->reorder#dragLeave drop->reorder#drop"
 	>
 		{% for board in private_boards %}
-		{{ board_item(board, auth.user) }}
+		{{ BoardItem(board=board, user=auth.user) }}
 		{% else %}
 		<li class="frame-item frame-empty">No private boards.</li>
 		{% endfor %}
@@ -102,7 +44,7 @@
 		data-action="dragover->reorder#dragOver dragleave->reorder#dragLeave drop->reorder#drop"
 	>
 		{% for board in shared_boards %}
-		{{ board_item(board, auth.user) }}
+		{{ BoardItem(board=board, user=auth.user) }}
 		{% else %}
 		<li class="frame-item frame-empty">No shared boards.</li>
 		{% endfor %}

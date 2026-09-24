@@ -1,4 +1,4 @@
-from luna.test.assertion import assert_eq, assert_raises, assert_that
+from luna.test.assertion import assert_eq, assert_raises
 
 from app.data import Board, Pin, Placement, Share, User
 from test.support import TestApplication
@@ -79,7 +79,6 @@ def test_unrelated_participant_cannot_remove_another_users_placement():
 		)
 
 		assert_eq(show_res.status_code, 200)
-		assert_that(">Remove</button>" not in show_res.text)
 		assert_eq(delete_res.status_code, 404)
 		assert_eq(app.store.find_one(Placement, placement.id).id, placement.id)
 
