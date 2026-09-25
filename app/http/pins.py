@@ -37,9 +37,12 @@ def _pin_return_url(
 	pin: Pin,
 	placements: list[Placement],
 ) -> URL:
+	store = ctx.get(Store)
+	auth = ctx.get(Authenticator)
 	urls = ctx.get(URLs)
-	access = Access(ctx)
+	user = cast(User, auth.user)
 
+	access = Access(store, user)
 	fallback = urls.route("pins.show", {"id": pin.id})
 	match = urls.match(raw_url)
 	if match is not None and match.route.name == "pins.index":
@@ -58,8 +61,8 @@ def build_placement_options(ctx: Context) -> list[PlacementOption]:
 	store = ctx.get(Store)
 	auth = ctx.get(Authenticator)
 	user = cast(User, auth.user)
-	access = Access(ctx)
 
+	access = Access(store, user)
 	boards = access.find_boards()
 	board_ids = {board.id for board in boards}
 	shares_by_board_id: dict[UUID, list[Share]] = {board.id: [] for board in boards}
@@ -113,7 +116,6 @@ def create(req: Request, ctx: Context) -> Response:
 	auth = ctx.get(Authenticator)
 	urls = ctx.get(URLs)
 	user = cast(User, auth.user)
-	access = Access(ctx)
 
 	form = Form(
 		[
@@ -128,6 +130,7 @@ def create(req: Request, ctx: Context) -> Response:
 	if errs:
 		return Response.text("400 Bad Request", status=Status.BAD_REQUEST)
 
+	access = Access(store, user)
 	board_ids = list(dict.fromkeys(input["board_id"]))
 	try:
 		boards = [access.find_board(board_id) for board_id in board_ids]
@@ -156,10 +159,13 @@ def create(req: Request, ctx: Context) -> Response:
 
 
 def new(req: Request, ctx: Context) -> Response:
+	store = ctx.get(Store)
+	auth = ctx.get(Authenticator)
 	views = ctx.get(Views)
 	urls = ctx.get(URLs)
-	access = Access(ctx)
+	user = cast(User, auth.user)
 
+	access = Access(store, user)
 	board_id = req.url.query.get("board_id")
 	if isinstance(board_id, str):
 		try:
@@ -187,9 +193,11 @@ def new(req: Request, ctx: Context) -> Response:
 
 def show(req: Request, ctx: Context, id: UUID) -> Response:
 	store = ctx.get(Store)
+	auth = ctx.get(Authenticator)
 	views = ctx.get(Views)
-	access = Access(ctx)
+	user = cast(User, auth.user)
 
+	access = Access(store, user)
 	pin = access.find_pin(id)
 	placements = pin.find_placements(store)
 	accessible_placements = []
@@ -220,10 +228,12 @@ def show(req: Request, ctx: Context, id: UUID) -> Response:
 
 def edit(req: Request, ctx: Context, id: UUID) -> Response:
 	store = ctx.get(Store)
+	auth = ctx.get(Authenticator)
 	views = ctx.get(Views)
-	access = Access(ctx)
-	ownership = Ownership(ctx)
+	user = cast(User, auth.user)
 
+	access = Access(store, user)
+	ownership = Ownership(store, user)
 	pin = ownership.find_pin(id)
 	placements = pin.find_placements(store)
 	accessible_placements = []
@@ -251,9 +261,9 @@ def update(req: Request, ctx: Context, id: UUID) -> Response:
 	store = ctx.get(Store)
 	auth = ctx.get(Authenticator)
 	user = cast(User, auth.user)
-	access = Access(ctx)
-	ownership = Ownership(ctx)
 
+	access = Access(store, user)
+	ownership = Ownership(store, user)
 	pin = ownership.find_pin(id)
 	placements = pin.find_placements(store)
 
@@ -300,9 +310,11 @@ def update(req: Request, ctx: Context, id: UUID) -> Response:
 
 def delete(req: Request, ctx: Context, id: UUID) -> Response:
 	store = ctx.get(Store)
+	auth = ctx.get(Authenticator)
 	urls = ctx.get(URLs)
-	ownership = Ownership(ctx)
+	user = cast(User, auth.user)
 
+	ownership = Ownership(store, user)
 	pin = ownership.find_pin(id)
 	store.delete(pin)
 

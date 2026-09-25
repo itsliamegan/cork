@@ -5,6 +5,7 @@ from uuid import uuid4
 
 from helios.auth.password import Digest
 from helios.database import Store
+import helios.database.config
 from helios.database.sqlite import connect
 from helios.wsgi.test import TestClient
 from luna.test.assertion import assert_eq
@@ -17,6 +18,29 @@ from lib.migrate import Migrations, Migrator
 Digest.method = "pbkdf2:sha256:1"
 
 MIGRATIONS_DIR = Path(ROOT_DIR, "database", "migrations")
+
+
+class TestStore:
+	def __init__(self):
+		self.directory = TemporaryDirectory()
+		try:
+			config = helios.database.config.Config(
+				Path(self.directory.name, "store.sqlite")
+			)
+			Migrator(config, Migrations.load(MIGRATIONS_DIR)).apply()
+			self.connection = connect(config)
+		except Exception:
+			self.directory.cleanup()
+			raise
+
+	def __enter__(self) -> Store:
+		return Store(self.connection, models)
+
+	def __exit__(self, exc_type, exc, traceback):
+		try:
+			self.connection.close()
+		finally:
+			self.directory.cleanup()
 
 
 class TestApplication(Application):

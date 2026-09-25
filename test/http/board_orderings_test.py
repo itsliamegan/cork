@@ -6,11 +6,11 @@ from test.support import TestApplication
 
 def test_orders_boards():
 	with TestApplication() as app:
-		alice = app.store.create(User, name="Alice")
-		reading = app.store.create(Board, title="Reading", creator_id=alice.id)
-		philosophy = app.store.create(Board, title="Philosophy", creator_id=alice.id)
-		essays = app.store.create(Board, title="Essays", creator_id=alice.id)
-		app.sign_in(alice)
+		viewer = app.store.create(User, name="Viewer")
+		reading = app.store.create(Board, title="Reading", creator_id=viewer.id)
+		philosophy = app.store.create(Board, title="Philosophy", creator_id=viewer.id)
+		essays = app.store.create(Board, title="Essays", creator_id=viewer.id)
+		app.sign_in(viewer)
 
 		res = app.client.post(
 			"/boards/ordering",
@@ -26,7 +26,7 @@ def test_orders_boards():
 
 		assert_eq(res.status_code, 204)
 
-		orderings = app.store.find_by(Ordering, user_id=alice.id)
+		orderings = app.store.find_by(Ordering, user_id=viewer.id)
 		orderings.sort(key=lambda ordering: ordering.position)
 		assert_eq(
 			[ordering.board_id for ordering in orderings],
@@ -41,24 +41,26 @@ def test_orders_boards():
 
 def test_rejects_invalid_orderings():
 	with TestApplication() as app:
-		alice = app.store.create(User, name="Alice")
-		bob = app.store.create(User, name="Bob")
-		reading = app.store.create(Board, title="Reading", creator_id=alice.id)
-		philosophy = app.store.create(Board, title="Philosophy", creator_id=alice.id)
-		private = app.store.create(Board, title="Bob's Reading", creator_id=bob.id)
+		viewer = app.store.create(User, name="Viewer")
+		stranger = app.store.create(User, name="Stranger")
+		reading = app.store.create(Board, title="Reading", creator_id=viewer.id)
+		philosophy = app.store.create(Board, title="Philosophy", creator_id=viewer.id)
+		private = app.store.create(
+			Board, title="Stranger's Reading", creator_id=stranger.id
+		)
 		app.store.create(
 			Ordering,
-			user_id=alice.id,
+			user_id=viewer.id,
 			board_id=reading.id,
 			position=0,
 		)
 		app.store.create(
 			Ordering,
-			user_id=alice.id,
+			user_id=viewer.id,
 			board_id=philosophy.id,
 			position=1,
 		)
-		app.sign_in(alice)
+		app.sign_in(viewer)
 
 		invalid_orders = [
 			# Duplicate
@@ -79,7 +81,7 @@ def test_rejects_invalid_orderings():
 
 			assert_eq(res.status_code, 400)
 
-			orderings = app.store.find_by(Ordering, user_id=alice.id)
+			orderings = app.store.find_by(Ordering, user_id=viewer.id)
 			orderings.sort(key=lambda ordering: ordering.position)
 			assert_eq(
 				[ordering.board_id for ordering in orderings],

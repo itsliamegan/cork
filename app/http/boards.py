@@ -42,9 +42,9 @@ def index(req: Request, ctx: Context) -> Response:
 	auth = ctx.get(Authenticator)
 	views = ctx.get(Views)
 	user = cast(User, auth.user)
-	access = Access(ctx)
 
-	boards = Ordering.arrange(ctx, access.find_boards())
+	access = Access(store, user)
+	boards = Ordering.arrange(store, user, access.find_boards())
 	shared_board_ids = {
 		share.board_id
 		for share in store.query(Share)
@@ -111,9 +111,11 @@ def new(req: Request, ctx: Context) -> Response:
 
 def show(req: Request, ctx: Context, id: UUID) -> Response:
 	store = ctx.get(Store)
+	auth = ctx.get(Authenticator)
 	views = ctx.get(Views)
-	access = Access(ctx)
+	user = cast(User, auth.user)
 
+	access = Access(store, user)
 	board = access.find_board(id)
 	placements = store.find_by(Placement, board_id=board.id)
 	pin_ids = [placement.pin_id for placement in placements]
@@ -125,7 +127,7 @@ def show(req: Request, ctx: Context, id: UUID) -> Response:
 			{
 				"placement": placement,
 				"pin": pin,
-				"can_remove": Removal(placement, pin, board).is_authorized(ctx),
+				"can_remove": Removal(placement, pin, board).is_authorized(store, user),
 			}
 		)
 	pin_rows.sort(key=lambda row: row["pin"].created_at, reverse=True)
@@ -144,8 +146,9 @@ def edit(req: Request, ctx: Context, id: UUID) -> Response:
 	store = ctx.get(Store)
 	auth = ctx.get(Authenticator)
 	views = ctx.get(Views)
-	ownership = Ownership(ctx)
+	user = cast(User, auth.user)
 
+	ownership = Ownership(store, user)
 	board = ownership.find_board(id)
 	shared_user_ids = {
 		share.user_id for share in store.find_by(Share, board_id=board.id)
@@ -165,8 +168,10 @@ def edit(req: Request, ctx: Context, id: UUID) -> Response:
 
 def update(req: Request, ctx: Context, id: UUID) -> Response:
 	store = ctx.get(Store)
-	ownership = Ownership(ctx)
+	auth = ctx.get(Authenticator)
+	user = cast(User, auth.user)
 
+	ownership = Ownership(store, user)
 	board = ownership.find_board(id)
 	form = Form(
 		[
@@ -200,9 +205,11 @@ def update(req: Request, ctx: Context, id: UUID) -> Response:
 
 def delete(req: Request, ctx: Context, id: UUID) -> Response:
 	store = ctx.get(Store)
+	auth = ctx.get(Authenticator)
 	urls = ctx.get(URLs)
-	ownership = Ownership(ctx)
+	user = cast(User, auth.user)
 
+	ownership = Ownership(store, user)
 	board = ownership.find_board(id)
 	store.delete(board)
 

@@ -77,8 +77,8 @@ def test_pin_placements_label_private_and_shared_boards():
 	with TestApplication() as app:
 		engine = app.container.get(Engine)
 		viewer_id = uuid4()
-		carmen = User(name="Carmen")
-		bob = User(name="bob")
+		capitalized_participant = User(name="Carmen")
+		lowercase_participant = User(name="bob")
 		placements = PinPlacements(
 			options=[
 				PlacementOption(
@@ -87,7 +87,7 @@ def test_pin_placements_label_private_and_shared_boards():
 				),
 				PlacementOption(
 					board=Board(title="Reading", creator_id=viewer_id),
-					others=[carmen, bob],
+					others=[capitalized_participant, lowercase_participant],
 				),
 			],
 			selected_board_ids=set(),

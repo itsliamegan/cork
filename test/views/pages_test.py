@@ -36,23 +36,26 @@ class References(HTMLParser):
 
 def test_every_page_reference_names_an_element_on_the_page():
 	with TestApplication() as app:
-		alice = app.store.create(User, name="Alice")
-		bob = app.store.create(User, name="Bob")
-		owned = app.store.create(Board, title="Reading", creator_id=alice.id)
-		shared = app.store.create(Board, title="Recipes", creator_id=bob.id)
-		app.store.create(Share, board_id=owned.id, user_id=bob.id)
-		app.store.create(Share, board_id=shared.id, user_id=alice.id)
+		viewer = app.store.create(User, name="Viewer")
+		participant = app.store.create(User, name="Participant")
+		owned = app.store.create(Board, title="Reading", creator_id=viewer.id)
+		shared = app.store.create(Board, title="Recipes", creator_id=participant.id)
+		app.store.create(Share, board_id=owned.id, user_id=participant.id)
+		app.store.create(Share, board_id=shared.id, user_id=viewer.id)
 		own_pin = app.store.create(
-			Pin, title="Sartre", url="https://example.com/sartre", creator_id=alice.id
+			Pin,
+			title="Sartre",
+			url="https://plato.stanford.edu/entries/sartre/",
+			creator_id=viewer.id,
 		)
 		other_pin = app.store.create(
-			Pin, title="Soup", url="https://example.com/soup", creator_id=bob.id
+			Pin, title="Soup", url="https://example.com/soup", creator_id=participant.id
 		)
-		Placement.create(app.store, own_pin, owned, alice)
-		Placement.create(app.store, other_pin, owned, bob)
-		Placement.create(app.store, other_pin, shared, bob)
-		Recovery.create(app.store, alice)
-		app.sign_in(alice)
+		Placement.create(app.store, own_pin, owned, viewer)
+		Placement.create(app.store, other_pin, owned, participant)
+		Placement.create(app.store, other_pin, shared, participant)
+		Recovery.create(app.store, viewer)
+		app.sign_in(viewer)
 		paths = [
 			"/boards/",
 			"/boards/new",

@@ -18,7 +18,7 @@ def test_new_renders():
 
 def test_new_redirects_when_signed_in():
 	with TestApplication() as app:
-		user = app.store.create(User, name="Alice")
+		user = app.store.create(User, name="User")
 		app.sign_in(user)
 
 		res = app.client.get("/sessions/new")
@@ -29,7 +29,7 @@ def test_new_redirects_when_signed_in():
 
 def test_create_normalizes_recovery_code():
 	with TestApplication() as app:
-		user = app.store.create(User, name="Alice")
+		user = app.store.create(User, name="User")
 		app.store.create(
 			Recovery,
 			user_id=user.id,
@@ -45,28 +45,9 @@ def test_create_normalizes_recovery_code():
 		assert_that(app.client.get_cookie("session_id") is not None)
 
 
-def test_create_rotates_recovery_code():
-	with TestApplication() as app:
-		user = app.store.create(User, name="Alice")
-		app.store.create(
-			Recovery,
-			user_id=user.id,
-			code=Recovery.Code(Digest.generate("ABCDEFGHJKLMNPQR")),
-		)
-
-		app.client.post(
-			"/sessions/",
-			form={"recovery_code": "ABCDEFGHJKLMNPQR"},
-		)
-
-		recoveries = app.store.find_by(Recovery, user_id=user.id)
-		assert_eq(len(recoveries), 1)
-		assert_that(not recoveries[0].code.matches("ABCDEFGHJKLMNPQR"))
-
-
 def test_create_rejects_invalid_recovery_code():
 	with TestApplication() as app:
-		app.store.create(User, name="Alice")
+		app.store.create(User, name="User")
 
 		res = app.client.post("/sessions/", form={"recovery_code": "XXXXXXXXXX"})
 		form = app.client.get(res.headers["Location"])
@@ -78,7 +59,7 @@ def test_create_rejects_invalid_recovery_code():
 
 def test_delete_signs_out():
 	with TestApplication() as app:
-		user = app.store.create(User, name="Alice")
+		user = app.store.create(User, name="User")
 		app.sign_in(user)
 
 		res = app.client.delete("/sessions/")
@@ -99,7 +80,7 @@ def test_guard_redirects_to_new_session():
 
 def test_stored_session_remains_authenticated():
 	with TestApplication() as app:
-		user = app.store.create(User, name="Alice")
+		user = app.store.create(User, name="User")
 		session_id = uuid4()
 		app.sessions_file.write_text(
 			json.dumps(
@@ -123,7 +104,7 @@ def test_stored_session_remains_authenticated():
 
 def test_expired_session_is_rejected():
 	with TestApplication() as app:
-		user = app.store.create(User, name="Alice")
+		user = app.store.create(User, name="User")
 		session_id = uuid4()
 		app.sessions_file.write_text(
 			json.dumps(

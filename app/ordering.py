@@ -1,8 +1,5 @@
-from typing import cast
 from uuid import UUID
 
-from helios.app import Context
-from helios.auth import Authenticator
 from helios.database import Model, Store
 
 from app.board import Board
@@ -17,11 +14,7 @@ class Ordering(Model):
 	position: int
 
 	@classmethod
-	def arrange(cls, ctx: Context, boards: list[Board]) -> list[Board]:
-		store = ctx.get(Store)
-		auth = ctx.get(Authenticator)
-		user = cast(User, auth.user)
-
+	def arrange(cls, store: Store, user: User, boards: list[Board]) -> list[Board]:
 		board_ids = {board.id for board in boards}
 		positions = {}
 		for ordering in store.find_by(cls, user_id=user.id):
