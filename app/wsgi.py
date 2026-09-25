@@ -2,6 +2,7 @@ import helios.app
 import helios.auth
 import helios.database
 import helios.flash
+import helios.form
 import helios.limit
 from helios.routing import Router
 import helios.session
@@ -28,6 +29,7 @@ class Application(Application):
 				),
 				helios.database.Provider(config.database, models),
 				helios.flash.Provider(),
+				helios.form.Provider(),
 				helios.auth.Provider(User),
 			],
 			[helios.limit.Middleware(config.rate_limit)],
