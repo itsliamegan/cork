@@ -23,9 +23,9 @@
 			<input
 				class="form-field"
 				type="checkbox"
-				name="board_id"
+				name="board_ids"
 				value="{{ option.board.id }}"
-				{% if option.board.id in selected_board_ids %}checked{% endif %}
+				{% if option.board.id|string in selected_board_ids %}checked{% endif %}
 			>
 			<span class="pin-placements-title">{{ option.board.title }}</span>
 			<span class="pin-placements-state">

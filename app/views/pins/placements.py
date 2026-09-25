@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from uuid import UUID
 
 from helios.view import Component
 
@@ -16,4 +15,4 @@ class PinPlacements(Component):
 	template = "pins.placements"
 
 	options: list[PlacementOption]
-	selected_board_ids: set[UUID]
+	selected_board_ids: set[str]

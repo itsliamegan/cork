@@ -135,7 +135,7 @@ def test_shares_board():
 				"title": "Stanford Entry on Beauvoir",
 				"url": "https://plato.stanford.edu/entries/beauvoir/",
 				"note": "",
-				"board_id": str(board.id),
+				"board_ids": str(board.id),
 			},
 		)
 		created = app.store.find_by(Pin, title="Stanford Entry on Beauvoir")[0]
