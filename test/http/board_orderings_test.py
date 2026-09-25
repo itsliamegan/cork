@@ -16,7 +16,7 @@ def test_orders_boards():
 			"/boards/ordering",
 			form={
 				"_method": "PUT",
-				"board_id": [
+				"board_ids": [
 					str(philosophy.id),
 					str(reading.id),
 					str(essays.id),
@@ -75,7 +75,7 @@ def test_rejects_invalid_orderings():
 				"/boards/ordering",
 				form={
 					"_method": "PUT",
-					"board_id": [str(board_id) for board_id in board_ids],
+					"board_ids": [str(board_id) for board_id in board_ids],
 				},
 			)
 
