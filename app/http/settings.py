@@ -3,8 +3,7 @@ from typing import cast
 from helios.app import Context
 from helios.auth import Authenticator
 from helios.database import Store
-from helios.flash import Flashes
-from helios.form import Field, Form, parser
+from helios.form import Form
 from helios.http import Request, Response, Status, URL
 from helios.routing import URLs
 from helios.view import Views
@@ -20,6 +19,11 @@ RETURNABLE_ROUTES = {
 }
 
 
+class SettingsForm(Form):
+	open_in_new_tab: bool = False
+	return_to: str | None = None
+
+
 def _settings_return_url(ctx: Context, raw_url: str | None) -> URL:
 	urls = ctx.get(URLs)
 
@@ -31,16 +35,11 @@ def _settings_return_url(ctx: Context, raw_url: str | None) -> URL:
 
 
 def show(req: Request, ctx: Context) -> Response:
-	flash = ctx.get(Flashes)
 	views = ctx.get(Views)
 
-	invite_error = None
-	if "invite_error" in flash:
-		invite_error = flash["invite_error"]
 	return views.render(
 		"settings.show",
 		{
-			"invite_error": invite_error,
 			"return_to": _settings_return_url(ctx, req.referrer),
 		},
 	)
@@ -51,17 +50,11 @@ def update(req: Request, ctx: Context) -> Response:
 	auth = ctx.get(Authenticator)
 	user = cast(User, auth.user)
 
-	form = Form(
-		[
-			Field("open_in_new_tab", parser.Bool()),
-			Field("return_to", parser.Optional(parser.Str())),
-		]
-	)
-	input, errs = form.validate(req.input)
-	if errs:
+	form, errors = SettingsForm.validate(req.input)
+	if errors:
 		return Response.text("400 Bad Request", status=Status.BAD_REQUEST)
 
-	user.open_in_new_tab = input["open_in_new_tab"]
+	user.open_in_new_tab = form.open_in_new_tab
 	store.save(user)
 
-	return Response.redirect(_settings_return_url(ctx, input["return_to"]))
+	return Response.redirect(_settings_return_url(ctx, form.return_to))

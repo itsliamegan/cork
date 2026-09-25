@@ -22,8 +22,8 @@
 		<h3 class="frame-title">Access</h3>
 	</header>
 
-	{% if invite_error %}
-	<div class="frame-item form-field-error">{{ invite_error }}</div>
+	{% if submission.invalid("targeted") %}
+	<div class="frame-item form-field-error">{{ submission.error("targeted") }}</div>
 	{% endif %}
 
 	<form class="frame-item setting-item" action="{{ urls.route("invites.create") }}" method="POST">
