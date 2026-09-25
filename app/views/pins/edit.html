@@ -10,7 +10,7 @@
 
 <form class="frame" method="POST" action="{{ urls.route("pins.update", {"id": pin.id}) }}" autocomplete="off">
 	<input type="text" name="_method" value="PUT" hidden>
-	<input type="hidden" name="return_to" value="{{ return_to }}">
+	<input type="hidden" name="return_to" value="{{ submission.value("return_to", return_to) }}">
 
 	<header class="frame-header">
 		<h3 class="frame-title">Details</h3>
@@ -19,17 +19,32 @@
 	<section class="form-items">
 		<label class="frame-item form-item">
 			<span class="form-label">Title</span>
-			<input class="form-field" type="text" name="title" value="{{ pin.title }}" required autofocus>
+			<input
+				class="form-field{% if submission.invalid("title") %} form-field--invalid{% endif %}"
+				type="text"
+				name="title"
+				value="{{ submission.value("title", pin.title) }}"
+				required
+				autofocus
+			>
+			{% if submission.invalid("title") %}<span class="form-field-error">{{ submission.error("title") }}</span>{% endif %}
 		</label>
 
 		<label class="frame-item form-item">
 			<span class="form-label">URL</span>
-			<input class="form-field" type="url" name="url" value="{{ pin.url }}" required>
+			<input
+				class="form-field{% if submission.invalid("url") %} form-field--invalid{% endif %}"
+				type="url"
+				name="url"
+				value="{{ submission.value("url", pin.url) }}"
+				required
+			>
+			{% if submission.invalid("url") %}<span class="form-field-error">{{ submission.error("url") }}</span>{% endif %}
 		</label>
 
 		<label class="frame-item form-item">
 			<span class="form-label">Note</span>
-			<textarea class="form-field pin-note-field" name="note" rows="6">{{ pin.note }}</textarea>
+			<textarea class="form-field pin-note-field" name="note" rows="6">{{ submission.value("note", pin.note) }}</textarea>
 		</label>
 	</section>
 

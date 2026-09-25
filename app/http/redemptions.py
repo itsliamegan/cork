@@ -2,7 +2,7 @@ from helios.app import Context
 from helios.auth import Authenticator
 from helios.database import Store
 from helios.flash import Flashes
-from helios.form import Field, Form, parser
+from helios.form import Form, Submissions
 from helios.http import Request, Response
 from helios.routing import URLs
 from helios.view import Views
@@ -10,50 +10,46 @@ from helios.view import Views
 from app import Invite, Recovery, User
 
 
+class RedemptionForm(Form):
+	token: str
+	name: str | None = None
+
+
 def create(req: Request, ctx: Context) -> Response:
 	store = ctx.get(Store)
 	auth = ctx.get(Authenticator)
 	flash = ctx.get(Flashes)
+	submissions = ctx.get(Submissions)
 	urls = ctx.get(URLs)
 
 	if auth.is_signed_in():
 		return Response.redirect(urls.route("home.show"))
 
-	form = Form(
-		[
-			Field("token", parser.Required(parser.Str())),
-			Field("name", parser.Optional(parser.Str())),
-		]
-	)
-	input, errs = form.validate(req.input)
-	if errs:
-		flash["redemption_error"] = "This invite link is invalid."
+	form, errors = RedemptionForm.validate(req.input)
+	if errors:
 		return Response.redirect(urls.route("redemptions.new"))
 
-	token = input["token"]
-	invite = Invite.find_valid(store, token)
+	invite = Invite.find_valid(store, form.token)
 	if invite is None:
-		return Response.redirect(urls.route("redemptions.new", query={"token": token}))
+		return Response.redirect(
+			urls.route("redemptions.new", query={"token": form.token})
+		)
 
-	name = (input["name"] or "").strip()
 	if invite.target_id is None:
-		if name == "":
-			flash["redemption_error"] = "Enter a name."
-			flash["redemption_name"] = ""
-			return Response.redirect(
-				urls.route("redemptions.new", query={"token": token})
-			)
-
+		if form.name is None:
+			errors.add("name", "Name must be provided.")
 		# The column's NOCASE collation makes this match names that differ only in
 		# ASCII case, which is also what its unique constraint rejects.
-		if store.query(User).where(name=name).first() is not None:
-			flash["redemption_error"] = "That name is already in use."
-			flash["redemption_name"] = name
-			return Response.redirect(
-				urls.route("redemptions.new", query={"token": token})
-			)
+		elif store.query(User).where(name=form.name).first() is not None:
+			errors.add("name", "Name is already in use.")
 
-	user = invite.redeem(store, name)
+	if errors:
+		submissions.flash(errors, req.input)
+		return Response.redirect(
+			urls.route("redemptions.new", query={"token": form.token})
+		)
+
+	user = invite.redeem(store, form.name or "")
 	auth.sign_in(user)
 	if invite.target_id is not None:
 		return Response.redirect(urls.route("boards.index"))
@@ -67,7 +63,6 @@ def create(req: Request, ctx: Context) -> Response:
 def new(req: Request, ctx: Context) -> Response:
 	store = ctx.get(Store)
 	auth = ctx.get(Authenticator)
-	flash = ctx.get(Flashes)
 	views = ctx.get(Views)
 	urls = ctx.get(URLs)
 
@@ -89,16 +84,6 @@ def new(req: Request, ctx: Context) -> Response:
 		else:
 			target = invite.find_target(store)
 
-	if "redemption_name" in flash:
-		name = flash["redemption_name"]
-	else:
-		name = ""
-
-	if "redemption_error" in flash:
-		error = flash["redemption_error"]
-	else:
-		error = None
-
 	return views.render(
 		"redemptions.new",
 		{
@@ -106,7 +91,5 @@ def new(req: Request, ctx: Context) -> Response:
 			"invite": invite,
 			"creator": creator,
 			"target": target,
-			"name": name,
-			"error": error,
 		},
 	)

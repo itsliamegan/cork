@@ -2,7 +2,7 @@ from datetime import UTC, datetime, timedelta
 import secrets
 from uuid import UUID
 
-from helios.database import Model, NotFoundError, Scalar, Store, attribute
+from helios.database import Model, NotFoundError, Scalar, Store
 
 from app.user import User
 
@@ -34,7 +34,7 @@ class Invite(Model):
 				raise TypeError(f"expected a string, got {type(value).__name__}")
 			return cls(value)
 
-	token: Token = attribute(type=Token)
+	token: Token
 	creator_id: UUID
 	target_id: UUID | None
 	expires_at: datetime

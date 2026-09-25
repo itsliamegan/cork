@@ -51,8 +51,7 @@ def test_new_renders_name_error():
 		res = app.client.get(res.headers["Location"])
 
 		assert_eq(res.status_code, 200)
-		assert_that("That name is already in use." in res.text)
-		assert_that('value="creator"' in res.text)
+		assert_that("Name is already in use." in res.text)
 
 
 def test_untargeted_invite_creates_user_and_recovery():

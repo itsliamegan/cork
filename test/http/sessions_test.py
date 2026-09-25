@@ -3,9 +3,11 @@ import json
 from uuid import uuid4
 
 from helios.auth.password import Digest
+from helios.http import Input
 from luna.test.assertion import assert_eq, assert_that
 
 from app import Recovery, User
+from app.http.sessions import SignInForm
 from test.support import TestApplication
 
 
@@ -54,7 +56,23 @@ def test_create_rejects_invalid_recovery_code():
 
 		assert_eq(res.status_code, 302)
 		assert_eq(res.headers["Location"], "/sessions/new")
-		assert_that("That recovery code is invalid." in form.text)
+		assert_that("Recovery code is invalid." in form.text)
+
+
+def test_sign_in_form_normalizes_recovery_code():
+	form, errors = SignInForm.validate(
+		Input({"recovery_code": " abcd efgh\tjklm\nnpqr "})
+	)
+
+	assert_that(not errors)
+	assert_eq(form.recovery_code, "ABCDEFGHJKLMNPQR")
+
+
+def test_sign_in_form_rejects_malformed_recovery_codes():
+	for code in ["ABCDEFGHJKLMNPQ", "ABCDEFGHJKLMNPQRS", "ABCDEFGHJKLMNPQ0"]:
+		_, errors = SignInForm.validate(Input({"recovery_code": code}))
+
+		assert_eq(errors.first("recovery_code"), "Recovery code is invalid.")
 
 
 def test_delete_signs_out():

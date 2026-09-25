@@ -41,7 +41,7 @@ def test_board_placements_default_to_newest_first_and_can_be_reordered():
 			f"/boards/{board.id}/pins/ordering",
 			form={
 				"_method": "PUT",
-				"placement_id": [str(older.id), str(newer.id)],
+				"placement_ids": [str(older.id), str(newer.id)],
 			},
 		)
 		ordered_res = app.client.get(f"/boards/{board.id}")
@@ -91,7 +91,7 @@ def test_rejects_incomplete_duplicate_and_inaccessible_placement_orders():
 				f"/boards/{board.id}/pins/ordering",
 				form={
 					"_method": "PUT",
-					"placement_id": [
+					"placement_ids": [
 						str(placement_id) for placement_id in placement_ids
 					],
 				},
@@ -110,7 +110,7 @@ def test_rejects_incomplete_duplicate_and_inaccessible_placement_orders():
 			f"/boards/{board.id}/pins/ordering",
 			form={
 				"_method": "PUT",
-				"placement_id": [str(placement.id) for placement in placements],
+				"placement_ids": [str(placement.id) for placement in placements],
 			},
 		)
 		assert_eq(res.status_code, 404)

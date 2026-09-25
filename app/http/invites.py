@@ -5,7 +5,7 @@ from helios.app import Context
 from helios.auth import Authenticator
 from helios.database import Store
 from helios.flash import Flashes
-from helios.form import Field, Form, parser
+from helios.form import Form, Submissions
 from helios.http import Request, Response
 from helios.routing import URLs
 from helios.view import Views
@@ -13,23 +13,29 @@ from helios.view import Views
 from app import Invite, User
 
 
+class InviteForm(Form):
+	messages = {"targeted.boolean": "Invite type is invalid."}
+
+	targeted: bool = False
+
+
 def create(req: Request, ctx: Context) -> Response:
 	store = ctx.get(Store)
 	auth = ctx.get(Authenticator)
 	flash = ctx.get(Flashes)
+	submissions = ctx.get(Submissions)
 	urls = ctx.get(URLs)
 
-	form = Form([Field("targeted", parser.Bool())])
-	input, errs = form.validate(req.input)
-	if errs:
-		flash["invite_error"] = "Choose an invite type."
+	form, errors = InviteForm.validate(req.input)
+	if errors:
+		submissions.flash(errors)
 		return Response.redirect(urls.route("settings.show"))
 
 	creator = cast(User, auth.user)
 	invite = Invite.create(
 		store,
 		creator,
-		target=creator if input["targeted"] else None,
+		target=creator if form.targeted else None,
 	)
 	flash["invite_id"] = str(invite.id)
 	flash["invite_token"] = invite.token.value

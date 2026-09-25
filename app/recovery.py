@@ -3,7 +3,7 @@ from typing import cast
 from uuid import UUID
 
 from helios.auth.password import Digest
-from helios.database import Model, NotFoundError, Scalar, Store, attribute
+from helios.database import Model, NotFoundError, Scalar, Store
 
 from app.user import User
 
@@ -44,7 +44,7 @@ class Recovery(Model):
 			return cls(Digest.decode(value))
 
 	user_id: UUID
-	code: Code = attribute(type=Code)
+	code: Code
 
 	@classmethod
 	def create(cls, store: Store, user: User) -> Recovery:

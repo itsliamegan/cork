@@ -27,8 +27,8 @@
 	<section class="form-items">
 		<label class="frame-item form-item">
 			<span class="form-label">Name</span>
-			<input class="form-field{% if error %} form-field--invalid{% endif %}" type="text" name="name" value="{{ name }}" required autofocus>
-			{% if error %}<span class="form-field-error">{{ error }}</span>{% endif %}
+			<input class="form-field{% if submission.invalid("name") %} form-field--invalid{% endif %}" type="text" name="name" value="{{ submission.value("name") }}" required autofocus>
+			{% if submission.invalid("name") %}<span class="form-field-error">{{ submission.error("name") }}</span>{% endif %}
 		</label>
 	</section>
 	<footer class="frame-item form-actions">

@@ -4,12 +4,21 @@ from uuid import UUID
 from helios.app import Context
 from helios.auth import Authenticator
 from helios.database import Store
-from helios.form import Field, Form, parser
+from helios.form import Form, Submission, Submissions
 from helios.http import Request, Response, Status, URL
 from helios.routing import URLs
 from helios.view import Views
 
 from app import Access, Board, Ordering, Ownership, Pin, Placement, Removal, Share, User
+from app.http.rules import Distinct
+
+
+class BoardForm(Form):
+	rules = {"user_ids": [Distinct()]}
+
+	title: str
+	user_ids: list[UUID] = []
+	return_to: str | None = None
 
 
 def _board_return_url(ctx: Context, raw_url: str | None, id: UUID) -> URL:
@@ -70,25 +79,21 @@ def index(req: Request, ctx: Context) -> Response:
 def create(req: Request, ctx: Context) -> Response:
 	store = ctx.get(Store)
 	auth = ctx.get(Authenticator)
+	submissions = ctx.get(Submissions)
 	urls = ctx.get(URLs)
 	user = cast(User, auth.user)
 
-	form = Form(
-		[
-			Field("title", parser.Required(parser.Str())),
-			Field("user_id", parser.List(parser.UUID())),
-		]
-	)
-	input, errs = form.validate(req.input)
-	if errs:
+	form, errors = BoardForm.validate(req.input)
+	if "user_ids" in errors or not _are_sharable_users(
+		store, set(form.user_ids), user.id
+	):
 		return Response.text("400 Bad Request", status=Status.BAD_REQUEST)
+	if errors:
+		submissions.flash(errors, req.input)
+		return Response.redirect(urls.route("boards.new"))
 
-	selected_user_ids = set(input["user_id"])
-	if not _are_sharable_users(store, selected_user_ids, user.id):
-		return Response.text("400 Bad Request", status=Status.BAD_REQUEST)
-
-	board = store.create(Board, title=input["title"], creator_id=user.id)
-	for user_id in selected_user_ids:
+	board = store.create(Board, title=form.title, creator_id=user.id)
+	for user_id in set(form.user_ids):
 		store.create(Share, board_id=board.id, user_id=user_id)
 
 	return Response.redirect(urls.route("boards.show", {"id": board.id}))
@@ -97,6 +102,7 @@ def create(req: Request, ctx: Context) -> Response:
 def new(req: Request, ctx: Context) -> Response:
 	auth = ctx.get(Authenticator)
 	views = ctx.get(Views)
+	submission = ctx.get(Submission)
 	user = cast(User, auth.user)
 
 	return views.render(
@@ -104,7 +110,7 @@ def new(req: Request, ctx: Context) -> Response:
 		{
 			"owner": auth.user,
 			"users": _sharable_users(ctx, user.id),
-			"shared_user_ids": set(),
+			"shared_user_ids": set(submission.value("user_ids", [])),
 		},
 	)
 
@@ -146,13 +152,14 @@ def edit(req: Request, ctx: Context, id: UUID) -> Response:
 	store = ctx.get(Store)
 	auth = ctx.get(Authenticator)
 	views = ctx.get(Views)
+	submission = ctx.get(Submission)
 	user = cast(User, auth.user)
 
 	ownership = Ownership(store, user)
 	board = ownership.find_board(id)
-	shared_user_ids = {
+	shared_user_ids = [
 		share.user_id for share in store.find_by(Share, board_id=board.id)
-	}
+	]
 
 	return views.render(
 		"boards.edit",
@@ -160,7 +167,7 @@ def edit(req: Request, ctx: Context, id: UUID) -> Response:
 			"board": board,
 			"owner": auth.user,
 			"users": _sharable_users(ctx, board.creator_id),
-			"shared_user_ids": shared_user_ids,
+			"shared_user_ids": set(submission.value("user_ids", shared_user_ids)),
 			"return_to": _board_return_url(ctx, req.referrer, board.id),
 		},
 	)
@@ -169,24 +176,22 @@ def edit(req: Request, ctx: Context, id: UUID) -> Response:
 def update(req: Request, ctx: Context, id: UUID) -> Response:
 	store = ctx.get(Store)
 	auth = ctx.get(Authenticator)
+	submissions = ctx.get(Submissions)
+	urls = ctx.get(URLs)
 	user = cast(User, auth.user)
 
 	ownership = Ownership(store, user)
 	board = ownership.find_board(id)
-	form = Form(
-		[
-			Field("title", parser.Required(parser.Str())),
-			Field("user_id", parser.List(parser.UUID())),
-			Field("return_to", parser.Optional(parser.Str())),
-		]
-	)
-	input, errs = form.validate(req.input)
-	if errs:
+	form, errors = BoardForm.validate(req.input)
+	if "user_ids" in errors or not _are_sharable_users(
+		store, set(form.user_ids), board.creator_id
+	):
 		return Response.text("400 Bad Request", status=Status.BAD_REQUEST)
+	if errors:
+		submissions.flash(errors, req.input)
+		return Response.redirect(urls.route("boards.edit", {"id": board.id}))
 
-	selected_user_ids = set(input["user_id"])
-	if not _are_sharable_users(store, selected_user_ids, board.creator_id):
-		return Response.text("400 Bad Request", status=Status.BAD_REQUEST)
+	selected_user_ids = set(form.user_ids)
 
 	shares = store.find_by(Share, board_id=board.id)
 	shared_user_ids = {share.user_id for share in shares}
@@ -196,10 +201,10 @@ def update(req: Request, ctx: Context, id: UUID) -> Response:
 	for user_id in selected_user_ids - shared_user_ids:
 		store.create(Share, board_id=board.id, user_id=user_id)
 
-	board.title = input["title"]
+	board.title = form.title
 	store.save(board)
 
-	return_to = _board_return_url(ctx, input["return_to"], board.id)
+	return_to = _board_return_url(ctx, form.return_to, board.id)
 	return Response.redirect(return_to)
 
 

@@ -10,7 +10,7 @@
 
 <form class="frame" action="{{ urls.route("boards.update", {"id": board.id}) }}" method="POST" autocomplete="off">
 	<input type="text" name="_method" value="PUT" hidden>
-	<input type="hidden" name="return_to" value="{{ return_to }}">
+	<input type="hidden" name="return_to" value="{{ submission.value("return_to", return_to) }}">
 
 	<header class="frame-header">
 		<h3 class="frame-title">Details</h3>
@@ -20,13 +20,14 @@
 		<label class="frame-item form-item">
 			<span class="form-label">Title</span>
 			<input
-				class="form-field"
+				class="form-field{% if submission.invalid("title") %} form-field--invalid{% endif %}"
 				type="text"
 				name="title"
-				value="{{ board.title }}"
+				value="{{ submission.value("title", board.title) }}"
 				required
 				autofocus
 			>
+			{% if submission.invalid("title") %}<span class="form-field-error">{{ submission.error("title") }}</span>{% endif %}
 		</label>
 	</section>
 
