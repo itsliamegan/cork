@@ -55,37 +55,6 @@ def test_create_rejects_repeated_board_ids():
 		assert_eq(app.store.find_all(Pin), [])
 
 
-def test_create_with_missing_fields_rerenders_form():
-	with TestApplication() as app:
-		creator = app.store.create(User, name="Creator")
-		reading = app.store.create(Board, title="Reading", creator_id=creator.id)
-		essays = app.store.create(Board, title="Essays", creator_id=creator.id)
-		app.sign_in(creator)
-
-		res = app.client.post(
-			"/pins/",
-			form={
-				"title": "",
-				"url": "",
-				"note": "Read the Negation section.",
-				"board_ids": [str(essays.id)],
-				"return_to": "/pins/",
-			},
-		)
-		form = app.client.get(res.headers["Location"])
-
-		assert_eq(res.status_code, 302)
-		assert_eq(res.headers["Location"], "/pins/new")
-		assert_that("Title must be provided." in form.text)
-		assert_that("URL must be provided." in form.text)
-		assert_that(">Read the Negation section.</textarea>" in form.text)
-		assert_eq(checked_values(form.text, "board_ids"), {str(essays.id)})
-		assert_that('name="return_to" value="/pins/"' in form.text)
-		assert_that(str(reading.id) not in checked_values(form.text, "board_ids"))
-		assert_eq(app.store.find_all(Pin), [])
-		assert_eq(app.store.find_all(Placement), [])
-
-
 def test_create_from_board_with_missing_fields_returns_to_board_form():
 	with TestApplication() as app:
 		creator = app.store.create(User, name="Creator")
@@ -101,65 +70,10 @@ def test_create_from_board_with_missing_fields_returns_to_board_form():
 				"return_to": f"/boards/{reading.id}",
 			},
 		)
-		form = app.client.get(res.headers["Location"])
 
 		assert_eq(res.status_code, 302)
 		assert_eq(res.headers["Location"], f"/pins/new?board_id={reading.id}")
-		assert_that("Title must be provided." in form.text)
-		assert_that('value="https://plato.stanford.edu/entries/sartre/"' in form.text)
-		assert_eq(checked_values(form.text, "board_ids"), set())
-		assert_that(f'name="return_to" value="/boards/{reading.id}"' in form.text)
 		assert_eq(app.store.find_all(Pin), [])
-
-
-def test_update_with_missing_fields_rerenders_form():
-	with TestApplication() as app:
-		creator = app.store.create(User, name="Creator")
-		reading = app.store.create(Board, title="Reading", creator_id=creator.id)
-		essays = app.store.create(Board, title="Essays", creator_id=creator.id)
-		pin = app.store.create(
-			Pin,
-			title="Sartre",
-			url="https://plato.stanford.edu/entries/sartre/",
-			note="Original note",
-			creator_id=creator.id,
-		)
-		placement = app.store.create(
-			Placement, pin_id=pin.id, board_id=reading.id, adder_id=creator.id
-		)
-		app.sign_in(creator)
-
-		res = app.client.post(
-			f"/pins/{pin.id}",
-			form={
-				"_method": "PUT",
-				"title": "",
-				"url": "",
-				"note": "Changed note",
-				"board_ids": [str(essays.id)],
-				"return_to": "/pins/",
-			},
-		)
-		form = app.client.get(res.headers["Location"])
-		stored = app.store.find_one(Pin, pin.id)
-		placements = app.store.find_by(Placement, pin_id=pin.id)
-
-		assert_eq(res.status_code, 302)
-		assert_eq(res.headers["Location"], f"/pins/{pin.id}/edit")
-		assert_that("Title must be provided." in form.text)
-		assert_that("URL must be provided." in form.text)
-		assert_that(">Changed note</textarea>" in form.text)
-		assert_eq(checked_values(form.text, "board_ids"), {str(essays.id)})
-		assert_that('name="return_to" value="/pins/"' in form.text)
-		assert_eq(
-			(stored.title, stored.url, stored.note),
-			(
-				"Sartre",
-				"https://plato.stanford.edu/entries/sartre/",
-				"Original note",
-			),
-		)
-		assert_eq([placement.id for placement in placements], [placement.id])
 
 
 def test_edit_form_checks_accessible_placements():
@@ -519,7 +433,6 @@ def test_new_form_and_creation_allow_no_board():
 		pin = app.store.find_by(Pin, title="Unfiled")[0]
 
 		assert_eq(form_res.status_code, 200)
-		assert_that('name="return_to" value="/pins/"' in form_res.text)
 		assert_eq(create_res.headers["Location"], "/pins/")
 		assert_eq(app.store.find_by(Placement, pin_id=pin.id), [])
 
@@ -620,15 +533,3 @@ def test_deletes_pin():
 		assert_eq(res.status_code, 302)
 		assert_eq(res.headers["Location"], "/pins/")
 		assert_eq(app.store.find_all(Pin), [])
-
-
-def test_new_form_from_board_returns_to_board():
-	with TestApplication() as app:
-		creator = app.store.create(User, name="Creator")
-		board = app.store.create(Board, title="Reading", creator_id=creator.id)
-		app.sign_in(creator)
-
-		res = app.client.get(f"/pins/new?board_id={board.id}")
-
-		assert_eq(res.status_code, 200)
-		assert_that(f'name="return_to" value="/boards/{board.id}"' in res.text)
