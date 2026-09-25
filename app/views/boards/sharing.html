@@ -13,9 +13,9 @@
 		<input
 			class="form-field"
 			type="checkbox"
-			name="user_id"
+			name="user_ids"
 			value="{{ user.id }}"
-			{% if user.id in shared_user_ids %}checked{% endif %}
+			{% if user.id|string in shared_user_ids %}checked{% endif %}
 		>
 		<span class="sharing-name">{{ user.name }}</span>
 	</label>

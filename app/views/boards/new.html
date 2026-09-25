@@ -16,7 +16,15 @@
 	<section class="form-items">
 		<label class="frame-item form-item">
 			<span class="form-label">Title</span>
-			<input class="form-field" type="text" name="title" required autofocus>
+			<input
+				class="form-field{% if submission.invalid("title") %} form-field--invalid{% endif %}"
+				type="text"
+				name="title"
+				value="{{ submission.value("title") }}"
+				required
+				autofocus
+			>
+			{% if submission.invalid("title") %}<span class="form-field-error">{{ submission.error("title") }}</span>{% endif %}
 		</label>
 	</section>
 

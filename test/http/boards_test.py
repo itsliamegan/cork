@@ -1,7 +1,7 @@
 from luna.test.assertion import assert_eq, assert_that
 
 from app import Board, Pin, Placement, Share, User
-from test.support import TestApplication
+from test.support import TestApplication, checked_values
 
 
 def test_creates_board():
@@ -17,6 +17,75 @@ def test_creates_board():
 		assert_eq(len(boards), 1)
 		assert_eq(boards[0].title, "Reading")
 		assert_eq(boards[0].creator_id, creator.id)
+
+
+def test_create_with_blank_title_rerenders_form():
+	with TestApplication() as app:
+		creator = app.store.create(User, name="Creator")
+		participant = app.store.create(User, name="Participant")
+		app.store.create(User, name="Stranger")
+		app.sign_in(creator)
+
+		for title in ["", "   "]:
+			res = app.client.post(
+				"/boards/",
+				form={"title": title, "user_ids": [str(participant.id)]},
+			)
+			form = app.client.get(res.headers["Location"])
+
+			assert_eq(res.status_code, 302)
+			assert_eq(res.headers["Location"], "/boards/new")
+			assert_that("Title must be provided." in form.text)
+			assert_eq(checked_values(form.text, "user_ids"), {str(participant.id)})
+			assert_eq(app.store.find_all(Board), [])
+			assert_eq(app.store.find_all(Share), [])
+
+
+def test_update_with_blank_title_rerenders_form():
+	with TestApplication() as app:
+		creator = app.store.create(User, name="Creator")
+		participant = app.store.create(User, name="Participant")
+		newcomer = app.store.create(User, name="Newcomer")
+		board = app.store.create(Board, title="Reading", creator_id=creator.id)
+		app.store.create(Share, board_id=board.id, user_id=participant.id)
+		app.sign_in(creator)
+
+		for title in ["", "   "]:
+			res = app.client.post(
+				f"/boards/{board.id}",
+				form={
+					"_method": "PUT",
+					"title": title,
+					"user_ids": [str(newcomer.id)],
+					"return_to": "/boards/",
+				},
+			)
+			form = app.client.get(res.headers["Location"])
+			shares = app.store.find_by(Share, board_id=board.id)
+
+			assert_eq(res.status_code, 302)
+			assert_eq(res.headers["Location"], f"/boards/{board.id}/edit")
+			assert_that("Title must be provided." in form.text)
+			assert_eq(checked_values(form.text, "user_ids"), {str(newcomer.id)})
+			assert_that('name="return_to" value="/boards/"' in form.text)
+			assert_eq(app.store.find_one(Board, board.id).title, "Reading")
+			assert_eq([share.user_id for share in shares], [participant.id])
+
+
+def test_edit_form_checks_current_shares():
+	with TestApplication() as app:
+		creator = app.store.create(User, name="Creator")
+		participant = app.store.create(User, name="Participant")
+		app.store.create(User, name="Stranger")
+		board = app.store.create(Board, title="Reading", creator_id=creator.id)
+		app.store.create(Share, board_id=board.id, user_id=participant.id)
+		app.sign_in(creator)
+
+		res = app.client.get(f"/boards/{board.id}/edit")
+
+		assert_eq(res.status_code, 200)
+		assert_that('value="Reading"' in res.text)
+		assert_eq(checked_values(res.text, "user_ids"), {str(participant.id)})
 
 
 def test_deletes_board():
@@ -110,7 +179,7 @@ def test_revokes_shared_board():
 			"/boards/",
 			form={
 				"title": "Reading",
-				"user_id": [str(former_participant.id)],
+				"user_ids": [str(former_participant.id)],
 			},
 		)
 		board = app.store.find_all(Board)[0]
@@ -124,7 +193,7 @@ def test_revokes_shared_board():
 			form={
 				"_method": "PUT",
 				"title": "Philosophy Reading",
-				"user_id": [str(new_participant.id)],
+				"user_ids": [str(new_participant.id)],
 				"return_to": f"/boards/{board.id}",
 			},
 		)

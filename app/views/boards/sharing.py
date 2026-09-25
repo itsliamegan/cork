@@ -1,5 +1,3 @@
-from uuid import UUID
-
 from helios.view import Component
 
 from app import User
@@ -10,4 +8,4 @@ class BoardSharing(Component):
 
 	owner: User
 	users: list[User]
-	shared_user_ids: set[UUID]
+	shared_user_ids: set[str]

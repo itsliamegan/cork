@@ -1,5 +1,6 @@
 import json
 from pathlib import Path
+import re
 from tempfile import TemporaryDirectory
 from uuid import uuid4
 
@@ -109,3 +110,18 @@ class TestClient(TestClient):
 			return super().request(*args, **kwargs)
 		finally:
 			self.app.refresh()
+
+
+def checked_values(html: str, name: str) -> set[str]:
+	"""Return the values of the checked inputs named `name` in `html`."""
+
+	values = set()
+	for tag in re.findall(r"<input\b[^>]*>", html):
+		value = re.search(r'\svalue="([^"]*)"', tag)
+		if (
+			f'name="{name}"' in tag
+			and re.search(r"\schecked\b", tag)
+			and value is not None
+		):
+			values.add(value.group(1))
+	return values
