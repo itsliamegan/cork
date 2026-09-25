@@ -10,9 +10,12 @@ from helios.routing import URLs
 from helios.view import Views
 
 from app import Access, Board, Ordering, Ownership, Pin, Placement, Removal, Share, User
+from app.http.rules import Distinct
 
 
 class BoardForm(Form):
+	rules = {"user_ids": [Distinct()]}
+
 	title: str
 	user_ids: list[UUID] = []
 	return_to: str | None = None

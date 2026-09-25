@@ -72,6 +72,29 @@ def test_update_with_blank_title_rerenders_form():
 			assert_eq([share.user_id for share in shares], [participant.id])
 
 
+def test_rejects_repeated_user_ids():
+	with TestApplication() as app:
+		creator = app.store.create(User, name="Creator")
+		participant = app.store.create(User, name="Participant")
+		board = app.store.create(Board, title="Reading", creator_id=creator.id)
+		app.sign_in(creator)
+		user_ids = [str(participant.id), str(participant.id)]
+
+		create_res = app.client.post(
+			"/boards/",
+			form={"title": "Essays", "user_ids": user_ids},
+		)
+		update_res = app.client.post(
+			f"/boards/{board.id}",
+			form={"_method": "PUT", "title": "Essays", "user_ids": user_ids},
+		)
+
+		assert_eq(create_res.status_code, 400)
+		assert_eq(update_res.status_code, 400)
+		assert_eq([board.title for board in app.store.find_all(Board)], ["Reading"])
+		assert_eq(app.store.find_all(Share), [])
+
+
 def test_edit_form_checks_current_shares():
 	with TestApplication() as app:
 		creator = app.store.create(User, name="Creator")
