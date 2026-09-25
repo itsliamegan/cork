@@ -29,7 +29,7 @@ def test_new_redirects_when_signed_in():
 		assert_eq(res.headers["Location"], "/boards/")
 
 
-def test_create_normalizes_recovery_code():
+def test_create_signs_in_with_recovery_code():
 	with TestApplication() as app:
 		user = app.store.create(User, name="User")
 		app.store.create(
@@ -38,13 +38,11 @@ def test_create_normalizes_recovery_code():
 			code=Recovery.Code(Digest.generate("ABCDEFGHJKLMNPQR")),
 		)
 
-		res = app.client.post(
-			"/sessions/",
-			form={"recovery_code": "  abcd efgh\t jklm\nnpqr  "},
-		)
+		res = app.client.post("/sessions/", form={"recovery_code": "ABCDEFGHJKLMNPQR"})
+		boards = app.client.get("/boards/")
 
 		assert_eq(res.status_code, 302)
-		assert_that(app.client.get_cookie("session_id") is not None)
+		assert_eq(boards.status_code, 200)
 
 
 def test_create_rejects_invalid_recovery_code():
@@ -60,16 +58,28 @@ def test_create_rejects_invalid_recovery_code():
 
 
 def test_sign_in_form_normalizes_recovery_code():
-	form, errors = SignInForm.validate(
-		Input({"recovery_code": " abcd efgh\tjklm\nnpqr "})
-	)
+	for code in [
+		"ABCDEFGHJKLMNPQR",
+		"abcdefghjklmnpqr",
+		" abcd efgh\tjklm\nnpqr ",
+		"AbCd EfGh jKlM nPqR",
+	]:
+		form, errors = SignInForm.validate(Input({"recovery_code": code}))
 
-	assert_that(not errors)
-	assert_eq(form.recovery_code, "ABCDEFGHJKLMNPQR")
+		assert_that(not errors)
+		assert_eq(form.recovery_code, "ABCDEFGHJKLMNPQR")
 
 
 def test_sign_in_form_rejects_malformed_recovery_codes():
-	for code in ["ABCDEFGHJKLMNPQ", "ABCDEFGHJKLMNPQRS", "ABCDEFGHJKLMNPQ0"]:
+	for code in [
+		"ABCDEFGHJKLMNPQ",
+		"ABCDEFGHJKLMNPQRS",
+		"ABCDEFGHJKLMNPQ0",
+		"ABCDEFGHJKLMNPQ1",
+		"ABCDEFGHJKLMNPQI",
+		"ABCDEFGHJKLMNPQO",
+		"ABCD-EFGH-JKLM-NP",
+	]:
 		_, errors = SignInForm.validate(Input({"recovery_code": code}))
 
 		assert_eq(errors.first("recovery_code"), "Recovery code is invalid.")

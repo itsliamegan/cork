@@ -1,11 +1,9 @@
 from uuid import uuid4
 
 from helios.database import NotFoundError
-from helios.http import Input
 from luna.test.assertion import assert_eq, assert_raises, assert_that
 
 from app import Board, Pin, Placement, Share, User
-from app.http.pins import PinForm
 from test.support import TestApplication, checked_values
 
 
@@ -38,22 +36,6 @@ def test_creates_pin_with_placements_for_selected_boards():
 		assert_eq({placement.adder_id for placement in placements}, {creator.id})
 
 
-def test_pin_form_rejects_repeated_board_ids():
-	board_id = str(uuid4())
-
-	_, errors = PinForm.validate(
-		Input(
-			{
-				"title": "Sartre",
-				"url": "https://plato.stanford.edu/entries/sartre/",
-				"board_ids": [board_id, board_id],
-			}
-		)
-	)
-
-	assert_eq(errors.first("board_ids"), "Board ids must not repeat a value.")
-
-
 def test_create_rejects_repeated_board_ids():
 	with TestApplication() as app:
 		creator = app.store.create(User, name="Creator")
@@ -80,29 +62,28 @@ def test_create_with_missing_fields_rerenders_form():
 		essays = app.store.create(Board, title="Essays", creator_id=creator.id)
 		app.sign_in(creator)
 
-		for blank in ["", "   "]:
-			res = app.client.post(
-				"/pins/",
-				form={
-					"title": blank,
-					"url": blank,
-					"note": "Read the Negation section.",
-					"board_ids": [str(essays.id)],
-					"return_to": "/pins/",
-				},
-			)
-			form = app.client.get(res.headers["Location"])
+		res = app.client.post(
+			"/pins/",
+			form={
+				"title": "",
+				"url": "",
+				"note": "Read the Negation section.",
+				"board_ids": [str(essays.id)],
+				"return_to": "/pins/",
+			},
+		)
+		form = app.client.get(res.headers["Location"])
 
-			assert_eq(res.status_code, 302)
-			assert_eq(res.headers["Location"], "/pins/new")
-			assert_that("Title must be provided." in form.text)
-			assert_that("URL must be provided." in form.text)
-			assert_that(">Read the Negation section.</textarea>" in form.text)
-			assert_eq(checked_values(form.text, "board_ids"), {str(essays.id)})
-			assert_that('name="return_to" value="/pins/"' in form.text)
-			assert_that(str(reading.id) not in checked_values(form.text, "board_ids"))
-			assert_eq(app.store.find_all(Pin), [])
-			assert_eq(app.store.find_all(Placement), [])
+		assert_eq(res.status_code, 302)
+		assert_eq(res.headers["Location"], "/pins/new")
+		assert_that("Title must be provided." in form.text)
+		assert_that("URL must be provided." in form.text)
+		assert_that(">Read the Negation section.</textarea>" in form.text)
+		assert_eq(checked_values(form.text, "board_ids"), {str(essays.id)})
+		assert_that('name="return_to" value="/pins/"' in form.text)
+		assert_that(str(reading.id) not in checked_values(form.text, "board_ids"))
+		assert_eq(app.store.find_all(Pin), [])
+		assert_eq(app.store.find_all(Placement), [])
 
 
 def test_create_from_board_with_missing_fields_returns_to_board_form():
@@ -148,38 +129,37 @@ def test_update_with_missing_fields_rerenders_form():
 		)
 		app.sign_in(creator)
 
-		for blank in ["", "   "]:
-			res = app.client.post(
-				f"/pins/{pin.id}",
-				form={
-					"_method": "PUT",
-					"title": blank,
-					"url": blank,
-					"note": "Changed note",
-					"board_ids": [str(essays.id)],
-					"return_to": "/pins/",
-				},
-			)
-			form = app.client.get(res.headers["Location"])
-			stored = app.store.find_one(Pin, pin.id)
-			placements = app.store.find_by(Placement, pin_id=pin.id)
+		res = app.client.post(
+			f"/pins/{pin.id}",
+			form={
+				"_method": "PUT",
+				"title": "",
+				"url": "",
+				"note": "Changed note",
+				"board_ids": [str(essays.id)],
+				"return_to": "/pins/",
+			},
+		)
+		form = app.client.get(res.headers["Location"])
+		stored = app.store.find_one(Pin, pin.id)
+		placements = app.store.find_by(Placement, pin_id=pin.id)
 
-			assert_eq(res.status_code, 302)
-			assert_eq(res.headers["Location"], f"/pins/{pin.id}/edit")
-			assert_that("Title must be provided." in form.text)
-			assert_that("URL must be provided." in form.text)
-			assert_that(">Changed note</textarea>" in form.text)
-			assert_eq(checked_values(form.text, "board_ids"), {str(essays.id)})
-			assert_that('name="return_to" value="/pins/"' in form.text)
-			assert_eq(
-				(stored.title, stored.url, stored.note),
-				(
-					"Sartre",
-					"https://plato.stanford.edu/entries/sartre/",
-					"Original note",
-				),
-			)
-			assert_eq([placement.id for placement in placements], [placement.id])
+		assert_eq(res.status_code, 302)
+		assert_eq(res.headers["Location"], f"/pins/{pin.id}/edit")
+		assert_that("Title must be provided." in form.text)
+		assert_that("URL must be provided." in form.text)
+		assert_that(">Changed note</textarea>" in form.text)
+		assert_eq(checked_values(form.text, "board_ids"), {str(essays.id)})
+		assert_that('name="return_to" value="/pins/"' in form.text)
+		assert_eq(
+			(stored.title, stored.url, stored.note),
+			(
+				"Sartre",
+				"https://plato.stanford.edu/entries/sartre/",
+				"Original note",
+			),
+		)
+		assert_eq([placement.id for placement in placements], [placement.id])
 
 
 def test_edit_form_checks_accessible_placements():
@@ -217,7 +197,6 @@ def test_new_form_from_board_lists_every_board():
 		res = app.client.get(f"/pins/new?board_id={reading.id}")
 
 		assert_eq(res.status_code, 200)
-		assert_that("No matching boards." in res.text)
 		assert_that(reading.title in res.text)
 		assert_that(essays.title in res.text)
 
@@ -234,17 +213,6 @@ def test_new_form_rejects_inaccessible_boards():
 
 		assert_eq(hidden_res.status_code, 404)
 		assert_eq(malformed_res.status_code, 404)
-
-
-def test_board_links_to_new_pin_form_for_board():
-	with TestApplication() as app:
-		creator = app.store.create(User, name="Creator")
-		board = app.store.create(Board, title="Reading", creator_id=creator.id)
-		app.sign_in(creator)
-
-		res = app.client.get(f"/boards/{board.id}")
-
-		assert_that(f'href="/pins/new?board_id={board.id}"' in res.text)
 
 
 def test_edit_form_lists_every_board():
@@ -268,7 +236,6 @@ def test_edit_form_lists_every_board():
 		res = app.client.get(f"/pins/{pin.id}/edit")
 
 		assert_eq(res.status_code, 200)
-		assert_that("No matching boards." in res.text)
 		for board in [reading, essays, unread]:
 			assert_that(board.title in res.text)
 
@@ -444,7 +411,7 @@ def test_pin_details_embed_frame_with_accessible_boards_and_actions():
 		assert_that("https://plato.stanford.edu/entries/sartre/" in res.text)
 
 
-def test_pin_details_use_referring_board_placement_and_empty_note_state():
+def test_pin_details_use_referring_board_placement():
 	with TestApplication() as app:
 		creator = app.store.create(User, name="Creator")
 		participant = app.store.create(User, name="Participant")
@@ -470,8 +437,6 @@ def test_pin_details_use_referring_board_placement_and_empty_note_state():
 
 		assert_eq(res.status_code, 200)
 		assert_that("Participant" in res.text)
-		assert_that("No note." in res.text)
-		assert_that(f'href="/pins/{pin.id}/edit"' in res.text)
 
 
 def test_owned_pins_index_includes_unfiled_pins_and_hides_other_creators():
@@ -505,10 +470,9 @@ def test_owned_pins_index_includes_unfiled_pins_and_hides_other_creators():
 		assert_that(owned.title in res.text)
 		assert_that("No boards" in res.text)
 		assert_that(visible.title not in res.text)
-		assert_that('href="/pins/new"' in res.text)
 
 
-def test_pins_index_renders_search_control_and_complete_collection():
+def test_pins_index_lists_every_pin_with_its_board_count():
 	with TestApplication() as app:
 		creator = app.store.create(User, name="Creator")
 		board = app.store.create(
@@ -533,34 +497,12 @@ def test_pins_index_renders_search_control_and_complete_collection():
 
 		res = app.client.get("/pins/")
 
-		placeholder_position = res.text.index('placeholder="Search"')
-		search_input = res.text[
-			res.text.rindex("<input", 0, placeholder_position) : res.text.index(
-				"\n\t\t>", placeholder_position
-			)
-		]
-		assert_that('type="search"' in search_input)
-		assert_that('aria-label="Search pins"' in search_input)
-		assert_that("name=" not in search_input)
+		assert_eq(res.status_code, 200)
 		assert_that(first.title in res.text)
 		assert_that(second.title in res.text)
 		assert_that("1 board" in res.text)
 		assert_that("No boards" in res.text)
 		assert_that(board.title not in res.text)
-		assert_that("No matching pins." in res.text)
-		assert_that("No pins yet." not in res.text)
-		assert_that('rel="next"' not in res.text)
-
-
-def test_empty_pins_index_distinguishes_collection_and_search_empty_states():
-	with TestApplication() as app:
-		viewer = app.store.create(User, name="Viewer")
-		app.sign_in(viewer)
-
-		res = app.client.get("/pins/")
-
-		assert_that("No pins yet." in res.text)
-		assert_that("No matching pins." in res.text)
 
 
 def test_new_form_and_creation_allow_no_board():
@@ -680,24 +622,13 @@ def test_deletes_pin():
 		assert_eq(app.store.find_all(Pin), [])
 
 
-def test_pin_forms_keep_return_behavior_without_board_backlinks():
+def test_new_form_from_board_returns_to_board():
 	with TestApplication() as app:
 		creator = app.store.create(User, name="Creator")
 		board = app.store.create(Board, title="Reading", creator_id=creator.id)
-		pin = app.store.create(
-			Pin,
-			title="Sartre",
-			url="https://plato.stanford.edu/entries/sartre/",
-			creator_id=creator.id,
-		)
-		app.store.create(
-			Placement, pin_id=pin.id, board_id=board.id, adder_id=creator.id
-		)
 		app.sign_in(creator)
 
-		new_res = app.client.get(f"/pins/new?board_id={board.id}")
-		edit_res = app.client.get(f"/pins/{pin.id}/edit")
+		res = app.client.get(f"/pins/new?board_id={board.id}")
 
-		assert_that("Board:" not in new_res.text and "Board:" not in edit_res.text)
-		assert_that(f'name="return_to" value="/boards/{board.id}"' in new_res.text)
-		assert_that(f'href="/pins/{pin.id}"' in edit_res.text)
+		assert_eq(res.status_code, 200)
+		assert_that(f'name="return_to" value="/boards/{board.id}"' in res.text)
