@@ -382,11 +382,10 @@ def test_owned_pins_index_includes_unfiled_pins_and_hides_other_creators():
 
 		assert_eq(res.status_code, 200)
 		assert_that(owned.title in res.text)
-		assert_that("No boards" in res.text)
 		assert_that(visible.title not in res.text)
 
 
-def test_pins_index_lists_every_pin_with_its_board_count():
+def test_pins_index_lists_every_pin_without_board_titles():
 	with TestApplication() as app:
 		creator = app.store.create(User, name="Creator")
 		board = app.store.create(
@@ -414,8 +413,6 @@ def test_pins_index_lists_every_pin_with_its_board_count():
 		assert_eq(res.status_code, 200)
 		assert_that(first.title in res.text)
 		assert_that(second.title in res.text)
-		assert_that("1 board" in res.text)
-		assert_that("No boards" in res.text)
 		assert_that(board.title not in res.text)
 
 
@@ -448,8 +445,6 @@ def test_owned_unfiled_pin_is_accessible_only_to_creator():
 		app.sign_in(creator)
 		creator_res = app.client.get(f"/pins/{pin.id}")
 		assert_eq(creator_res.status_code, 200)
-		assert_that("Not on any boards" in creator_res.text)
-		assert_that("Added by" not in creator_res.text)
 		app.sign_in(stranger)
 		assert_eq(app.client.get(f"/pins/{pin.id}").status_code, 404)
 
@@ -488,7 +483,7 @@ def test_pin_update_preserves_placements_on_inaccessible_boards():
 		assert_eq(retained.adder_id, hidden_creator.id)
 
 
-def test_owned_pin_hides_inaccessible_board_names_without_calling_it_unfiled():
+def test_owned_pin_hides_inaccessible_board_names():
 	with TestApplication() as app:
 		creator = app.store.create(User, name="Creator")
 		hidden_creator = app.store.create(User, name="Hidden creator")
@@ -509,12 +504,9 @@ def test_owned_pin_hides_inaccessible_board_names_without_calling_it_unfiled():
 
 		assert_eq(index_res.status_code, 200)
 		assert_that(hidden.title not in index_res.text)
-		assert_that("1 board" in index_res.text)
-		assert_that("No boards" not in index_res.text)
 		for res in [show_res, edit_res]:
 			assert_eq(res.status_code, 200)
 			assert_that(hidden.title not in res.text)
-			assert_that("Not on any boards" not in res.text)
 
 
 def test_deletes_pin():

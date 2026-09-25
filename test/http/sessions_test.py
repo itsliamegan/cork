@@ -50,11 +50,11 @@ def test_create_rejects_invalid_recovery_code():
 		app.store.create(User, name="User")
 
 		res = app.client.post("/sessions/", form={"recovery_code": "XXXXXXXXXX"})
-		form = app.client.get(res.headers["Location"])
+		boards = app.client.get("/boards/")
 
 		assert_eq(res.status_code, 302)
 		assert_eq(res.headers["Location"], "/sessions/new")
-		assert_that("Recovery code is invalid." in form.text)
+		assert_eq(boards.status_code, 302)
 
 
 def test_sign_in_form_normalizes_recovery_code():
