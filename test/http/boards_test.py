@@ -6,8 +6,8 @@ from test.support import TestApplication
 
 def test_creates_board():
 	with TestApplication() as app:
-		user = app.store.create(User, name="Alice")
-		app.sign_in(user)
+		creator = app.store.create(User, name="Creator")
+		app.sign_in(creator)
 
 		res = app.client.post("/boards/", form={"title": "Reading"})
 		boards = app.store.find_all(Board)
@@ -16,14 +16,14 @@ def test_creates_board():
 		assert_eq(res.headers["Location"], f"/boards/{boards[0].id}")
 		assert_eq(len(boards), 1)
 		assert_eq(boards[0].title, "Reading")
-		assert_eq(boards[0].creator_id, user.id)
+		assert_eq(boards[0].creator_id, creator.id)
 
 
 def test_deletes_board():
 	with TestApplication() as app:
-		user = app.store.create(User, name="Alice")
-		board = app.store.create(Board, title="Reading", creator_id=user.id)
-		app.sign_in(user)
+		creator = app.store.create(User, name="Creator")
+		board = app.store.create(Board, title="Reading", creator_id=creator.id)
+		app.sign_in(creator)
 
 		res = app.client.post(
 			f"/boards/{board.id}",
@@ -38,20 +38,22 @@ def test_deletes_board():
 
 def test_shares_board():
 	with TestApplication() as app:
-		alice = app.store.create(User, name="Alice")
-		bob = app.store.create(User, name="Bob")
-		charlie = app.store.create(User, name="Charlie")
-		board = app.store.create(Board, title="Reading", creator_id=alice.id)
-		app.store.create(Share, board_id=board.id, user_id=bob.id)
+		creator = app.store.create(User, name="Creator")
+		participant = app.store.create(User, name="Participant")
+		stranger = app.store.create(User, name="Stranger")
+		board = app.store.create(Board, title="Reading", creator_id=creator.id)
+		app.store.create(Share, board_id=board.id, user_id=participant.id)
 		pin = app.store.create(
 			Pin,
 			title="Stanford Entry on Sartre",
 			url="https://plato.stanford.edu/entries/sartre/",
 			note="Read the Negation section.",
-			creator_id=alice.id,
+			creator_id=creator.id,
 		)
-		app.store.create(Placement, pin_id=pin.id, board_id=board.id, adder_id=alice.id)
-		app.sign_in(bob)
+		app.store.create(
+			Placement, pin_id=pin.id, board_id=board.id, adder_id=creator.id
+		)
+		app.sign_in(participant)
 
 		res = app.client.get(f"/boards/{board.id}")
 
@@ -71,13 +73,13 @@ def test_shares_board():
 
 		assert_eq(res.status_code, 302)
 		assert_eq(created.note, "")
-		assert_eq(created.creator_id, bob.id)
+		assert_eq(created.creator_id, participant.id)
 		created_placement = app.store.find_by(Placement, pin_id=created.id)[0]
 		assert_eq(created_placement.board_id, board.id)
 
 		res = app.client.post(
 			f"/boards/{board.id}",
-			form={"_method": "PUT", "title": "Bob's Reading"},
+			form={"_method": "PUT", "title": "Participant's Reading"},
 		)
 
 		assert_eq(res.status_code, 404)
@@ -90,7 +92,7 @@ def test_shares_board():
 		assert_eq(res.status_code, 404)
 		assert_eq(app.store.find_one(Pin, pin.id).title, "Stanford Entry on Sartre")
 
-		app.sign_in(charlie)
+		app.sign_in(stranger)
 
 		res = app.client.get(f"/boards/{board.id}")
 
@@ -99,30 +101,30 @@ def test_shares_board():
 
 def test_revokes_shared_board():
 	with TestApplication() as app:
-		alice = app.store.create(User, name="Alice")
-		bob = app.store.create(User, name="Bob")
-		charlie = app.store.create(User, name="Charlie")
-		app.sign_in(alice)
+		creator = app.store.create(User, name="Creator")
+		former_participant = app.store.create(User, name="Former participant")
+		new_participant = app.store.create(User, name="New participant")
+		app.sign_in(creator)
 
 		res = app.client.post(
 			"/boards/",
 			form={
 				"title": "Reading",
-				"user_id": [str(bob.id)],
+				"user_id": [str(former_participant.id)],
 			},
 		)
 		board = app.store.find_all(Board)[0]
 		shares = app.store.find_by(Share, board_id=board.id)
 
 		assert_eq(res.status_code, 302)
-		assert_eq([share.user_id for share in shares], [bob.id])
+		assert_eq([share.user_id for share in shares], [former_participant.id])
 
 		res = app.client.post(
 			f"/boards/{board.id}",
 			form={
 				"_method": "PUT",
 				"title": "Philosophy Reading",
-				"user_id": [str(charlie.id)],
+				"user_id": [str(new_participant.id)],
 				"return_to": f"/boards/{board.id}",
 			},
 		)
@@ -130,22 +132,22 @@ def test_revokes_shared_board():
 
 		assert_eq(res.status_code, 302)
 		assert_eq(app.store.find_one(Board, board.id).title, "Philosophy Reading")
-		assert_eq([share.user_id for share in shares], [charlie.id])
+		assert_eq([share.user_id for share in shares], [new_participant.id])
 
-		app.sign_in(bob)
+		app.sign_in(former_participant)
 
 		assert_eq(app.client.get(f"/boards/{board.id}").status_code, 404)
 
-		app.sign_in(charlie)
+		app.sign_in(new_participant)
 
 		assert_eq(app.client.get(f"/boards/{board.id}").status_code, 200)
 
 
 def test_board_overflow_menu_offers_edit_and_delete_without_sharing():
 	with TestApplication() as app:
-		user = app.store.create(User, name="Alice")
-		board = app.store.create(Board, title="Reading", creator_id=user.id)
-		app.sign_in(user)
+		creator = app.store.create(User, name="Creator")
+		board = app.store.create(Board, title="Reading", creator_id=creator.id)
+		app.sign_in(creator)
 
 		index_res = app.client.get("/boards/")
 		edit_res = app.client.get(f"/boards/{board.id}/edit")
@@ -158,16 +160,18 @@ def test_board_overflow_menu_offers_edit_and_delete_without_sharing():
 
 def test_board_pin_rows_target_unique_detail_frames():
 	with TestApplication() as app:
-		user = app.store.create(User, name="Alice")
-		board = app.store.create(Board, title="Reading", creator_id=user.id)
+		creator = app.store.create(User, name="Creator")
+		board = app.store.create(Board, title="Reading", creator_id=creator.id)
 		pin = app.store.create(
 			Pin,
 			title="Sartre",
 			url="https://www.example.com/articles/sartre",
-			creator_id=user.id,
+			creator_id=creator.id,
 		)
-		app.store.create(Placement, pin_id=pin.id, board_id=board.id, adder_id=user.id)
-		app.sign_in(user)
+		app.store.create(
+			Placement, pin_id=pin.id, board_id=board.id, adder_id=creator.id
+		)
+		app.sign_in(creator)
 
 		res = app.client.get(f"/boards/{board.id}")
 

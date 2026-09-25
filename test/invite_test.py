@@ -7,9 +7,9 @@ from app import Invite, User
 from test.support import TestStore
 
 
-def test_account_invite_lasts_a_week_without_a_target():
+def test_untargeted_invite_lasts_a_week():
 	with TestStore() as store:
-		creator = store.create(User, name="Alice")
+		creator = store.create(User, name="Creator")
 		before = datetime.now(UTC)
 
 		invite = Invite.create(store, creator)
@@ -23,7 +23,7 @@ def test_account_invite_lasts_a_week_without_a_target():
 
 def test_targeted_invite_lasts_a_day():
 	with TestStore() as store:
-		creator = store.create(User, name="Alice")
+		creator = store.create(User, name="Creator")
 		before = datetime.now(UTC)
 
 		invite = Invite.create(store, creator, target=creator)
@@ -36,7 +36,7 @@ def test_targeted_invite_lasts_a_day():
 
 def test_invite_expires_at_boundary():
 	with TestStore() as store:
-		creator = store.create(User, name="Alice")
+		creator = store.create(User, name="Creator")
 		invite = Invite.create(store, creator)
 
 		assert_that(Invite.find_valid(store, invite.token.value) is invite)
@@ -46,7 +46,7 @@ def test_invite_expires_at_boundary():
 
 def test_unknown_token_is_invalid():
 	with TestStore() as store:
-		creator = store.create(User, name="Alice")
+		creator = store.create(User, name="Creator")
 		Invite.create(store, creator)
 
 		invite = Invite.find_valid(store, "not-a-real-token")
@@ -54,37 +54,39 @@ def test_unknown_token_is_invalid():
 		assert_that(invite is None)
 
 
-def test_redeeming_account_invite_creates_user_and_spends_invite():
+def test_redeeming_untargeted_invite_creates_user_and_spends_invite():
 	with TestStore() as store:
-		creator = store.create(User, name="Alice")
+		creator = store.create(User, name="Creator")
 		invite = Invite.create(store, creator)
 
-		user = invite.redeem(store, "Bob")
+		newcomer = invite.redeem(store, "Newcomer")
 
-		assert_eq(user.name, "Bob")
-		assert_eq({stored.name for stored in store.find_all(User)}, {"Alice", "Bob"})
+		assert_eq(newcomer.name, "Newcomer")
+		assert_eq(
+			{stored.name for stored in store.find_all(User)}, {"Creator", "Newcomer"}
+		)
 		assert_that(Invite.find_valid(store, invite.token.value) is None)
 
 
 def test_redeeming_targeted_invite_returns_target_and_spends_invite():
 	with TestStore() as store:
-		alice = store.create(User, name="Alice")
-		invite = Invite.create(store, alice, target=alice)
+		creator = store.create(User, name="Creator")
+		invite = Invite.create(store, creator, target=creator)
 
-		user = invite.redeem(store, "")
+		redeemed = invite.redeem(store, "")
 
-		assert_eq(user.id, alice.id)
+		assert_that(redeemed is creator)
 		assert_eq(len(store.find_all(User)), 1)
 		assert_that(Invite.find_valid(store, invite.token.value) is None)
 
 
 def test_redeeming_one_invite_leaves_others_valid():
 	with TestStore() as store:
-		creator = store.create(User, name="Alice")
+		creator = store.create(User, name="Creator")
 		first = Invite.create(store, creator)
 		second = Invite.create(store, creator)
 
-		first.redeem(store, "Bob")
+		first.redeem(store, "Newcomer")
 
 		assert_that(Invite.find_valid(store, first.token.value) is None)
 		assert_that(Invite.find_valid(store, second.token.value) is second)
@@ -92,25 +94,25 @@ def test_redeeming_one_invite_leaves_others_valid():
 
 def test_find_target_returns_target_user():
 	with TestStore() as store:
-		alice = store.create(User, name="Alice")
-		account_invite = Invite.create(store, alice)
-		targeted_invite = Invite.create(store, alice, target=alice)
+		creator = store.create(User, name="Creator")
+		untargeted_invite = Invite.create(store, creator)
+		targeted_invite = Invite.create(store, creator, target=creator)
 
-		account_target = account_invite.find_target(store)
+		untargeted_target = untargeted_invite.find_target(store)
 		targeted_target = targeted_invite.find_target(store)
 
-		assert_that(account_target is None)
-		assert_that(targeted_target is alice)
+		assert_that(untargeted_target is None)
+		assert_that(targeted_target is creator)
 
 
 def test_find_created_by_hides_other_creators_invites():
 	with TestStore() as store:
-		alice = store.create(User, name="Alice")
-		bob = store.create(User, name="Bob")
-		invite = Invite.create(store, alice)
+		creator = store.create(User, name="Creator")
+		stranger = store.create(User, name="Stranger")
+		invite = Invite.create(store, creator)
 
-		found = Invite.find_created_by(store, invite.id, alice)
+		found = Invite.find_created_by(store, invite.id, creator)
 
 		assert_eq(found.id, invite.id)
 		with assert_raises(NotFoundError):
-			Invite.find_created_by(store, invite.id, bob)
+			Invite.find_created_by(store, invite.id, stranger)

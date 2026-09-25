@@ -5,110 +5,122 @@ from app import Access, Board, Pin, Placement, Share, User
 from test.support import TestStore
 
 
-def test_board_is_open_to_its_creator_and_shared_users():
+def test_board_is_accessible_to_its_creator_and_participants_only():
 	with TestStore() as store:
-		alice = store.create(User, name="Alice")
-		bob = store.create(User, name="Bob")
-		eve = store.create(User, name="Eve")
-		board = store.create(Board, title="Reading", creator_id=alice.id)
-		store.create(Share, board_id=board.id, user_id=bob.id)
+		creator = store.create(User, name="Creator")
+		participant = store.create(User, name="Participant")
+		stranger = store.create(User, name="Stranger")
+		board = store.create(Board, title="Reading", creator_id=creator.id)
+		store.create(Share, board_id=board.id, user_id=participant.id)
 
-		allowed = [
-			Access(store, user).allows_board(board) for user in [alice, bob, eve]
-		]
-
-		assert_eq(allowed, [True, True, False])
+		assert_that(Access(store, creator).allows_board(board))
+		assert_that(Access(store, participant).allows_board(board))
+		assert_that(not Access(store, stranger).allows_board(board))
 
 
 def test_find_board_hides_inaccessible_boards():
 	with TestStore() as store:
-		alice = store.create(User, name="Alice")
-		eve = store.create(User, name="Eve")
-		board = store.create(Board, title="Reading", creator_id=alice.id)
+		creator = store.create(User, name="Creator")
+		stranger = store.create(User, name="Stranger")
+		board = store.create(Board, title="Reading", creator_id=creator.id)
 
-		found = Access(store, alice).find_board(board.id)
+		found = Access(store, creator).find_board(board.id)
 
 		assert_eq(found.id, board.id)
 		with assert_raises(NotFoundError):
-			Access(store, eve).find_board(board.id)
+			Access(store, stranger).find_board(board.id)
 
 
-def test_pin_is_open_through_any_board_it_is_placed_on():
+def test_pin_is_accessible_through_any_board_it_is_placed_on():
 	with TestStore() as store:
-		alice = store.create(User, name="Alice")
-		bob = store.create(User, name="Bob")
-		private = store.create(Board, title="Private", creator_id=alice.id)
-		shared = store.create(Board, title="Shared", creator_id=alice.id)
-		store.create(Share, board_id=shared.id, user_id=bob.id)
+		creator = store.create(User, name="Creator")
+		participant = store.create(User, name="Participant")
+		private = store.create(Board, title="Private", creator_id=creator.id)
+		shared = store.create(Board, title="Shared", creator_id=creator.id)
+		store.create(Share, board_id=shared.id, user_id=participant.id)
 		pin = store.create(
-			Pin, title="Sartre", url="https://example.com", creator_id=alice.id
+			Pin,
+			title="Sartre",
+			url="https://plato.stanford.edu/entries/sartre/",
+			creator_id=creator.id,
 		)
 		for board in [private, shared]:
-			Placement.create(store, pin, board, alice)
+			Placement.create(store, pin, board, creator)
 
-		found = Access(store, bob).find_pin(pin.id)
+		found = Access(store, participant).find_pin(pin.id)
 
 		assert_eq(found.id, pin.id)
 
 
-def test_pin_is_open_to_the_creator_of_a_board_it_is_placed_on():
+def test_pin_is_accessible_to_the_creator_of_a_board_it_is_placed_on():
 	with TestStore() as store:
-		alice = store.create(User, name="Alice")
-		bob = store.create(User, name="Bob")
-		board = store.create(Board, title="Reading", creator_id=bob.id)
-		store.create(Share, board_id=board.id, user_id=alice.id)
+		pin_creator = store.create(User, name="Pin creator")
+		board_creator = store.create(User, name="Board creator")
+		board = store.create(Board, title="Reading", creator_id=board_creator.id)
+		store.create(Share, board_id=board.id, user_id=pin_creator.id)
 		pin = store.create(
-			Pin, title="Sartre", url="https://example.com", creator_id=alice.id
+			Pin,
+			title="Sartre",
+			url="https://plato.stanford.edu/entries/sartre/",
+			creator_id=pin_creator.id,
 		)
-		Placement.create(store, pin, board, alice)
+		Placement.create(store, pin, board, pin_creator)
 
-		allowed = Access(store, bob).allows_pin(pin)
+		allowed = Access(store, board_creator).allows_pin(pin)
 
 		assert_that(allowed)
 
 
-def test_pin_is_hidden_from_users_without_a_placed_board():
+def test_pin_is_inaccessible_to_users_without_a_placed_board():
 	with TestStore() as store:
-		alice = store.create(User, name="Alice")
-		eve = store.create(User, name="Eve")
-		board = store.create(Board, title="Reading", creator_id=alice.id)
+		creator = store.create(User, name="Creator")
+		stranger = store.create(User, name="Stranger")
+		board = store.create(Board, title="Reading", creator_id=creator.id)
 		filed = store.create(
-			Pin, title="Filed", url="https://example.com", creator_id=alice.id
+			Pin,
+			title="Sartre",
+			url="https://plato.stanford.edu/entries/sartre/",
+			creator_id=creator.id,
 		)
 		unfiled = store.create(
-			Pin, title="Unfiled", url="https://example.org", creator_id=alice.id
+			Pin,
+			title="Beauvoir",
+			url="https://plato.stanford.edu/entries/beauvoir/",
+			creator_id=creator.id,
 		)
-		Placement.create(store, filed, board, alice)
-		access = Access(store, eve)
+		Placement.create(store, filed, board, creator)
+		access = Access(store, stranger)
 
-		allowed = [access.allows_pin(filed), access.allows_pin(unfiled)]
-
-		assert_eq(allowed, [False, False])
+		assert_that(not access.allows_pin(filed))
+		assert_that(not access.allows_pin(unfiled))
 		with assert_raises(NotFoundError):
 			access.find_pin(filed.id)
 
 
-def test_unfiled_pin_is_open_to_its_creator():
+def test_unfiled_pin_is_accessible_to_its_creator():
 	with TestStore() as store:
-		alice = store.create(User, name="Alice")
+		creator = store.create(User, name="Creator")
 		pin = store.create(
-			Pin, title="Unfiled", url="https://example.com", creator_id=alice.id
+			Pin,
+			title="Sartre",
+			url="https://plato.stanford.edu/entries/sartre/",
+			creator_id=creator.id,
 		)
 
-		allowed = Access(store, alice).allows_pin(pin)
+		allowed = Access(store, creator).allows_pin(pin)
 
 		assert_that(allowed)
 
 
-def test_find_boards_returns_owned_and_shared_boards():
+def test_find_boards_returns_created_and_shared_boards():
 	with TestStore() as store:
-		alice = store.create(User, name="Alice")
-		bob = store.create(User, name="Bob")
-		owned = store.create(Board, title="Owned", creator_id=alice.id)
-		shared = store.create(Board, title="Shared", creator_id=bob.id)
-		store.create(Board, title="Private", creator_id=bob.id)
-		store.create(Share, board_id=shared.id, user_id=alice.id)
+		viewer = store.create(User, name="Viewer")
+		other_creator = store.create(User, name="Other creator")
+		created = store.create(Board, title="Created", creator_id=viewer.id)
+		shared = store.create(Board, title="Shared", creator_id=other_creator.id)
+		store.create(Board, title="Private", creator_id=other_creator.id)
+		store.create(Share, board_id=shared.id, user_id=viewer.id)
 
-		boards = Access(store, alice).find_boards()
+		boards = Access(store, viewer).find_boards()
 
-		assert_eq({board.id for board in boards}, {owned.id, shared.id})
+		assert_eq({board.id for board in boards}, {created.id, shared.id})

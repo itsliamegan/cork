@@ -6,7 +6,7 @@ from test.support import TestApplication
 
 def test_create_generates_recovery():
 	with TestApplication() as app:
-		user = app.store.create(User, name="Alice")
+		user = app.store.create(User, name="User")
 		app.sign_in(user)
 
 		res = app.client.post("/recoveries/")
@@ -17,7 +17,7 @@ def test_create_generates_recovery():
 
 def test_show_redirects_without_flash():
 	with TestApplication() as app:
-		user = app.store.create(User, name="Alice")
+		user = app.store.create(User, name="User")
 		app.sign_in(user)
 
 		created = app.client.post("/recoveries/")

@@ -6,15 +6,18 @@ from test.support import TestStore
 
 def test_deleting_board_removes_placements_shares_and_orderings():
 	with TestStore() as store:
-		alice = store.create(User, name="Alice")
-		bob = store.create(User, name="Bob")
-		board = store.create(Board, title="Reading", creator_id=alice.id)
+		creator = store.create(User, name="Creator")
+		participant = store.create(User, name="Participant")
+		board = store.create(Board, title="Reading", creator_id=creator.id)
 		pin = store.create(
-			Pin, title="Sartre", url="https://example.com", creator_id=alice.id
+			Pin,
+			title="Sartre",
+			url="https://plato.stanford.edu/entries/sartre/",
+			creator_id=creator.id,
 		)
-		Placement.create(store, pin, board, alice)
-		store.create(Share, board_id=board.id, user_id=bob.id)
-		store.create(Ordering, user_id=alice.id, board_id=board.id, position=0)
+		Placement.create(store, pin, board, creator)
+		store.create(Share, board_id=board.id, user_id=participant.id)
+		store.create(Ordering, user_id=creator.id, board_id=board.id, position=0)
 
 		store.delete(board)
 
@@ -26,14 +29,17 @@ def test_deleting_board_removes_placements_shares_and_orderings():
 
 def test_deleting_board_keeps_placements_on_other_boards():
 	with TestStore() as store:
-		user = store.create(User, name="Alice")
-		reading = store.create(Board, title="Reading", creator_id=user.id)
-		essays = store.create(Board, title="Essays", creator_id=user.id)
+		creator = store.create(User, name="Creator")
+		reading = store.create(Board, title="Reading", creator_id=creator.id)
+		essays = store.create(Board, title="Essays", creator_id=creator.id)
 		pin = store.create(
-			Pin, title="Sartre", url="https://example.com", creator_id=user.id
+			Pin,
+			title="Sartre",
+			url="https://plato.stanford.edu/entries/sartre/",
+			creator_id=creator.id,
 		)
-		Placement.create(store, pin, reading, user)
-		kept = Placement.create(store, pin, essays, user)
+		Placement.create(store, pin, reading, creator)
+		kept = Placement.create(store, pin, essays, creator)
 
 		store.delete(reading)
 

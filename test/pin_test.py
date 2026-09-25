@@ -9,7 +9,19 @@ from test.support import TestStore
 def test_display_url_shortens_to_hostname():
 	pin = Pin(
 		title="Sartre",
-		url="https://www.example.com/articles/sartre",
+		url="https://plato.stanford.edu/entries/sartre/",
+		creator_id=uuid4(),
+	)
+
+	display_url = pin.display_url()
+
+	assert_eq(display_url, "plato.stanford.edu")
+
+
+def test_display_url_drops_www_prefix():
+	pin = Pin(
+		title="Example",
+		url="https://www.example.com/articles",
 		creator_id=uuid4(),
 	)
 
@@ -28,9 +40,12 @@ def test_display_url_falls_back_to_url_without_a_host():
 
 def test_pin_without_placements_is_unfiled():
 	with TestStore() as store:
-		user = store.create(User, name="Alice")
+		creator = store.create(User, name="Creator")
 		pin = store.create(
-			Pin, title="Sartre", url="https://example.com", creator_id=user.id
+			Pin,
+			title="Sartre",
+			url="https://plato.stanford.edu/entries/sartre/",
+			creator_id=creator.id,
 		)
 
 		placements = pin.find_placements(store)
@@ -40,18 +55,24 @@ def test_pin_without_placements_is_unfiled():
 
 def test_find_placements_returns_only_this_pins_placements():
 	with TestStore() as store:
-		user = store.create(User, name="Alice")
-		reading = store.create(Board, title="Reading", creator_id=user.id)
-		essays = store.create(Board, title="Essays", creator_id=user.id)
+		creator = store.create(User, name="Creator")
+		reading = store.create(Board, title="Reading", creator_id=creator.id)
+		essays = store.create(Board, title="Essays", creator_id=creator.id)
 		pin = store.create(
-			Pin, title="Sartre", url="https://example.com", creator_id=user.id
+			Pin,
+			title="Sartre",
+			url="https://plato.stanford.edu/entries/sartre/",
+			creator_id=creator.id,
 		)
 		other_pin = store.create(
-			Pin, title="Beauvoir", url="https://example.org", creator_id=user.id
+			Pin,
+			title="Beauvoir",
+			url="https://plato.stanford.edu/entries/beauvoir/",
+			creator_id=creator.id,
 		)
 		for board in [reading, essays]:
-			Placement.create(store, pin, board, user)
-		Placement.create(store, other_pin, reading, user)
+			Placement.create(store, pin, board, creator)
+		Placement.create(store, other_pin, reading, creator)
 
 		placements = pin.find_placements(store)
 
@@ -62,14 +83,17 @@ def test_find_placements_returns_only_this_pins_placements():
 
 def test_deleting_pin_removes_its_placements():
 	with TestStore() as store:
-		user = store.create(User, name="Alice")
-		reading = store.create(Board, title="Reading", creator_id=user.id)
-		essays = store.create(Board, title="Essays", creator_id=user.id)
+		creator = store.create(User, name="Creator")
+		reading = store.create(Board, title="Reading", creator_id=creator.id)
+		essays = store.create(Board, title="Essays", creator_id=creator.id)
 		pin = store.create(
-			Pin, title="Sartre", url="https://example.com", creator_id=user.id
+			Pin,
+			title="Sartre",
+			url="https://plato.stanford.edu/entries/sartre/",
+			creator_id=creator.id,
 		)
 		for board in [reading, essays]:
-			Placement.create(store, pin, board, user)
+			Placement.create(store, pin, board, creator)
 
 		store.delete(pin)
 

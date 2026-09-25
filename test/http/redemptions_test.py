@@ -7,47 +7,9 @@ from app import Invite, Recovery, User
 from test.support import TestApplication, TestClient
 
 
-def test_create_stores_account_invite():
-	with TestApplication() as app:
-		creator = app.store.create(User, name="Alice")
-		app.sign_in(creator)
-
-		res = app.client.post("/invites/")
-
-		assert_eq(res.status_code, 302)
-		invite = app.store.find_all(Invite)[0]
-		assert_eq(invite.creator_id, creator.id)
-		assert_that(invite.target_id is None)
-
-
-def test_create_stores_targeted_invite():
-	with TestApplication() as app:
-		creator = app.store.create(User, name="Alice")
-		app.sign_in(creator)
-
-		res = app.client.post("/invites/", form={"targeted": "on"})
-
-		assert_eq(res.status_code, 302)
-		invite = app.store.find_all(Invite)[0]
-		assert_eq(invite.target_id, creator.id)
-
-
-def test_show_redirects_after_create():
-	with TestApplication() as app:
-		creator = app.store.create(User, name="Alice")
-		app.sign_in(creator)
-
-		created = app.client.post("/invites/")
-		app.client.get(created.headers["Location"])
-
-		revisited = app.client.get(created.headers["Location"])
-		assert_eq(revisited.status_code, 302)
-		assert_eq(revisited.headers["Location"], "/settings")
-
-
 def test_signed_in_user_redirects():
 	with TestApplication() as app:
-		creator = app.store.create(User, name="Alice")
+		creator = app.store.create(User, name="Creator")
 		invite = Invite.create(app.store, creator)
 		app.sign_in(creator)
 
@@ -56,55 +18,55 @@ def test_signed_in_user_redirects():
 		assert_eq(res.status_code, 302)
 
 
-def test_new_renders_account_invite():
+def test_new_renders_untargeted_invite():
 	with TestApplication() as app:
-		creator = app.store.create(User, name="Alice")
+		creator = app.store.create(User, name="Creator")
 		invite = Invite.create(app.store, creator)
 
 		res = app.client.get(f"/redemptions/new?token={invite.token.value}")
 
 		assert_eq(res.status_code, 200)
-		assert_that("Invited by Alice" in res.text)
+		assert_that("Invited by Creator" in res.text)
 
 
 def test_new_renders_targeted_invite():
 	with TestApplication() as app:
-		alice = app.store.create(User, name="Alice")
-		invite = Invite.create(app.store, alice, target=alice)
+		target = app.store.create(User, name="Target")
+		invite = Invite.create(app.store, target, target=target)
 
 		res = app.client.get(f"/redemptions/new?token={invite.token.value}")
 
 		assert_eq(res.status_code, 200)
-		assert_that("<strong>Alice</strong>" in res.text)
+		assert_that("<strong>Target</strong>" in res.text)
 
 
 def test_new_renders_name_error():
 	with TestApplication() as app:
-		creator = app.store.create(User, name="Alice")
+		creator = app.store.create(User, name="Creator")
 		invite = Invite.create(app.store, creator)
 
 		res = app.client.post(
-			"/redemptions/", form={"token": invite.token.value, "name": " alice "}
+			"/redemptions/", form={"token": invite.token.value, "name": " creator "}
 		)
 		res = app.client.get(res.headers["Location"])
 
 		assert_eq(res.status_code, 200)
 		assert_that("That name is already in use." in res.text)
-		assert_that('value="alice"' in res.text)
+		assert_that('value="creator"' in res.text)
 
 
-def test_account_invite_creates_user_and_recovery():
+def test_untargeted_invite_creates_user_and_recovery():
 	with TestApplication() as app:
-		creator = app.store.create(User, name="Alice")
+		creator = app.store.create(User, name="Creator")
 		invite = Invite.create(app.store, creator)
 
 		res = app.client.post(
-			"/redemptions/", form={"token": invite.token.value, "name": "  Bob  "}
+			"/redemptions/", form={"token": invite.token.value, "name": "  Newcomer  "}
 		)
 
 		assert_eq(res.status_code, 302)
 		users = app.store.find_all(User)
-		created = next(user for user in users if user.name == "Bob")
+		created = next(user for user in users if user.name == "Newcomer")
 		assert_eq(len(app.store.find_by(Recovery, user_id=created.id)), 1)
 		assert_that(
 			invite.id not in {stored.id for stored in app.store.find_all(Invite)}
@@ -113,11 +75,11 @@ def test_account_invite_creates_user_and_recovery():
 
 def test_duplicate_name_does_not_redeem():
 	with TestApplication() as app:
-		creator = app.store.create(User, name="Alice")
+		creator = app.store.create(User, name="Creator")
 		invite = Invite.create(app.store, creator)
 
 		res = app.client.post(
-			"/redemptions/", form={"token": invite.token.value, "name": " alice "}
+			"/redemptions/", form={"token": invite.token.value, "name": " creator "}
 		)
 
 		assert_eq(res.status_code, 302)
@@ -127,7 +89,7 @@ def test_duplicate_name_does_not_redeem():
 
 def test_empty_name_does_not_redeem():
 	with TestApplication() as app:
-		creator = app.store.create(User, name="Alice")
+		creator = app.store.create(User, name="Creator")
 		invite = Invite.create(app.store, creator)
 
 		res = app.client.post(
@@ -141,14 +103,14 @@ def test_empty_name_does_not_redeem():
 
 def test_targeted_invite_signs_in_without_recovery():
 	with TestApplication() as app:
-		alice = app.store.create(User, name="Alice")
-		invite = Invite.create(app.store, alice, target=alice)
+		target = app.store.create(User, name="Target")
+		invite = Invite.create(app.store, target, target=target)
 
 		res = app.client.post("/redemptions/", form={"token": invite.token.value})
 
 		assert_eq(res.status_code, 302)
 		assert_eq(res.headers["Location"], "/boards/")
-		assert_eq(app.store.find_by(Recovery, user_id=alice.id), [])
+		assert_eq(app.store.find_by(Recovery, user_id=target.id), [])
 		assert_that(
 			invite.id not in {stored.id for stored in app.store.find_all(Invite)}
 		)
@@ -156,7 +118,7 @@ def test_targeted_invite_signs_in_without_recovery():
 
 def test_invalid_tokens_render_error():
 	with TestApplication() as app:
-		creator = app.store.create(User, name="Alice")
+		creator = app.store.create(User, name="Creator")
 		expired = Invite.create(app.store, creator)
 		expired.expires_at = datetime.now(UTC)
 		app.store.save(expired)
@@ -175,7 +137,7 @@ def test_invalid_tokens_render_error():
 
 def test_concurrent_redemptions_create_one_user():
 	with TestApplication() as app:
-		creator = app.store.create(User, name="Alice")
+		creator = app.store.create(User, name="Creator")
 		invite = Invite.create(app.store, creator)
 		app.client.get(f"/redemptions/new?token={invite.token.value}")
 		clients = [TestClient(app), TestClient(app)]
@@ -187,7 +149,7 @@ def test_concurrent_redemptions_create_one_user():
 						"/redemptions/",
 						form={"token": invite.token.value, "name": pair[1]},
 					),
-					zip(clients, ["Bob", "Charlie"], strict=True),
+					zip(clients, ["Newcomer", "Second newcomer"], strict=True),
 				)
 			)
 
