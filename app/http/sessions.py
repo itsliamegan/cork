@@ -2,7 +2,7 @@ from helios.app import Context
 from helios.auth import Authenticator
 from helios.database import Store
 from helios.flash import Flashes
-from helios.form import Form, RuleError, Submissions
+from helios.form import Form, Rule, RuleError, Submissions
 from helios.http import Request, Response
 from helios.routing import URLs
 from helios.view import Views
@@ -10,7 +10,7 @@ from helios.view import Views
 from app import Recovery
 
 
-class RecoveryCode:
+class RecoveryCode(Rule[str, str]):
 	name = "recovery_code"
 	message = "is invalid"
 
@@ -20,8 +20,7 @@ class RecoveryCode:
 			character not in Recovery.Code.ALPHABET for character in code
 		):
 			raise RuleError()
-		else:
-			return code
+		return code
 
 
 class SignInForm(Form):
