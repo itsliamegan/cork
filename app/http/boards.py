@@ -133,7 +133,7 @@ def show(req: Request, ctx: Context, id: UUID) -> Response:
 			{
 				"placement": placement,
 				"pin": pin,
-				"can_remove": Removal(placement, pin, board).is_authorized(store, user),
+				"can_remove": Removal(placement, pin, board).is_authorized(access),
 			}
 		)
 	pin_rows.sort(key=lambda row: row["pin"].created_at, reverse=True)

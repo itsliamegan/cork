@@ -1,6 +1,6 @@
 from luna.test.assertion import assert_that
 
-from app import Board, Pin, Placement, Removal, Share, User
+from app import Access, Board, Ownership, Pin, Placement, Removal, Share, User
 from test.support import TestStore
 
 
@@ -22,10 +22,10 @@ def test_pin_creator_adder_and_board_creator_may_remove_a_placement():
 		placement = Placement.create(store, pin, board, adder)
 		removal = Removal(placement, pin, board)
 
-		assert_that(removal.is_authorized(store, pin_creator))
-		assert_that(removal.is_authorized(store, adder))
-		assert_that(removal.is_authorized(store, board_creator))
-		assert_that(not removal.is_authorized(store, participant))
+		assert_that(removal.is_authorized(Access(Ownership(store, pin_creator))))
+		assert_that(removal.is_authorized(Access(Ownership(store, adder))))
+		assert_that(removal.is_authorized(Access(Ownership(store, board_creator))))
+		assert_that(not removal.is_authorized(Access(Ownership(store, participant))))
 
 
 def test_adder_without_current_board_access_may_not_remove_a_placement():
@@ -41,6 +41,8 @@ def test_adder_without_current_board_access_may_not_remove_a_placement():
 		)
 		placement = Placement.create(store, pin, board, former_adder)
 
-		authorized = Removal(placement, pin, board).is_authorized(store, former_adder)
+		access = Access(Ownership(store, former_adder))
+
+		authorized = Removal(placement, pin, board).is_authorized(access)
 
 		assert_that(not authorized)
