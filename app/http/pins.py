@@ -146,7 +146,7 @@ def create(req: Request, ctx: Context) -> Response:
 		note=form.note,
 		creator_id=user.id,
 	)
-	pin.place_on(store, boards, access)
+	Placement.replace(store, pin, boards, access)
 
 	match = urls.match(form.return_to)
 	if (
@@ -287,7 +287,7 @@ def update(req: Request, ctx: Context, id: UUID) -> Response:
 		pin,
 		pin.find_accessible_placements(store, access),
 	)
-	pin.place_on(store, boards, access)
+	Placement.replace(store, pin, boards, access)
 	pin.url = form.url
 	pin.title = form.title
 	pin.note = form.note
