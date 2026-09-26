@@ -70,10 +70,8 @@ def test_sign_in_form_normalizes_recovery_code():
 		assert_eq(form.recovery_code, "ABCDEFGHJKLMNPQR")
 
 
-def test_sign_in_form_rejects_malformed_recovery_codes():
+def test_sign_in_form_rejects_recovery_codes_with_disallowed_characters():
 	for code in [
-		"ABCDEFGHJKLMNPQ",
-		"ABCDEFGHJKLMNPQRS",
 		"ABCDEFGHJKLMNPQ0",
 		"ABCDEFGHJKLMNPQ1",
 		"ABCDEFGHJKLMNPQI",
@@ -82,7 +80,24 @@ def test_sign_in_form_rejects_malformed_recovery_codes():
 	]:
 		_, errors = SignInForm.validate(Input({"recovery_code": code}))
 
-		assert_eq(errors.first("recovery_code"), "Recovery code is invalid.")
+		assert_eq(
+			errors.first("recovery_code"),
+			"Recovery code must only contain allowed characters.",
+		)
+
+
+def test_sign_in_form_rejects_recovery_codes_of_the_wrong_length():
+	for code in ["ABCDEFGHJKLMNPQ", "ABCDEFGHJKLMNPQRS"]:
+		_, errors = SignInForm.validate(Input({"recovery_code": code}))
+
+		assert_eq(errors.first("recovery_code"), "Recovery code must be 16 characters.")
+
+
+def test_sign_in_form_accepts_a_lowercase_recovery_code_with_spaces():
+	form, errors = SignInForm.validate(Input({"recovery_code": "abcd efgh jkmn pqrs"}))
+
+	assert_that(not errors)
+	assert_eq(form.recovery_code, "ABCDEFGHJKMNPQRS")
 
 
 def test_delete_signs_out():

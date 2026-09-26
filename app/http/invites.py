@@ -14,7 +14,7 @@ from app import Invite, User
 
 
 class InviteForm(Form):
-	messages = {"targeted.boolean": "Invite type is invalid."}
+	messages = {"targeted.invalid": "Invite type is invalid."}
 
 	targeted: bool = False
 

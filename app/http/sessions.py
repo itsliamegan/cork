@@ -2,7 +2,9 @@ from helios.app import Context
 from helios.auth import Authenticator
 from helios.database import Store
 from helios.flash import Flashes
-from helios.form import Form, Rule, RuleError, Submissions
+from helios.form import Filters, Form, Rules, Submissions
+from helios.form.filter import Unspace, Upcase
+from helios.form.rule import Length, Only
 from helios.http import Request, Response
 from helios.routing import URLs
 from helios.view import Views
@@ -10,21 +12,16 @@ from helios.view import Views
 from app import Recovery
 
 
-class RecoveryCode(Rule[str, str]):
-	name = "recovery_code"
-	message = "is invalid"
-
-	def check(self, value: str) -> str:
-		code = "".join(value.split()).upper()
-		if len(code) != Recovery.Code.LENGTH or any(
-			character not in Recovery.Code.ALPHABET for character in code
-		):
-			raise RuleError()
-		return code
-
-
 class SignInForm(Form):
-	rules = {"recovery_code": [RecoveryCode()]}
+	filters = Filters({"recovery_code": [Unspace(), Upcase()]})
+	rules = Rules(
+		{
+			"recovery_code": [
+				Only(Recovery.Code.ALPHABET),
+				Length(exactly=Recovery.Code.LENGTH),
+			],
+		}
+	)
 
 	recovery_code: str
 
