@@ -21,7 +21,7 @@ class Apply(Command):
 	dry: bool = option(
 		default=False,
 		short="d",
-		help="report the migrations that would be applied, without applying them",
+		help="report the migrations that would be applied without applying them",
 	)
 
 	def run(self):

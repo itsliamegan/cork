@@ -37,7 +37,7 @@ class Backup(Program):
 	dry: bool = option(
 		default=False,
 		short="d",
-		help="report what would be uploaded and deleted, without doing either",
+		help="report what would be uploaded and deleted without doing either",
 	)
 	keep: int = option(
 		default=KEEP_DAYS,
