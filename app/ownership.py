@@ -31,9 +31,4 @@ class Ownership:
 		return pin
 
 	def find_pins(self) -> list[Pin]:
-		return (
-			self.store.query(Pin)
-			.where(creator_id=self.user.id)
-			.order_by("created_at", "desc")
-			.all()
-		)
+		return self.store.find_by(Pin, creator_id=self.user.id)

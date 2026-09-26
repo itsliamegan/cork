@@ -27,14 +27,15 @@ class Pin(Model):
 		placements = store.find_by(Placement, pin_id=self.id)
 		if access is None:
 			return placements
-		board_ids = access.find_board_ids()
-		return [
-			placement for placement in placements if placement.board_id in board_ids
-		]
+		else:
+			board_ids = access.find_board_ids()
+			return [
+				placement for placement in placements if placement.board_id in board_ids
+			]
 
 	def place_on(self, store: Store, boards: list[Board], access: Access) -> None:
 		chosen_board_ids = {board.id for board in boards}
-		inaccessible_board_ids = chosen_board_ids - access.find_board_ids()
+		inaccessible_board_ids = chosen_board_ids - set(access.find_board_ids())
 		if inaccessible_board_ids:
 			raise ValueError(f"Boards {inaccessible_board_ids} are not accessible")
 

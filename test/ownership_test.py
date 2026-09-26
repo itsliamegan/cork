@@ -50,7 +50,7 @@ def test_find_boards_returns_only_created_boards():
 		assert_eq([board.id for board in boards], [created.id])
 
 
-def test_find_pins_returns_created_pins_newest_first():
+def test_find_pins_returns_only_created_pins():
 	with TestStore() as store:
 		viewer = store.create(User, name="Viewer")
 		other_creator = store.create(User, name="Other creator")
@@ -77,4 +77,4 @@ def test_find_pins_returns_created_pins_newest_first():
 
 		pins = Ownership(store, viewer).find_pins()
 
-		assert_eq([pin.id for pin in pins], [newer.id, older.id])
+		assert_eq({pin.id for pin in pins}, {older.id, newer.id})

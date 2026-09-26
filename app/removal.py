@@ -12,7 +12,7 @@ class Removal:
 
 	def is_authorized(self, access: Access) -> bool:
 		return access.allows_board(self.board) and (
-			access.ownership.owns(self.pin)
-			or access.ownership.owns(self.board)
+			access.owns(self.pin)
+			or access.owns(self.board)
 			or self.placement.adder_id == access.user.id
 		)
