@@ -73,11 +73,34 @@ def test_redeeming_targeted_invite_returns_target_and_spends_invite():
 		creator = store.create(User, name="Creator")
 		invite = Invite.create(store, creator, target=creator)
 
-		redeemed = invite.redeem(store, "")
+		redeemed = invite.redeem_for_target(store)
 
 		assert_that(redeemed is creator)
 		assert_eq(len(store.find_all(User)), 1)
 		assert_that(Invite.find_valid(store, invite.token.value) is None)
+
+
+def test_redeem_refuses_a_targeted_invite():
+	with TestStore() as store:
+		creator = store.create(User, name="Creator")
+		invite = Invite.create(store, creator, target=creator)
+
+		with assert_raises(ValueError):
+			invite.redeem(store, "Newcomer")
+
+		assert_eq(len(store.find_all(User)), 1)
+		assert_that(Invite.find_valid(store, invite.token.value) is invite)
+
+
+def test_redeem_for_target_refuses_an_untargeted_invite():
+	with TestStore() as store:
+		creator = store.create(User, name="Creator")
+		invite = Invite.create(store, creator)
+
+		with assert_raises(ValueError):
+			invite.redeem_for_target(store)
+
+		assert_that(Invite.find_valid(store, invite.token.value) is invite)
 
 
 def test_redeeming_one_invite_leaves_others_valid():

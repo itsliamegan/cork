@@ -35,29 +35,27 @@ def create(req: Request, ctx: Context) -> Response:
 			urls.route("redemptions.new", query={"token": form.token})
 		)
 
-	if invite.target_id is None:
-		if form.name is None:
-			errors.add("name", "Name must be provided.")
-		# The column's NOCASE collation makes this match names that differ only in
-		# ASCII case, which is also what its unique constraint rejects.
-		elif store.query(User).where(name=form.name).first() is not None:
-			errors.add("name", "Name is already in use.")
-
-	if errors:
-		submissions.flash(errors, req.input)
-		return Response.redirect(
-			urls.route("redemptions.new", query={"token": form.token})
-		)
-
-	user = invite.redeem(store, form.name or "")
-	auth.sign_in(user)
 	if invite.target_id is not None:
+		user = invite.redeem_for_target(store)
+		auth.sign_in(user)
 		return Response.redirect(urls.route("boards.index"))
+
+	if form.name is None:
+		errors.add("name", "Name must be provided.")
+	# The column's NOCASE collation makes this match names that differ only in
+	# ASCII case, which is also what its unique constraint rejects.
+	elif store.query(User).where(name=form.name).first() is not None:
+		errors.add("name", "Name is already in use.")
 	else:
+		user = invite.redeem(store, form.name)
+		auth.sign_in(user)
 		recovery = Recovery.create(store, user)
 		flash["recovery_id"] = str(recovery.id)
 		flash["recovery_code"] = recovery.code.plaintext
 		return Response.redirect(urls.route("recoveries.show", {"id": recovery.id}))
+
+	submissions.flash(errors, req.input)
+	return Response.redirect(urls.route("redemptions.new", query={"token": form.token}))
 
 
 def new(req: Request, ctx: Context) -> Response:

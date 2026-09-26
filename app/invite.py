@@ -80,8 +80,14 @@ class Invite(Model):
 
 	def redeem(self, store: Store, name: str) -> User:
 		if self.target_id is not None:
-			user = store.find_one(User, self.target_id)
-		else:
-			user = store.create(User, name=name)
+			raise ValueError(f"Invite {self.id} is for an existing user")
+		user = store.create(User, name=name)
+		store.delete(self)
+		return user
+
+	def redeem_for_target(self, store: Store) -> User:
+		if self.target_id is None:
+			raise ValueError(f"Invite {self.id} has no target")
+		user = store.find_one(User, self.target_id)
 		store.delete(self)
 		return user
