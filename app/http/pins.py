@@ -54,7 +54,7 @@ def _pin_return_url(
 	urls = ctx.get(URLs)
 	user = cast(User, auth.user)
 
-	access = Access(store, user)
+	access = Access(Ownership(store, user))
 	fallback = urls.route("pins.show", {"id": pin.id})
 	match = urls.match(raw_url)
 	if match is not None and match.route.name == "pins.index":
@@ -74,7 +74,7 @@ def build_placement_options(ctx: Context) -> list[PlacementOption]:
 	auth = ctx.get(Authenticator)
 	user = cast(User, auth.user)
 
-	access = Access(store, user)
+	access = Access(Ownership(store, user))
 	boards = access.find_boards()
 	board_ids = {board.id for board in boards}
 	shares_by_board_id: dict[UUID, list[Share]] = {board.id: [] for board in boards}
@@ -104,9 +104,7 @@ def index(req: Request, ctx: Context) -> Response:
 	views = ctx.get(Views)
 	user = cast(User, auth.user)
 
-	pins = (
-		store.query(Pin).where(creator_id=user.id).order_by("created_at", "desc").all()
-	)
+	pins = Ownership(store, user).find_pins()
 	board_counts = Counter(
 		placement.pin_id
 		for placement in store.query(Placement)
@@ -134,7 +132,7 @@ def create(req: Request, ctx: Context) -> Response:
 	if "board_ids" in errors:
 		return Response.text("400 Bad Request", status=Status.BAD_REQUEST)
 
-	access = Access(store, user)
+	access = Access(Ownership(store, user))
 	try:
 		boards = [access.find_board(board_id) for board_id in form.board_ids]
 	except NotFoundError:
@@ -178,7 +176,7 @@ def new(req: Request, ctx: Context) -> Response:
 	urls = ctx.get(URLs)
 	user = cast(User, auth.user)
 
-	access = Access(store, user)
+	access = Access(Ownership(store, user))
 	board_id = req.url.query.get("board_id")
 	if isinstance(board_id, str):
 		try:
@@ -212,7 +210,7 @@ def show(req: Request, ctx: Context, id: UUID) -> Response:
 	views = ctx.get(Views)
 	user = cast(User, auth.user)
 
-	access = Access(store, user)
+	access = Access(Ownership(store, user))
 	pin = access.find_pin(id)
 	placements = pin.find_placements(store)
 	accessible_placements = []
@@ -248,8 +246,8 @@ def edit(req: Request, ctx: Context, id: UUID) -> Response:
 	submission = ctx.get(Submission)
 	user = cast(User, auth.user)
 
-	access = Access(store, user)
 	ownership = Ownership(store, user)
+	access = Access(ownership)
 	pin = ownership.find_pin(id)
 	placements = pin.find_placements(store)
 	accessible_placements = []
@@ -281,8 +279,8 @@ def update(req: Request, ctx: Context, id: UUID) -> Response:
 	urls = ctx.get(URLs)
 	user = cast(User, auth.user)
 
-	access = Access(store, user)
 	ownership = Ownership(store, user)
+	access = Access(ownership)
 	pin = ownership.find_pin(id)
 	placements = pin.find_placements(store)
 

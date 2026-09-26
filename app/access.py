@@ -1,20 +1,21 @@
 from uuid import UUID
 
-from helios.database import NotFoundError, Store
+from helios.database import NotFoundError
 
 from app.board import Board
+from app.ownership import Ownership
 from app.pin import Pin
 from app.share import Share
-from app.user import User
 
 
 class Access:
-	def __init__(self, store: Store, user: User):
-		self.store = store
-		self.user = user
+	def __init__(self, ownership: Ownership):
+		self.ownership = ownership
+		self.store = ownership.store
+		self.user = ownership.user
 
 	def allows_board(self, board: Board) -> bool:
-		if board.creator_id == self.user.id:
+		if self.ownership.owns(board):
 			return True
 		share = (
 			self.store.query(Share)
@@ -24,7 +25,7 @@ class Access:
 		return share is not None
 
 	def allows_pin(self, pin: Pin) -> bool:
-		if pin.creator_id == self.user.id:
+		if self.ownership.owns(pin):
 			return True
 		board_ids = [
 			placement.board_id for placement in pin.find_placements(self.store)
@@ -53,9 +54,8 @@ class Access:
 		shared_board_ids = {
 			share.board_id for share in self.store.find_by(Share, user_id=self.user.id)
 		}
-		owned_boards = self.store.find_by(Board, creator_id=self.user.id)
 		shared_boards = self.store.query(Board).where_in(id=shared_board_ids).all()
-		return [*owned_boards, *shared_boards]
+		return [*self.ownership.find_boards(), *shared_boards]
 
 	def find_pin(self, id: UUID) -> Pin:
 		pin = self.store.find_one(Pin, id)
