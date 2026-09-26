@@ -7,7 +7,7 @@ from helios.database import Store
 from helios.form import Form
 from helios.http import Request, Response, Status
 
-from app import Access, Ownership, Placement, User
+from app import Access, Placement, User
 from app.http.rules import Distinct
 
 
@@ -22,7 +22,7 @@ def update(req: Request, ctx: Context, id: UUID) -> Response:
 	auth = ctx.get(Authenticator)
 	user = cast(User, auth.user)
 
-	access = Access(store, user, Ownership(store, user))
+	access = Access(store, user)
 	board = access.find_board(id)
 
 	form, errors = PinOrderForm.validate(req.input)

@@ -1,12 +1,9 @@
-from typing import TYPE_CHECKING
 from uuid import UUID
 
 from helios.database import Model, Store
 
+from app.board import Board
 from app.user import User
-
-if TYPE_CHECKING:
-	from app.board import Board
 
 
 class Share(Model):
@@ -23,3 +20,8 @@ class Share(Model):
 	@classmethod
 	def find_board_ids(cls, store: Store, user: User) -> list[UUID]:
 		return [share.board_id for share in store.find_by(cls, user_id=user.id)]
+
+	@classmethod
+	def find_boards(cls, store: Store, user: User) -> list[Board]:
+		board_ids = cls.find_board_ids(store, user)
+		return store.query(Board).where_in(id=board_ids).all()

@@ -42,3 +42,17 @@ def test_find_board_ids_returns_only_boards_shared_with_the_user():
 		board_ids = Share.find_board_ids(store, viewer)
 
 		assert_eq(sorted(board_ids), sorted([reading.id, essays.id]))
+
+
+def test_find_boards_returns_only_boards_shared_with_the_user():
+	with TestStore() as store:
+		viewer = store.create(User, name="Viewer")
+		other_creator = store.create(User, name="Other creator")
+		store.create(Board, title="Created", creator_id=viewer.id)
+		shared = store.create(Board, title="Shared", creator_id=other_creator.id)
+		store.create(Board, title="Private", creator_id=other_creator.id)
+		store.create(Share, board_id=shared.id, user_id=viewer.id)
+
+		boards = Share.find_boards(store, viewer)
+
+		assert_eq([board.id for board in boards], [shared.id])

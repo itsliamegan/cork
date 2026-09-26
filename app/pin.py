@@ -19,19 +19,20 @@ class Pin(Model):
 	note: str = ""
 	creator_id: UUID
 
-	def find_placements(
+	def find_placements(self, store: Store) -> list[Placement]:
+		return store.find_by(Placement, pin_id=self.id)
+
+	def find_accessible_placements(
 		self,
 		store: Store,
-		access: Access | None = None,
+		access: Access,
 	) -> list[Placement]:
-		placements = store.find_by(Placement, pin_id=self.id)
-		if access is None:
-			return placements
-		else:
-			board_ids = access.find_board_ids()
-			return [
-				placement for placement in placements if placement.board_id in board_ids
-			]
+		board_ids = access.find_board_ids()
+		return [
+			placement
+			for placement in self.find_placements(store)
+			if placement.board_id in board_ids
+		]
 
 	def place_on(self, store: Store, boards: list[Board], access: Access) -> None:
 		chosen_board_ids = {board.id for board in boards}
@@ -39,7 +40,7 @@ class Pin(Model):
 		if inaccessible_board_ids:
 			raise ValueError(f"Boards {inaccessible_board_ids} are not accessible")
 
-		for placement in self.find_placements(store, access):
+		for placement in self.find_accessible_placements(store, access):
 			if placement.board_id not in chosen_board_ids:
 				store.delete(placement)
 		placed_board_ids = {

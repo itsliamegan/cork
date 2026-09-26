@@ -52,7 +52,7 @@ def index(req: Request, ctx: Context) -> Response:
 	views = ctx.get(Views)
 	user = cast(User, auth.user)
 
-	access = Access(store, user, Ownership(store, user))
+	access = Access(store, user)
 	boards = Ordering.arrange(store, user, access.find_boards())
 	shared_board_ids = {
 		share.board_id
@@ -121,7 +121,7 @@ def show(req: Request, ctx: Context, id: UUID) -> Response:
 	views = ctx.get(Views)
 	user = cast(User, auth.user)
 
-	access = Access(store, user, Ownership(store, user))
+	access = Access(store, user)
 	board = access.find_board(id)
 	placements = store.find_by(Placement, board_id=board.id)
 	pin_ids = [placement.pin_id for placement in placements]

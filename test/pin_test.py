@@ -2,7 +2,7 @@ from uuid import uuid4
 
 from luna.test.assertion import assert_eq, assert_raises
 
-from app import Access, Board, Ownership, Pin, Placement, Share, User
+from app import Access, Board, Pin, Placement, Share, User
 from test.support import TestStore
 
 
@@ -101,7 +101,7 @@ def test_deleting_pin_removes_its_placements():
 		assert_eq(len(store.find_all(Board)), 2)
 
 
-def test_find_placements_with_access_skips_inaccessible_boards():
+def test_find_accessible_placements_skips_inaccessible_boards():
 	with TestStore() as store:
 		viewer = store.create(User, name="Viewer")
 		other_creator = store.create(User, name="Other creator")
@@ -118,9 +118,7 @@ def test_find_placements_with_access_skips_inaccessible_boards():
 		for board in [owned, shared, hidden]:
 			Placement.create(store, pin, board, other_creator)
 
-		placements = pin.find_placements(
-			store, Access(store, viewer, Ownership(store, viewer))
-		)
+		placements = pin.find_accessible_placements(store, Access(store, viewer))
 
 		assert_eq(
 			{placement.board_id for placement in placements}, {owned.id, shared.id}
@@ -142,7 +140,7 @@ def test_place_on_adds_and_removes_placements_and_keeps_retained_ones():
 		)
 		retained = Placement.create(store, pin, reading, other_creator)
 		Placement.create(store, pin, essays, viewer)
-		access = Access(store, viewer, Ownership(store, viewer))
+		access = Access(store, viewer)
 
 		pin.place_on(store, [reading, unread], access)
 
@@ -173,7 +171,7 @@ def test_place_on_keeps_placements_on_inaccessible_boards():
 		Placement.create(store, pin, visible, viewer)
 		hidden_placement = Placement.create(store, pin, hidden, hidden_creator)
 
-		pin.place_on(store, [], Access(store, viewer, Ownership(store, viewer)))
+		pin.place_on(store, [], Access(store, viewer))
 
 		placements = pin.find_placements(store)
 		assert_eq([placement.id for placement in placements], [hidden_placement.id])
@@ -195,7 +193,7 @@ def test_place_on_places_a_new_pin_once_per_board():
 		pin.place_on(
 			store,
 			[reading, essays, reading],
-			Access(store, viewer, Ownership(store, viewer)),
+			Access(store, viewer),
 		)
 
 		placements = pin.find_placements(store)
@@ -220,9 +218,7 @@ def test_place_on_refuses_inaccessible_boards_without_changes():
 		placement = Placement.create(store, pin, reading, viewer)
 
 		with assert_raises(ValueError):
-			pin.place_on(
-				store, [private], Access(store, viewer, Ownership(store, viewer))
-			)
+			pin.place_on(store, [private], Access(store, viewer))
 
 		placements = pin.find_placements(store)
 		assert_eq([stored.id for stored in placements], [placement.id])

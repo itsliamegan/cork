@@ -47,14 +47,14 @@ def _pin_return_url(
 	ctx: Context,
 	raw_url: str | None,
 	pin: Pin,
-	accessible_placements: list[Placement],
+	placements: list[Placement],
 ) -> URL:
 	urls = ctx.get(URLs)
 
 	match = urls.match(raw_url)
 	if match is not None and match.route.name == "pins.index":
 		return urls.route("pins.index")
-	board_id = _referring_board_id(ctx, raw_url, accessible_placements)
+	board_id = _referring_board_id(ctx, raw_url, placements)
 	if board_id is None:
 		return urls.route("pins.show", {"id": pin.id})
 	return urls.route("boards.show", {"id": board_id})
@@ -65,7 +65,7 @@ def build_placement_options(ctx: Context) -> list[PlacementOption]:
 	auth = ctx.get(Authenticator)
 	user = cast(User, auth.user)
 
-	access = Access(store, user, Ownership(store, user))
+	access = Access(store, user)
 	boards = access.find_boards()
 	board_ids = {board.id for board in boards}
 	shares_by_board_id: dict[UUID, list[Share]] = {board.id: [] for board in boards}
@@ -124,7 +124,7 @@ def create(req: Request, ctx: Context) -> Response:
 	if "board_ids" in errors:
 		return Response.text("400 Bad Request", status=Status.BAD_REQUEST)
 
-	access = Access(store, user, Ownership(store, user))
+	access = Access(store, user)
 	try:
 		boards = [access.find_board(board_id) for board_id in form.board_ids]
 	except NotFoundError:
@@ -167,7 +167,7 @@ def new(req: Request, ctx: Context) -> Response:
 	urls = ctx.get(URLs)
 	user = cast(User, auth.user)
 
-	access = Access(store, user, Ownership(store, user))
+	access = Access(store, user)
 	board_id = req.url.query.get("board_id")
 	if isinstance(board_id, str):
 		try:
@@ -201,32 +201,27 @@ def show(req: Request, ctx: Context, id: UUID) -> Response:
 	views = ctx.get(Views)
 	user = cast(User, auth.user)
 
-	access = Access(store, user, Ownership(store, user))
+	access = Access(store, user)
 	pin = access.find_pin(id)
-	placements = pin.find_placements(store)
-	accessible_placements = pin.find_placements(store, access)
-	boards_by_id = {
-		board.id: board
-		for board in store.query(Board)
-		.where_in(id=[placement.board_id for placement in accessible_placements])
+	placements = pin.find_accessible_placements(store, access)
+	boards = (
+		store.query(Board)
+		.where_in(id=[placement.board_id for placement in placements])
 		.all()
-	}
-	accessible_boards = [
-		boards_by_id[placement.board_id] for placement in accessible_placements
-	]
+	)
 	adder = Placement.find_adder(
 		store,
-		accessible_placements,
-		_referring_board_id(ctx, req.referrer, accessible_placements),
+		placements,
+		_referring_board_id(ctx, req.referrer, placements),
 	)
 	return views.render(
 		"pins.show",
 		{
 			"pin": pin,
-			"accessible_boards": accessible_boards,
+			"accessible_boards": boards,
 			"creator": store.find_one(User, pin.creator_id),
 			"adder": adder,
-			"is_unfiled": not placements,
+			"is_unfiled": not pin.find_placements(store),
 		},
 	)
 
@@ -239,10 +234,10 @@ def edit(req: Request, ctx: Context, id: UUID) -> Response:
 	user = cast(User, auth.user)
 
 	ownership = Ownership(store, user)
-	access = Access(store, user, ownership)
+	access = Access(store, user)
 	pin = ownership.find_pin(id)
-	accessible_placements = pin.find_placements(store, access)
-	selected_board_ids = [placement.board_id for placement in accessible_placements]
+	placements = pin.find_accessible_placements(store, access)
+	selected_board_ids = [placement.board_id for placement in placements]
 
 	return views.render(
 		"pins.edit",
@@ -256,7 +251,7 @@ def edit(req: Request, ctx: Context, id: UUID) -> Response:
 				ctx,
 				req.referrer,
 				pin,
-				accessible_placements,
+				placements,
 			),
 		},
 	)
@@ -270,7 +265,7 @@ def update(req: Request, ctx: Context, id: UUID) -> Response:
 	user = cast(User, auth.user)
 
 	ownership = Ownership(store, user)
-	access = Access(store, user, ownership)
+	access = Access(store, user)
 	pin = ownership.find_pin(id)
 
 	form, errors = PinForm.validate(req.input)
@@ -290,7 +285,7 @@ def update(req: Request, ctx: Context, id: UUID) -> Response:
 		ctx,
 		form.return_to,
 		pin,
-		pin.find_placements(store, access),
+		pin.find_accessible_placements(store, access),
 	)
 	pin.place_on(store, boards, access)
 	pin.url = form.url
