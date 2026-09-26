@@ -1,8 +1,8 @@
 from uuid import uuid4
 
-from luna.test.assertion import assert_eq
+from luna.test.assertion import assert_eq, assert_raises
 
-from app import Board, Pin, Placement, User
+from app import Access, Board, Ownership, Pin, Placement, Share, User
 from test.support import TestStore
 
 
@@ -99,3 +99,126 @@ def test_deleting_pin_removes_its_placements():
 
 		assert_eq(store.find_all(Placement), [])
 		assert_eq(len(store.find_all(Board)), 2)
+
+
+def test_find_placements_with_access_skips_inaccessible_boards():
+	with TestStore() as store:
+		viewer = store.create(User, name="Viewer")
+		other_creator = store.create(User, name="Other creator")
+		owned = store.create(Board, title="Owned", creator_id=viewer.id)
+		shared = store.create(Board, title="Shared", creator_id=other_creator.id)
+		hidden = store.create(Board, title="Hidden", creator_id=other_creator.id)
+		store.create(Share, board_id=shared.id, user_id=viewer.id)
+		pin = store.create(
+			Pin,
+			title="Sartre",
+			url="https://plato.stanford.edu/entries/sartre/",
+			creator_id=viewer.id,
+		)
+		for board in [owned, shared, hidden]:
+			Placement.create(store, pin, board, other_creator)
+
+		placements = pin.find_placements(store, Access(Ownership(store, viewer)))
+
+		assert_eq(
+			{placement.board_id for placement in placements}, {owned.id, shared.id}
+		)
+
+
+def test_place_on_adds_and_removes_placements_and_keeps_retained_ones():
+	with TestStore() as store:
+		viewer = store.create(User, name="Viewer")
+		other_creator = store.create(User, name="Other creator")
+		reading = store.create(Board, title="Reading", creator_id=viewer.id)
+		essays = store.create(Board, title="Essays", creator_id=viewer.id)
+		unread = store.create(Board, title="Unread", creator_id=viewer.id)
+		pin = store.create(
+			Pin,
+			title="Sartre",
+			url="https://plato.stanford.edu/entries/sartre/",
+			creator_id=viewer.id,
+		)
+		retained = Placement.create(store, pin, reading, other_creator)
+		Placement.create(store, pin, essays, viewer)
+		access = Access(Ownership(store, viewer))
+
+		pin.place_on(store, [reading, unread], access)
+
+		placements = {
+			placement.board_id: placement for placement in pin.find_placements(store)
+		}
+		assert_eq(set(placements), {reading.id, unread.id})
+		kept = placements[reading.id]
+		assert_eq(
+			(kept.id, kept.created_at, kept.adder_id),
+			(retained.id, retained.created_at, other_creator.id),
+		)
+		assert_eq(placements[unread.id].adder_id, viewer.id)
+
+
+def test_place_on_keeps_placements_on_inaccessible_boards():
+	with TestStore() as store:
+		viewer = store.create(User, name="Viewer")
+		hidden_creator = store.create(User, name="Hidden creator")
+		visible = store.create(Board, title="Visible", creator_id=viewer.id)
+		hidden = store.create(Board, title="Hidden", creator_id=hidden_creator.id)
+		pin = store.create(
+			Pin,
+			title="Sartre",
+			url="https://plato.stanford.edu/entries/sartre/",
+			creator_id=viewer.id,
+		)
+		Placement.create(store, pin, visible, viewer)
+		hidden_placement = Placement.create(store, pin, hidden, hidden_creator)
+
+		pin.place_on(store, [], Access(Ownership(store, viewer)))
+
+		placements = pin.find_placements(store)
+		assert_eq([placement.id for placement in placements], [hidden_placement.id])
+		assert_eq(placements[0].created_at, hidden_placement.created_at)
+
+
+def test_place_on_places_a_new_pin_once_per_board():
+	with TestStore() as store:
+		viewer = store.create(User, name="Viewer")
+		reading = store.create(Board, title="Reading", creator_id=viewer.id)
+		essays = store.create(Board, title="Essays", creator_id=viewer.id)
+		pin = store.create(
+			Pin,
+			title="Sartre",
+			url="https://plato.stanford.edu/entries/sartre/",
+			creator_id=viewer.id,
+		)
+
+		pin.place_on(
+			store,
+			[reading, essays, reading],
+			Access(Ownership(store, viewer)),
+		)
+
+		placements = pin.find_placements(store)
+		assert_eq(len(placements), 2)
+		assert_eq(
+			{placement.board_id for placement in placements}, {reading.id, essays.id}
+		)
+
+
+def test_place_on_refuses_inaccessible_boards_without_changes():
+	with TestStore() as store:
+		viewer = store.create(User, name="Viewer")
+		stranger = store.create(User, name="Stranger")
+		reading = store.create(Board, title="Reading", creator_id=viewer.id)
+		private = store.create(Board, title="Private", creator_id=stranger.id)
+		pin = store.create(
+			Pin,
+			title="Sartre",
+			url="https://plato.stanford.edu/entries/sartre/",
+			creator_id=viewer.id,
+		)
+		placement = Placement.create(store, pin, reading, viewer)
+
+		with assert_raises(ValueError):
+			pin.place_on(store, [private], Access(Ownership(store, viewer)))
+
+		placements = pin.find_placements(store)
+		assert_eq([stored.id for stored in placements], [placement.id])
