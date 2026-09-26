@@ -21,8 +21,14 @@ class Ownership:
 			raise NotFoundError(Board, id)
 		return board
 
+	def find_boards(self) -> list[Board]:
+		return self.store.find_by(Board, creator_id=self.user.id)
+
 	def find_pin(self, id: UUID) -> Pin:
 		pin = self.store.find_one(Pin, id)
 		if not self.owns(pin):
 			raise NotFoundError(Pin, id)
 		return pin
+
+	def find_pins(self) -> list[Pin]:
+		return self.store.find_by(Pin, creator_id=self.user.id)

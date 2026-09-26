@@ -2,7 +2,7 @@ from uuid import uuid4
 
 from luna.test.assertion import assert_eq
 
-from app import Board, Pin, Placement, User
+from app import Access, Board, Pin, Placement, Share, User
 from test.support import TestStore
 
 
@@ -99,3 +99,27 @@ def test_deleting_pin_removes_its_placements():
 
 		assert_eq(store.find_all(Placement), [])
 		assert_eq(len(store.find_all(Board)), 2)
+
+
+def test_find_accessible_placements_skips_inaccessible_boards():
+	with TestStore() as store:
+		viewer = store.create(User, name="Viewer")
+		other_creator = store.create(User, name="Other creator")
+		owned = store.create(Board, title="Owned", creator_id=viewer.id)
+		shared = store.create(Board, title="Shared", creator_id=other_creator.id)
+		hidden = store.create(Board, title="Hidden", creator_id=other_creator.id)
+		store.create(Share, board_id=shared.id, user_id=viewer.id)
+		pin = store.create(
+			Pin,
+			title="Sartre",
+			url="https://plato.stanford.edu/entries/sartre/",
+			creator_id=viewer.id,
+		)
+		for board in [owned, shared, hidden]:
+			Placement.create(store, pin, board, other_creator)
+
+		placements = pin.find_accessible_placements(store, Access(store, viewer))
+
+		assert_eq(
+			{placement.board_id for placement in placements}, {owned.id, shared.id}
+		)

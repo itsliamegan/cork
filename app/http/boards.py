@@ -39,13 +39,6 @@ def _sharable_users(ctx: Context, owner_id: UUID) -> list[User]:
 	return users
 
 
-def _are_sharable_users(store: Store, user_ids: set[UUID], owner_id: UUID) -> bool:
-	if owner_id in user_ids:
-		return False
-	users = store.query(User).where_in(id=user_ids).all()
-	return len(users) == len(user_ids)
-
-
 def index(req: Request, ctx: Context) -> Response:
 	store = ctx.get(Store)
 	auth = ctx.get(Authenticator)
@@ -53,7 +46,7 @@ def index(req: Request, ctx: Context) -> Response:
 	user = cast(User, auth.user)
 
 	access = Access(store, user)
-	boards = Ordering.arrange(store, user, access.find_boards())
+	boards = Ordering.arrange(store, access)
 	shared_board_ids = {
 		share.board_id
 		for share in store.query(Share)
@@ -84,17 +77,21 @@ def create(req: Request, ctx: Context) -> Response:
 	user = cast(User, auth.user)
 
 	form, errors = BoardForm.validate(req.input)
-	if "user_ids" in errors or not _are_sharable_users(
-		store, set(form.user_ids), user.id
-	):
+	if "user_ids" in errors:
+		return Response.text("400 Bad Request", status=Status.BAD_REQUEST)
+	sharable_users = _sharable_users(ctx, user.id)
+	if not set(form.user_ids) <= {sharable.id for sharable in sharable_users}:
 		return Response.text("400 Bad Request", status=Status.BAD_REQUEST)
 	if errors:
 		submissions.flash(errors, req.input)
 		return Response.redirect(urls.route("boards.new"))
 
 	board = store.create(Board, title=form.title, creator_id=user.id)
-	for user_id in set(form.user_ids):
-		store.create(Share, board_id=board.id, user_id=user_id)
+	Share.replace(
+		store,
+		board,
+		[sharable for sharable in sharable_users if sharable.id in form.user_ids],
+	)
 
 	return Response.redirect(urls.route("boards.show", {"id": board.id}))
 
@@ -133,7 +130,7 @@ def show(req: Request, ctx: Context, id: UUID) -> Response:
 			{
 				"placement": placement,
 				"pin": pin,
-				"can_remove": Removal(placement, pin, board).is_authorized(store, user),
+				"can_remove": Removal(placement, pin, board).is_authorized(access),
 			}
 		)
 	pin_rows.sort(key=lambda row: row["pin"].created_at, reverse=True)
@@ -183,24 +180,20 @@ def update(req: Request, ctx: Context, id: UUID) -> Response:
 	ownership = Ownership(store, user)
 	board = ownership.find_board(id)
 	form, errors = BoardForm.validate(req.input)
-	if "user_ids" in errors or not _are_sharable_users(
-		store, set(form.user_ids), board.creator_id
-	):
+	if "user_ids" in errors:
+		return Response.text("400 Bad Request", status=Status.BAD_REQUEST)
+	sharable_users = _sharable_users(ctx, board.creator_id)
+	if not set(form.user_ids) <= {sharable.id for sharable in sharable_users}:
 		return Response.text("400 Bad Request", status=Status.BAD_REQUEST)
 	if errors:
 		submissions.flash(errors, req.input)
 		return Response.redirect(urls.route("boards.edit", {"id": board.id}))
 
-	selected_user_ids = set(form.user_ids)
-
-	shares = store.find_by(Share, board_id=board.id)
-	shared_user_ids = {share.user_id for share in shares}
-	for share in shares:
-		if share.user_id not in selected_user_ids:
-			store.delete(share)
-	for user_id in selected_user_ids - shared_user_ids:
-		store.create(Share, board_id=board.id, user_id=user_id)
-
+	Share.replace(
+		store,
+		board,
+		[sharable for sharable in sharable_users if sharable.id in form.user_ids],
+	)
 	board.title = form.title
 	store.save(board)
 

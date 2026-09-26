@@ -11,7 +11,7 @@ from helios.http import Request, Response, Status, URL
 from helios.routing import URLs
 from helios.view import Views
 
-from app import Access, Ownership, Pin, Placement, Share, User
+from app import Access, Board, Ownership, Pin, Placement, Share, User
 from app.http.rules import Distinct
 from app.views.pins.placements import PlacementOption
 
@@ -49,23 +49,14 @@ def _pin_return_url(
 	pin: Pin,
 	placements: list[Placement],
 ) -> URL:
-	store = ctx.get(Store)
-	auth = ctx.get(Authenticator)
 	urls = ctx.get(URLs)
-	user = cast(User, auth.user)
 
-	access = Access(store, user)
-	fallback = urls.route("pins.show", {"id": pin.id})
 	match = urls.match(raw_url)
 	if match is not None and match.route.name == "pins.index":
 		return urls.route("pins.index")
 	board_id = _referring_board_id(ctx, raw_url, placements)
 	if board_id is None:
-		return fallback
-	try:
-		access.find_board(board_id)
-	except NotFoundError:
-		return fallback
+		return urls.route("pins.show", {"id": pin.id})
 	return urls.route("boards.show", {"id": board_id})
 
 
@@ -104,9 +95,8 @@ def index(req: Request, ctx: Context) -> Response:
 	views = ctx.get(Views)
 	user = cast(User, auth.user)
 
-	pins = (
-		store.query(Pin).where(creator_id=user.id).order_by("created_at", "desc").all()
-	)
+	pins = Ownership(store, user).find_pins()
+	pins.sort(key=lambda pin: pin.created_at, reverse=True)
 	board_counts = Counter(
 		placement.pin_id
 		for placement in store.query(Placement)
@@ -156,8 +146,7 @@ def create(req: Request, ctx: Context) -> Response:
 		note=form.note,
 		creator_id=user.id,
 	)
-	for board in boards:
-		Placement.create(store, pin, board, user)
+	Placement.replace(store, pin, boards, access)
 
 	match = urls.match(form.return_to)
 	if (
@@ -214,29 +203,25 @@ def show(req: Request, ctx: Context, id: UUID) -> Response:
 
 	access = Access(store, user)
 	pin = access.find_pin(id)
-	placements = pin.find_placements(store)
-	accessible_placements = []
-	accessible_boards = []
-	for placement in placements:
-		try:
-			board = access.find_board(placement.board_id)
-		except NotFoundError:
-			continue
-		accessible_placements.append(placement)
-		accessible_boards.append(board)
+	placements = pin.find_accessible_placements(store, access)
+	boards = (
+		store.query(Board)
+		.where_in(id=[placement.board_id for placement in placements])
+		.all()
+	)
 	adder = Placement.find_adder(
 		store,
-		accessible_placements,
-		_referring_board_id(ctx, req.referrer, accessible_placements),
+		placements,
+		_referring_board_id(ctx, req.referrer, placements),
 	)
 	return views.render(
 		"pins.show",
 		{
 			"pin": pin,
-			"accessible_boards": accessible_boards,
+			"accessible_boards": boards,
 			"creator": store.find_one(User, pin.creator_id),
 			"adder": adder,
-			"is_unfiled": not placements,
+			"is_unfiled": not pin.find_placements(store),
 		},
 	)
 
@@ -248,18 +233,11 @@ def edit(req: Request, ctx: Context, id: UUID) -> Response:
 	submission = ctx.get(Submission)
 	user = cast(User, auth.user)
 
-	access = Access(store, user)
 	ownership = Ownership(store, user)
+	access = Access(store, user)
 	pin = ownership.find_pin(id)
-	placements = pin.find_placements(store)
-	accessible_placements = []
-	for placement in placements:
-		try:
-			access.find_board(placement.board_id)
-		except NotFoundError:
-			continue
-		accessible_placements.append(placement)
-	selected_board_ids = [placement.board_id for placement in accessible_placements]
+	placements = pin.find_accessible_placements(store, access)
+	selected_board_ids = [placement.board_id for placement in placements]
 
 	return views.render(
 		"pins.edit",
@@ -269,7 +247,12 @@ def edit(req: Request, ctx: Context, id: UUID) -> Response:
 			"selected_board_ids": set(
 				submission.value("board_ids", selected_board_ids)
 			),
-			"return_to": _pin_return_url(ctx, req.referrer, pin, placements),
+			"return_to": _pin_return_url(
+				ctx,
+				req.referrer,
+				pin,
+				placements,
+			),
 		},
 	)
 
@@ -281,18 +264,16 @@ def update(req: Request, ctx: Context, id: UUID) -> Response:
 	urls = ctx.get(URLs)
 	user = cast(User, auth.user)
 
-	access = Access(store, user)
 	ownership = Ownership(store, user)
+	access = Access(store, user)
 	pin = ownership.find_pin(id)
-	placements = pin.find_placements(store)
 
 	form, errors = PinForm.validate(req.input)
 	if "board_ids" in errors:
 		return Response.text("400 Bad Request", status=Status.BAD_REQUEST)
 
-	board_ids = set(form.board_ids)
 	try:
-		boards_by_id = {board_id: access.find_board(board_id) for board_id in board_ids}
+		boards = [access.find_board(board_id) for board_id in form.board_ids]
 	except NotFoundError:
 		return Response.text("400 Bad Request", status=Status.BAD_REQUEST)
 
@@ -300,20 +281,13 @@ def update(req: Request, ctx: Context, id: UUID) -> Response:
 		submissions.flash(errors, req.input)
 		return Response.redirect(urls.route("pins.edit", {"id": pin.id}))
 
-	return_to = _pin_return_url(ctx, form.return_to, pin, placements)
-	accessible_placements = []
-	for placement in placements:
-		try:
-			access.find_board(placement.board_id)
-		except NotFoundError:
-			continue
-		accessible_placements.append(placement)
-	for placement in accessible_placements:
-		if placement.board_id not in board_ids:
-			store.delete(placement)
-	existing_board_ids = {placement.board_id for placement in placements}
-	for board_id in board_ids - existing_board_ids:
-		Placement.create(store, pin, boards_by_id[board_id], user)
+	return_to = _pin_return_url(
+		ctx,
+		form.return_to,
+		pin,
+		pin.find_accessible_placements(store, access),
+	)
+	Placement.replace(store, pin, boards, access)
 	pin.url = form.url
 	pin.title = form.title
 	pin.note = form.note

@@ -3,6 +3,7 @@ from uuid import UUID
 from helios.database import NotFoundError, Store
 
 from app.board import Board
+from app.ownership import Ownership
 from app.pin import Pin
 from app.share import Share
 from app.user import User
@@ -12,36 +13,23 @@ class Access:
 	def __init__(self, store: Store, user: User):
 		self.store = store
 		self.user = user
+		self.ownership = Ownership(store, user)
+
+	def owns(self, record: Board | Pin) -> bool:
+		return self.ownership.owns(record)
 
 	def allows_board(self, board: Board) -> bool:
-		if board.creator_id == self.user.id:
-			return True
-		share = (
-			self.store.query(Share)
-			.where(board_id=board.id, user_id=self.user.id)
-			.first()
-		)
-		return share is not None
+		return self.owns(board) or Share.exists(self.store, board, self.user)
 
 	def allows_pin(self, pin: Pin) -> bool:
-		if pin.creator_id == self.user.id:
+		if self.owns(pin):
 			return True
-		board_ids = [
-			placement.board_id for placement in pin.find_placements(self.store)
-		]
-		owned_board = (
-			self.store.query(Board)
-			.where_in(id=board_ids)
-			.where(creator_id=self.user.id)
-			.first()
-		)
-		share = (
-			self.store.query(Share)
-			.where_in(board_id=board_ids)
-			.where(user_id=self.user.id)
-			.first()
-		)
-		return owned_board is not None or share is not None
+		else:
+			board_ids = self.find_board_ids()
+			return any(
+				placement.board_id in board_ids
+				for placement in pin.find_placements(self.store)
+			)
 
 	def find_board(self, id: UUID) -> Board:
 		board = self.store.find_one(Board, id)
@@ -49,13 +37,14 @@ class Access:
 			raise NotFoundError(Board, id)
 		return board
 
+	def find_board_ids(self) -> list[UUID]:
+		owned_board_ids = [board.id for board in self.ownership.find_boards()]
+		shared_board_ids = Share.find_board_ids(self.store, self.user)
+		return [*owned_board_ids, *shared_board_ids]
+
 	def find_boards(self) -> list[Board]:
-		shared_board_ids = {
-			share.board_id for share in self.store.find_by(Share, user_id=self.user.id)
-		}
-		owned_boards = self.store.find_by(Board, creator_id=self.user.id)
-		shared_boards = self.store.query(Board).where_in(id=shared_board_ids).all()
-		return [*owned_boards, *shared_boards]
+		shared_boards = Share.find_boards(self.store, self.user)
+		return [*self.ownership.find_boards(), *shared_boards]
 
 	def find_pin(self, id: UUID) -> Pin:
 		pin = self.store.find_one(Pin, id)

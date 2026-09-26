@@ -124,3 +124,17 @@ def test_find_boards_returns_created_and_shared_boards():
 		boards = Access(store, viewer).find_boards()
 
 		assert_eq({board.id for board in boards}, {created.id, shared.id})
+
+
+def test_find_board_ids_covers_created_and_shared_boards():
+	with TestStore() as store:
+		viewer = store.create(User, name="Viewer")
+		other_creator = store.create(User, name="Other creator")
+		created = store.create(Board, title="Created", creator_id=viewer.id)
+		shared = store.create(Board, title="Shared", creator_id=other_creator.id)
+		store.create(Board, title="Private", creator_id=other_creator.id)
+		store.create(Share, board_id=shared.id, user_id=viewer.id)
+
+		board_ids = Access(store, viewer).find_board_ids()
+
+		assert_eq(sorted(board_ids), sorted([created.id, shared.id]))

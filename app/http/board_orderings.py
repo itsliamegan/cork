@@ -27,18 +27,11 @@ def update(req: Request, ctx: Context) -> Response:
 		return Response.text("400 Bad Request", status=Status.BAD_REQUEST)
 
 	access = Access(store, user)
-	accessible_board_ids = {board.id for board in access.find_boards()}
-	if set(form.board_ids) != accessible_board_ids:
+	boards_by_id = {board.id: board for board in access.find_boards()}
+	if set(form.board_ids) != set(boards_by_id):
 		return Response.text("400 Bad Request", status=Status.BAD_REQUEST)
 
-	for ordering in store.find_by(Ordering, user_id=user.id):
-		store.delete(ordering)
-	for position, board_id in enumerate(form.board_ids):
-		store.create(
-			Ordering,
-			user_id=user.id,
-			board_id=board_id,
-			position=position,
-		)
+	boards = [boards_by_id[board_id] for board_id in form.board_ids]
+	Ordering.replace(store, access, boards)
 
 	return Response.empty()

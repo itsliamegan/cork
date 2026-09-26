@@ -7,7 +7,7 @@ from helios.database import NotFoundError, Store
 from helios.http import Request, Response
 from helios.routing import URLs
 
-from app import Board, Pin, Placement, Removal, User
+from app import Access, Board, Pin, Placement, Removal, User
 
 
 def delete(req: Request, ctx: Context, id: UUID) -> Response:
@@ -19,7 +19,8 @@ def delete(req: Request, ctx: Context, id: UUID) -> Response:
 	placement = store.find_one(Placement, id)
 	pin = store.find_one(Pin, placement.pin_id)
 	board = store.find_one(Board, placement.board_id)
-	if not Removal(placement, pin, board).is_authorized(store, user):
+	access = Access(store, user)
+	if not Removal(placement, pin, board).is_authorized(access):
 		raise NotFoundError(Placement, id)
 
 	store.delete(placement)

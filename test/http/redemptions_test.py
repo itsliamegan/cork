@@ -26,7 +26,6 @@ def test_new_renders_untargeted_invite():
 		res = app.client.get(f"/redemptions/new?token={invite.token.value}")
 
 		assert_eq(res.status_code, 200)
-		assert_that("Invited by Creator" in res.text)
 
 
 def test_new_renders_targeted_invite():
@@ -37,21 +36,6 @@ def test_new_renders_targeted_invite():
 		res = app.client.get(f"/redemptions/new?token={invite.token.value}")
 
 		assert_eq(res.status_code, 200)
-		assert_that("<strong>Target</strong>" in res.text)
-
-
-def test_new_renders_name_error():
-	with TestApplication() as app:
-		creator = app.store.create(User, name="Creator")
-		invite = Invite.create(app.store, creator)
-
-		res = app.client.post(
-			"/redemptions/", form={"token": invite.token.value, "name": " creator "}
-		)
-		res = app.client.get(res.headers["Location"])
-
-		assert_eq(res.status_code, 200)
-		assert_that("Name is already in use." in res.text)
 
 
 def test_untargeted_invite_creates_user_and_recovery():

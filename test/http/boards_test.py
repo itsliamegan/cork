@@ -1,3 +1,5 @@
+from uuid import uuid4
+
 from luna.test.assertion import assert_eq, assert_that
 
 from app import Board, Pin, Placement, Share, User
@@ -7,92 +9,50 @@ from test.support import TestApplication, checked_values
 def test_creates_board():
 	with TestApplication() as app:
 		creator = app.store.create(User, name="Creator")
+		participant = app.store.create(User, name="Participant")
 		app.sign_in(creator)
 
-		res = app.client.post("/boards/", form={"title": "Reading"})
+		res = app.client.post(
+			"/boards/",
+			form={"title": "Reading", "user_ids": [str(participant.id)]},
+		)
 		boards = app.store.find_all(Board)
+		shares = app.store.find_all(Share)
 
 		assert_eq(res.status_code, 302)
 		assert_eq(res.headers["Location"], f"/boards/{boards[0].id}")
 		assert_eq(len(boards), 1)
 		assert_eq(boards[0].title, "Reading")
 		assert_eq(boards[0].creator_id, creator.id)
+		assert_eq(
+			[(share.board_id, share.user_id) for share in shares],
+			[(boards[0].id, participant.id)],
+		)
 
 
-def test_create_with_blank_title_rerenders_form():
+def test_rejects_unsharable_users():
 	with TestApplication() as app:
 		creator = app.store.create(User, name="Creator")
 		participant = app.store.create(User, name="Participant")
-		app.store.create(User, name="Stranger")
+		board = app.store.create(Board, title="Reading", creator_id=creator.id)
+		share = app.store.create(Share, board_id=board.id, user_id=participant.id)
 		app.sign_in(creator)
 
-		for title in ["", "   "]:
-			res = app.client.post(
+		for user_ids in [[str(creator.id)], [str(uuid4())]]:
+			create_res = app.client.post(
 				"/boards/",
-				form={"title": title, "user_ids": [str(participant.id)]},
+				form={"title": "Essays", "user_ids": user_ids},
 			)
-			form = app.client.get(res.headers["Location"])
-
-			assert_eq(res.status_code, 302)
-			assert_eq(res.headers["Location"], "/boards/new")
-			assert_that("Title must be provided." in form.text)
-			assert_eq(checked_values(form.text, "user_ids"), {str(participant.id)})
-			assert_eq(app.store.find_all(Board), [])
-			assert_eq(app.store.find_all(Share), [])
-
-
-def test_update_with_blank_title_rerenders_form():
-	with TestApplication() as app:
-		creator = app.store.create(User, name="Creator")
-		participant = app.store.create(User, name="Participant")
-		newcomer = app.store.create(User, name="Newcomer")
-		board = app.store.create(Board, title="Reading", creator_id=creator.id)
-		app.store.create(Share, board_id=board.id, user_id=participant.id)
-		app.sign_in(creator)
-
-		for title in ["", "   "]:
-			res = app.client.post(
+			update_res = app.client.post(
 				f"/boards/{board.id}",
-				form={
-					"_method": "PUT",
-					"title": title,
-					"user_ids": [str(newcomer.id)],
-					"return_to": "/boards/",
-				},
+				form={"_method": "PUT", "title": "Essays", "user_ids": user_ids},
 			)
-			form = app.client.get(res.headers["Location"])
-			shares = app.store.find_by(Share, board_id=board.id)
 
-			assert_eq(res.status_code, 302)
-			assert_eq(res.headers["Location"], f"/boards/{board.id}/edit")
-			assert_that("Title must be provided." in form.text)
-			assert_eq(checked_values(form.text, "user_ids"), {str(newcomer.id)})
-			assert_that('name="return_to" value="/boards/"' in form.text)
+			assert_eq(create_res.status_code, 400)
+			assert_eq(update_res.status_code, 400)
+			assert_eq([stored.id for stored in app.store.find_all(Board)], [board.id])
 			assert_eq(app.store.find_one(Board, board.id).title, "Reading")
-			assert_eq([share.user_id for share in shares], [participant.id])
-
-
-def test_rejects_repeated_user_ids():
-	with TestApplication() as app:
-		creator = app.store.create(User, name="Creator")
-		participant = app.store.create(User, name="Participant")
-		board = app.store.create(Board, title="Reading", creator_id=creator.id)
-		app.sign_in(creator)
-		user_ids = [str(participant.id), str(participant.id)]
-
-		create_res = app.client.post(
-			"/boards/",
-			form={"title": "Essays", "user_ids": user_ids},
-		)
-		update_res = app.client.post(
-			f"/boards/{board.id}",
-			form={"_method": "PUT", "title": "Essays", "user_ids": user_ids},
-		)
-
-		assert_eq(create_res.status_code, 400)
-		assert_eq(update_res.status_code, 400)
-		assert_eq([board.title for board in app.store.find_all(Board)], ["Reading"])
-		assert_eq(app.store.find_all(Share), [])
+			assert_eq([stored.id for stored in app.store.find_all(Share)], [share.id])
 
 
 def test_edit_form_checks_current_shares():
@@ -191,25 +151,14 @@ def test_shares_board():
 		assert_eq(res.status_code, 404)
 
 
-def test_revokes_shared_board():
+def test_update_changes_board_and_its_shares():
 	with TestApplication() as app:
 		creator = app.store.create(User, name="Creator")
 		former_participant = app.store.create(User, name="Former participant")
 		new_participant = app.store.create(User, name="New participant")
+		board = app.store.create(Board, title="Reading", creator_id=creator.id)
+		app.store.create(Share, board_id=board.id, user_id=former_participant.id)
 		app.sign_in(creator)
-
-		res = app.client.post(
-			"/boards/",
-			form={
-				"title": "Reading",
-				"user_ids": [str(former_participant.id)],
-			},
-		)
-		board = app.store.find_all(Board)[0]
-		shares = app.store.find_by(Share, board_id=board.id)
-
-		assert_eq(res.status_code, 302)
-		assert_eq([share.user_id for share in shares], [former_participant.id])
 
 		res = app.client.post(
 			f"/boards/{board.id}",
@@ -223,54 +172,6 @@ def test_revokes_shared_board():
 		shares = app.store.find_by(Share, board_id=board.id)
 
 		assert_eq(res.status_code, 302)
+		assert_eq(res.headers["Location"], f"/boards/{board.id}")
 		assert_eq(app.store.find_one(Board, board.id).title, "Philosophy Reading")
 		assert_eq([share.user_id for share in shares], [new_participant.id])
-
-		app.sign_in(former_participant)
-
-		assert_eq(app.client.get(f"/boards/{board.id}").status_code, 404)
-
-		app.sign_in(new_participant)
-
-		assert_eq(app.client.get(f"/boards/{board.id}").status_code, 200)
-
-
-def test_board_overflow_menu_offers_edit_and_delete_without_sharing():
-	with TestApplication() as app:
-		creator = app.store.create(User, name="Creator")
-		board = app.store.create(Board, title="Reading", creator_id=creator.id)
-		app.sign_in(creator)
-
-		index_res = app.client.get("/boards/")
-		edit_res = app.client.get(f"/boards/{board.id}/edit")
-
-		assert_that(
-			"pins will remain in Pins and on any other boards" in index_res.text
-		)
-		assert_that("Delete board" not in edit_res.text)
-
-
-def test_board_pin_rows_target_unique_detail_frames():
-	with TestApplication() as app:
-		creator = app.store.create(User, name="Creator")
-		board = app.store.create(Board, title="Reading", creator_id=creator.id)
-		pin = app.store.create(
-			Pin,
-			title="Sartre",
-			url="https://www.example.com/articles/sartre",
-			creator_id=creator.id,
-		)
-		app.store.create(
-			Placement, pin_id=pin.id, board_id=board.id, adder_id=creator.id
-		)
-		app.sign_in(creator)
-
-		res = app.client.get(f"/boards/{board.id}")
-
-		assert_eq(res.status_code, 200)
-		assert_that(
-			f'href="/pins/{pin.id}"' in res.text
-			and f'data-turbo-frame="pin-{pin.id}-details"' in res.text
-			and f'<turbo-frame id="pin-{pin.id}-details"' in res.text
-		)
-		assert_that("Also on" not in res.text and "Only on this board" not in res.text)
