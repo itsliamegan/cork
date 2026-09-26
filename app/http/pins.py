@@ -6,18 +6,18 @@ from helios import http
 from helios.app import Context
 from helios.auth import Authenticator
 from helios.database import NotFoundError, Store
-from helios.form import Form, Submission, Submissions
+from helios.form import Form, Rules, Submission, Submissions
+from helios.form.rule import Distinct
 from helios.http import Request, Response, Status, URL
 from helios.routing import URLs
 from helios.view import Views
 
 from app import Access, Board, Ownership, Pin, Placement, Share, User
-from app.http.rules import Distinct
 from app.views.pins.placements import PlacementOption
 
 
 class PinForm(Form):
-	rules = {"board_ids": [Distinct()]}
+	rules = Rules({"board_ids": [Distinct()]})
 	messages = {"url.required": "URL must be provided."}
 
 	title: str

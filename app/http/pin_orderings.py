@@ -4,15 +4,15 @@ from uuid import UUID
 from helios.app import Context
 from helios.auth import Authenticator
 from helios.database import Store
-from helios.form import Form
+from helios.form import Form, Rules
+from helios.form.rule import Distinct
 from helios.http import Request, Response, Status
 
 from app import Access, Placement, User
-from app.http.rules import Distinct
 
 
 class PinOrderForm(Form):
-	rules = {"placement_ids": [Distinct()]}
+	rules = Rules({"placement_ids": [Distinct()]})
 
 	placement_ids: list[UUID] = []
 
