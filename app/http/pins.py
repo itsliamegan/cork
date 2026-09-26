@@ -60,11 +60,7 @@ def _pin_return_url(
 	if match is not None and match.route.name == "pins.index":
 		return urls.route("pins.index")
 	board_id = _referring_board_id(ctx, raw_url, placements)
-	if board_id is None:
-		return fallback
-	try:
-		access.find_board(board_id)
-	except NotFoundError:
+	if board_id is None or board_id not in access.find_board_ids():
 		return fallback
 	return urls.route("boards.show", {"id": board_id})
 

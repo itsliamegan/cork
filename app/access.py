@@ -9,40 +9,24 @@ from app.share import Share
 
 
 class Access:
+	# Accessible board IDs are loaded once, so an Access lasts for one request.
 	def __init__(self, ownership: Ownership):
 		self.ownership = ownership
 		self.store = ownership.store
 		self.user = ownership.user
+		self.board_ids: set[UUID] | None = None
 
 	def allows_board(self, board: Board) -> bool:
-		if self.ownership.owns(board):
-			return True
-		share = (
-			self.store.query(Share)
-			.where(board_id=board.id, user_id=self.user.id)
-			.first()
-		)
-		return share is not None
+		return board.id in self.find_board_ids()
 
 	def allows_pin(self, pin: Pin) -> bool:
 		if self.ownership.owns(pin):
 			return True
-		board_ids = [
-			placement.board_id for placement in pin.find_placements(self.store)
-		]
-		owned_board = (
-			self.store.query(Board)
-			.where_in(id=board_ids)
-			.where(creator_id=self.user.id)
-			.first()
+		board_ids = self.find_board_ids()
+		return any(
+			placement.board_id in board_ids
+			for placement in pin.find_placements(self.store)
 		)
-		share = (
-			self.store.query(Share)
-			.where_in(board_id=board_ids)
-			.where(user_id=self.user.id)
-			.first()
-		)
-		return owned_board is not None or share is not None
 
 	def find_board(self, id: UUID) -> Board:
 		board = self.store.find_one(Board, id)
@@ -50,12 +34,18 @@ class Access:
 			raise NotFoundError(Board, id)
 		return board
 
+	def find_board_ids(self) -> set[UUID]:
+		if self.board_ids is None:
+			owned = {board.id for board in self.ownership.find_boards()}
+			shared = {
+				share.board_id
+				for share in self.store.find_by(Share, user_id=self.user.id)
+			}
+			self.board_ids = owned | shared
+		return self.board_ids
+
 	def find_boards(self) -> list[Board]:
-		shared_board_ids = {
-			share.board_id for share in self.store.find_by(Share, user_id=self.user.id)
-		}
-		shared_boards = self.store.query(Board).where_in(id=shared_board_ids).all()
-		return [*self.ownership.find_boards(), *shared_boards]
+		return self.store.query(Board).where_in(id=self.find_board_ids()).all()
 
 	def find_pin(self, id: UUID) -> Pin:
 		pin = self.store.find_one(Pin, id)
