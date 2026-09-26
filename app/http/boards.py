@@ -46,7 +46,7 @@ def index(req: Request, ctx: Context) -> Response:
 	user = cast(User, auth.user)
 
 	access = Access(store, user)
-	boards = Ordering.arrange(store, user, access.find_boards())
+	boards = Ordering.arrange(store, access)
 	shared_board_ids = {
 		share.board_id
 		for share in store.query(Share)

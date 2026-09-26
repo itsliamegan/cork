@@ -196,3 +196,70 @@ def test_replace_refuses_inaccessible_boards_without_changes():
 
 		placements = pin.find_placements(store)
 		assert_eq([stored.id for stored in placements], [placement.id])
+
+
+def test_reorder_positions_placements_as_given():
+	with TestStore() as store:
+		viewer = store.create(User, name="Viewer")
+		reading = store.create(Board, title="Reading", creator_id=viewer.id)
+		placements = []
+		for index in range(3):
+			pin = store.create(
+				Pin,
+				title=f"Pin {index}",
+				url=f"https://example.com/{index}",
+				creator_id=viewer.id,
+			)
+			placements.append(Placement.create(store, pin, reading, viewer))
+		first, second, third = placements
+
+		Placement.reorder(store, reading, [third, first, second])
+
+		assert_eq(
+			[
+				store.find_one(Placement, placement.id).position
+				for placement in placements
+			],
+			[1, 2, 0],
+		)
+
+
+def test_reorder_refuses_duplicate_placements_without_changes():
+	with TestStore() as store:
+		viewer = store.create(User, name="Viewer")
+		reading = store.create(Board, title="Reading", creator_id=viewer.id)
+		pin = store.create(
+			Pin, title="Sartre", url="https://sartre.example", creator_id=viewer.id
+		)
+		placement = Placement.create(store, pin, reading, viewer)
+
+		with assert_raises(ValueError):
+			Placement.reorder(store, reading, [placement, placement])
+
+		assert_eq(store.find_one(Placement, placement.id).position, 0)
+
+
+def test_reorder_refuses_placements_on_other_boards_without_changes():
+	with TestStore() as store:
+		viewer = store.create(User, name="Viewer")
+		reading = store.create(Board, title="Reading", creator_id=viewer.id)
+		essays = store.create(Board, title="Essays", creator_id=viewer.id)
+		first_pin = store.create(
+			Pin, title="First pin", url="https://first.example", creator_id=viewer.id
+		)
+		second_pin = store.create(
+			Pin, title="Second pin", url="https://second.example", creator_id=viewer.id
+		)
+		on_reading = Placement.create(store, first_pin, reading, viewer)
+		on_essays = Placement.create(store, second_pin, essays, viewer)
+
+		with assert_raises(ValueError):
+			Placement.reorder(store, reading, [on_essays, on_reading])
+
+		assert_eq(
+			[
+				store.find_one(Placement, placement.id).position
+				for placement in [on_reading, on_essays]
+			],
+			[0, 0],
+		)

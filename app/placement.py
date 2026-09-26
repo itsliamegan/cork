@@ -62,6 +62,21 @@ class Placement(Model):
 				placed_board_ids.add(board.id)
 
 	@classmethod
+	def reorder(cls, store: Store, board: Board, placements: list[Placement]) -> None:
+		placement_ids = [placement.id for placement in placements]
+		if len(set(placement_ids)) != len(placement_ids):
+			raise ValueError("Placements must be ordered once each")
+		misplaced_ids = {
+			placement.id for placement in placements if placement.board_id != board.id
+		}
+		if misplaced_ids:
+			raise ValueError(f"Placements {misplaced_ids} are not on Board {board.id}")
+
+		for position, placement in enumerate(placements):
+			placement.position = position
+			store.save(placement)
+
+	@classmethod
 	def find_adder(
 		cls,
 		store: Store,

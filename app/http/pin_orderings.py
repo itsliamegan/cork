@@ -34,9 +34,7 @@ def update(req: Request, ctx: Context, id: UUID) -> Response:
 	if set(form.placement_ids) != set(placements_by_id):
 		return Response.text("400 Bad Request", status=Status.BAD_REQUEST)
 
-	for position, placement_id in enumerate(form.placement_ids):
-		placement = placements_by_id[placement_id]
-		placement.position = position
-		store.save(placement)
+	placements = [placements_by_id[placement_id] for placement_id in form.placement_ids]
+	Placement.reorder(store, board, placements)
 
 	return Response.empty()
