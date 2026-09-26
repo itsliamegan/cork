@@ -19,14 +19,7 @@ class Access:
 		return self.ownership.owns(record)
 
 	def allows_board(self, board: Board) -> bool:
-		if self.owns(board):
-			return True
-		share = (
-			self.store.query(Share)
-			.where(board_id=board.id, user_id=self.user.id)
-			.first()
-		)
-		return share is not None
+		return self.owns(board) or Share.exists(self.store, board, self.user)
 
 	def allows_pin(self, pin: Pin) -> bool:
 		if self.owns(pin):
@@ -45,12 +38,12 @@ class Access:
 
 	def find_board_ids(self) -> list[UUID]:
 		owned_board_ids = [board.id for board in self.ownership.find_boards()]
-		return [*owned_board_ids, *self.find_shared_board_ids()]
+		shared_board_ids = Share.find_board_ids(self.store, self.user)
+		return [*owned_board_ids, *shared_board_ids]
 
 	def find_boards(self) -> list[Board]:
-		shared_boards = (
-			self.store.query(Board).where_in(id=self.find_shared_board_ids()).all()
-		)
+		shared_board_ids = Share.find_board_ids(self.store, self.user)
+		shared_boards = self.store.query(Board).where_in(id=shared_board_ids).all()
 		return [*self.ownership.find_boards(), *shared_boards]
 
 	def find_pin(self, id: UUID) -> Pin:
@@ -58,8 +51,3 @@ class Access:
 		if not self.allows_pin(pin):
 			raise NotFoundError(Pin, id)
 		return pin
-
-	def find_shared_board_ids(self) -> list[UUID]:
-		return [
-			share.board_id for share in self.store.find_by(Share, user_id=self.user.id)
-		]
