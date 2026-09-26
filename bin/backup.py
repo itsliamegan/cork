@@ -11,7 +11,7 @@ from tempfile import TemporaryDirectory
 
 from boto3 import client
 from helios.config import ConfigError
-from luna.cli import Option, Program
+from luna.cli import Program, option
 
 import app.config
 
@@ -30,25 +30,38 @@ class Config(app.config.Config):
 		self.prefix = self.text("APP_BACKUP_PREFIX", "backups").strip("/")
 
 
-def main(dry: bool, keep: int):
+class Backup(Program):
 	"""Back up the database to Cloudflare R2."""
 
-	try:
-		config = Config.load(env_file=app.config.ENV_FILE)
-	except ConfigError as error:
-		raise SystemExit(f"backup: error: {error}") from None
-
-	s3 = client(
-		"s3",
-		endpoint_url=config.endpoint,
-		aws_access_key_id=config.access_key_id,
-		aws_secret_access_key=config.secret_access_key,
-		region_name="auto",
+	name = "backup"
+	dry: bool = option(
+		default=False,
+		short="d",
+		help="report what would be uploaded and deleted without doing either",
 	)
-	archive = Archive(config)
+	keep: int = option(
+		default=KEEP_DAYS,
+		short="k",
+		help=f"days of backups to retain (default: {KEEP_DAYS})",
+	)
 
-	backup(s3, archive, config, dry)
-	prune(s3, archive, keep, dry)
+	def run(self):
+		try:
+			config = Config.load(env_file=app.config.ENV_FILE)
+		except ConfigError as error:
+			raise SystemExit(f"backup: error: {error}") from None
+
+		s3 = client(
+			"s3",
+			endpoint_url=config.endpoint,
+			aws_access_key_id=config.access_key_id,
+			aws_secret_access_key=config.secret_access_key,
+			region_name="auto",
+		)
+		archive = Archive(config)
+
+		backup(s3, archive, config, self.dry)
+		prune(s3, archive, self.keep, self.dry)
 
 
 def backup(s3, archive: Archive, config: Config, dry: bool):
@@ -182,27 +195,5 @@ class Archive:
 			return None
 
 
-program = Program(
-	"backup",
-	main,
-	description=main.__doc__,
-	options=[
-		Option(
-			"dry",
-			short="d",
-			type=bool,
-			help="report what would be uploaded and deleted, without doing either",
-		),
-		Option(
-			"keep",
-			short="k",
-			type=int,
-			default=KEEP_DAYS,
-			help=f"days of backups to retain (default: {KEEP_DAYS})",
-		),
-	],
-)
-
-
 if __name__ == "__main__":
-	program.run(sys.argv)
+	Backup.main(sys.argv)

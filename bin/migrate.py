@@ -6,7 +6,7 @@ import sys
 from typing import NoReturn
 
 from helios.config import ConfigError
-from luna.cli import Command, Option, Program
+from luna.cli import Command, Program, option
 
 from app.config import Config, ENV_FILE, ROOT_DIR
 from lib.migrate import MigrationError, Migrations, Migrator
@@ -14,44 +14,55 @@ from lib.migrate import MigrationError, Migrations, Migrator
 MIGRATIONS_DIR = Path(ROOT_DIR, "database", "migrations")
 
 
-def apply(dry: bool):
+class Apply(Command):
 	"""Apply pending migrations to the database."""
 
-	migrator = load_migrator()
-	try:
-		if dry:
-			migrations = migrator.pending()
+	name = "apply"
+	dry: bool = option(
+		default=False,
+		short="d",
+		help="report the migrations that would be applied without applying them",
+	)
+
+	def run(self):
+		migrator = load_migrator()
+		try:
+			if self.dry:
+				migrations = migrator.pending()
+			else:
+				migrations = migrator.apply()
+		except MigrationError as error:
+			if not self.dry:
+				report_version(migrator)
+			fail(error)
+
+		for migration in migrations:
+			print(f"apply  {migration.name}")
+
+		if self.dry:
+			print("dry run: nothing applied")
 		else:
-			migrations = migrator.apply()
-	except MigrationError as error:
-		if not dry:
 			report_version(migrator)
-		fail(error)
-
-	for migration in migrations:
-		print(f"apply  {migration.name}")
-
-	if dry:
-		print("dry run: nothing applied")
-	else:
-		report_version(migrator)
 
 
-def status():
+class Status(Command):
 	"""Report the database version and pending migrations."""
 
-	migrator = load_migrator()
-	try:
-		status = migrator.status()
-	except MigrationError as error:
-		fail(error)
+	name = "status"
 
-	print(f"current  {status.current}")
-	print(f"latest   {status.latest}")
-	if status.current > status.latest:
-		print("database is newer than the latest migration")
-	for migration in status.pending:
-		print(f"pending  {migration.name}")
+	def run(self):
+		migrator = load_migrator()
+		try:
+			status = migrator.status()
+		except MigrationError as error:
+			fail(error)
+
+		print(f"current  {status.current}")
+		print(f"latest   {status.latest}")
+		if status.current > status.latest:
+			print("database is newer than the latest migration")
+		for migration in status.pending:
+			print(f"pending  {migration.name}")
 
 
 def load_migrator() -> Migrator:
@@ -91,26 +102,10 @@ def fail(error: MigrationError) -> NoReturn:
 	raise SystemExit(message) from None
 
 
-program = Program(
-	"migrate",
-	commands=[
-		Command(
-			"apply",
-			apply,
-			description=apply.__doc__,
-			options=[
-				Option(
-					"dry",
-					short="d",
-					type=bool,
-					help="report the migrations that would be applied, without applying them",
-				),
-			],
-		),
-		Command("status", status, description=status.__doc__),
-	],
-)
+class Migrate(Program):
+	name = "migrate"
+	commands = (Apply, Status)
 
 
 if __name__ == "__main__":
-	program.run(sys.argv)
+	Migrate.main(sys.argv)
