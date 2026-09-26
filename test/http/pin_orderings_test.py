@@ -4,28 +4,26 @@ from app import Board, Pin, Placement, Share, User
 from test.support import TestApplication
 
 
-def create_placements(
-	app: TestApplication, board: Board, adder: User
-) -> list[Placement]:
-	placements = []
-	for index in range(2):
-		pin = app.store.create(
-			Pin,
-			title=f"Pin {index}",
-			url=f"https://example.com/{index}",
-			creator_id=adder.id,
-		)
-		placements.append(Placement.create(app.store, pin, board, adder))
-	return placements
-
-
 def test_participant_reorders_placements():
 	with TestApplication() as app:
 		owner = app.store.create(User, name="Owner")
 		participant = app.store.create(User, name="Participant")
 		board = app.store.create(Board, title="Reading", creator_id=owner.id)
 		app.store.create(Share, board_id=board.id, user_id=participant.id)
-		first, second = create_placements(app, board, owner)
+		first_pin = app.store.create(
+			Pin,
+			title="First pin",
+			url="https://first.example",
+			creator_id=owner.id,
+		)
+		second_pin = app.store.create(
+			Pin,
+			title="Second pin",
+			url="https://second.example",
+			creator_id=owner.id,
+		)
+		first = Placement.create(app.store, first_pin, board, owner)
+		second = Placement.create(app.store, second_pin, board, owner)
 		app.sign_in(participant)
 
 		res = app.client.post(
@@ -50,7 +48,20 @@ def test_rejects_incomplete_placement_orders():
 	with TestApplication() as app:
 		owner = app.store.create(User, name="Owner")
 		board = app.store.create(Board, title="Reading", creator_id=owner.id)
-		first, second = create_placements(app, board, owner)
+		first_pin = app.store.create(
+			Pin,
+			title="First pin",
+			url="https://first.example",
+			creator_id=owner.id,
+		)
+		second_pin = app.store.create(
+			Pin,
+			title="Second pin",
+			url="https://second.example",
+			creator_id=owner.id,
+		)
+		first = Placement.create(app.store, first_pin, board, owner)
+		second = Placement.create(app.store, second_pin, board, owner)
 		app.sign_in(owner)
 
 		res = app.client.post(
@@ -76,7 +87,20 @@ def test_outsider_cannot_reorder_placements():
 		owner = app.store.create(User, name="Owner")
 		outsider = app.store.create(User, name="Outsider")
 		board = app.store.create(Board, title="Reading", creator_id=owner.id)
-		first, second = create_placements(app, board, owner)
+		first_pin = app.store.create(
+			Pin,
+			title="First pin",
+			url="https://first.example",
+			creator_id=owner.id,
+		)
+		second_pin = app.store.create(
+			Pin,
+			title="Second pin",
+			url="https://second.example",
+			creator_id=owner.id,
+		)
+		first = Placement.create(app.store, first_pin, board, owner)
+		second = Placement.create(app.store, second_pin, board, owner)
 		app.sign_in(outsider)
 
 		res = app.client.post(
