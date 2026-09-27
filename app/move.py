@@ -1,3 +1,4 @@
+from collections.abc import Container
 from dataclasses import dataclass
 from uuid import UUID
 
@@ -12,10 +13,16 @@ class Move:
 	above_id: UUID | None
 	below_id: UUID | None
 
-	def apply(self, record_ids: list[UUID]) -> list[UUID] | None:
+	def apply(
+		self,
+		record_ids: list[UUID],
+		hidden_ids: Container[UUID] = frozenset(),
+	) -> list[UUID] | None:
 		for id in (self.record_id, self.above_id, self.below_id):
 			if id is not None and id not in record_ids:
 				raise OutOfDate(f"{id} is not in the order")
+		if self.record_id in hidden_ids:
+			raise OutOfDate(f"{self.record_id} is hidden")
 
 		start = -1 if self.above_id is None else record_ids.index(self.above_id)
 		end = (
@@ -26,7 +33,7 @@ class Move:
 		if start > end:
 			raise OutOfDate(f"{self.above_id} comes after {self.below_id}")
 		between = record_ids[start + 1 : end]
-		if any(id != self.record_id for id in between):
+		if any(id != self.record_id and id not in hidden_ids for id in between):
 			raise OutOfDate(
 				f"Other records lie between {self.above_id} and {self.below_id}"
 			)

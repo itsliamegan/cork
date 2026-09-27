@@ -71,9 +71,14 @@ class Placement(Model):
 		return placements
 
 	@classmethod
-	def move(cls, store: Store, board: Board, move: Move):
+	def move(cls, store: Store, board: Board, user: User, move: Move):
+		from app.archival import Archival
+
 		placements = cls.arrange(store, board)
-		order = move.apply([placement.id for placement in placements])
+		hidden_ids = {
+			archival.placement_id for archival in Archival.arrange(store, board, user)
+		}
+		order = move.apply([placement.id for placement in placements], hidden_ids)
 		if order is None:
 			return
 

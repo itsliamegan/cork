@@ -1,7 +1,7 @@
 from helios.database import Store
 from luna.test.assertion import assert_eq, assert_raises, assert_that
 
-from app import Access, Board, Move, Pin, Placement, User
+from app import Access, Archival, Board, Move, Pin, Placement, Share, User
 from app.move import OutOfDate
 from test.support import TestStore
 
@@ -265,7 +265,7 @@ def test_move_renumbers_the_whole_board():
 		reading = store.create(Board, title="Reading", creator_id=viewer.id)
 		third, second, first = place_pins(store, reading, viewer, 3)
 
-		Placement.move(store, reading, Move(first.id, second.id, third.id))
+		Placement.move(store, reading, viewer, Move(first.id, second.id, third.id))
 
 		placements = Placement.arrange(store, reading)
 		assert_eq(placements, [second, first, third])
@@ -282,7 +282,7 @@ def test_move_that_changes_nothing_writes_nothing():
 			store.save(placement)
 		first, second, third = placements
 
-		Placement.move(store, reading, Move(second.id, first.id, third.id))
+		Placement.move(store, reading, viewer, Move(second.id, first.id, third.id))
 
 		assert_eq(
 			[
@@ -302,7 +302,9 @@ def test_move_of_a_placement_on_another_board_is_out_of_date():
 		(elsewhere,) = place_pins(store, essays, viewer, 1)
 
 		with assert_raises(OutOfDate):
-			Placement.move(store, reading, Move(elsewhere.id, first.id, second.id))
+			Placement.move(
+				store, reading, viewer, Move(elsewhere.id, first.id, second.id)
+			)
 
 		assert_eq(Placement.arrange(store, reading), [first, second])
 		assert_eq(
@@ -322,7 +324,7 @@ def test_move_next_to_a_deleted_placement_is_out_of_date():
 		store.delete(second)
 
 		with assert_raises(OutOfDate):
-			Placement.move(store, reading, Move(third.id, first.id, second.id))
+			Placement.move(store, reading, viewer, Move(third.id, first.id, second.id))
 
 		assert_eq(
 			[
@@ -331,3 +333,38 @@ def test_move_next_to_a_deleted_placement_is_out_of_date():
 			],
 			[0, 0],
 		)
+
+
+def test_move_renumbers_archived_placements_too():
+	with TestStore() as store:
+		viewer = store.create(User, name="Viewer")
+		reading = store.create(Board, title="Reading", creator_id=viewer.id)
+		placements = place_pins(store, reading, viewer, 3)
+		for position, placement in zip([0, 5, 9], placements):
+			placement.position = position
+			store.save(placement)
+		first, archived, last = placements
+		Archival.archive(store, archived, viewer)
+
+		Placement.move(store, reading, viewer, Move(last.id, None, first.id))
+
+		arranged = Placement.arrange(store, reading)
+		assert_eq(arranged, [last, first, archived])
+		assert_eq([placement.position for placement in arranged], [0, 1, 2])
+
+
+def test_move_ignores_another_users_archivals():
+	with TestStore() as store:
+		viewer = store.create(User, name="Viewer")
+		other_reader = store.create(User, name="Other reader")
+		reading = store.create(Board, title="Reading", creator_id=viewer.id)
+		Share.replace(store, reading, [other_reader])
+		third, second, first = place_pins(store, reading, viewer, 3)
+		Archival.archive(store, second, other_reader)
+
+		with assert_raises(OutOfDate):
+			Placement.move(store, reading, viewer, Move(third.id, first.id, None))
+		with assert_raises(OutOfDate):
+			Placement.move(store, reading, viewer, Move(first.id, None, third.id))
+
+		assert_eq(Placement.arrange(store, reading), [first, second, third])
