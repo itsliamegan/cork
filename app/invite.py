@@ -2,7 +2,7 @@ from datetime import UTC, datetime, timedelta
 import secrets
 from uuid import UUID
 
-from helios.database import Model, NotFoundError, Scalar, Store
+from helios.database import Codec, Model, NotFoundError, Scalar, Store
 
 from app.user import User
 
@@ -18,21 +18,19 @@ class Invite(Model):
 		def generate(cls) -> Invite.Token:
 			return cls(secrets.token_urlsafe(32))
 
-		@classmethod
-		def check(cls, value: object):
-			if not isinstance(value, cls):
-				raise TypeError(f"expected a Token, got {type(value).__name__}")
+		class Codec(Codec):
+			def check(self, value: object):
+				if not isinstance(value, Invite.Token):
+					raise TypeError(f"expected a Token, got {type(value).__name__}")
 
-		@classmethod
-		def encode(cls, value: Invite.Token) -> Scalar:
-			cls.check(value)
-			return value.value
+			def encode(self, value: Invite.Token) -> Scalar:
+				self.check(value)
+				return value.value
 
-		@classmethod
-		def decode(cls, value: Scalar) -> Invite.Token:
-			if not isinstance(value, str):
-				raise TypeError(f"expected a string, got {type(value).__name__}")
-			return cls(value)
+			def decode(self, value: Scalar) -> Invite.Token:
+				if not isinstance(value, str):
+					raise TypeError(f"expected a string, got {type(value).__name__}")
+				return Invite.Token(value)
 
 	token: Token
 	creator_id: UUID

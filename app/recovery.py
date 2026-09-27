@@ -3,7 +3,7 @@ from typing import cast
 from uuid import UUID
 
 from helios.auth.password import Digest
-from helios.database import Model, NotFoundError, Scalar, Store
+from helios.database import Codec, Model, NotFoundError, Scalar, Store
 
 from app.user import User
 
@@ -27,21 +27,19 @@ class Recovery(Model):
 		def matches(self, candidate: str) -> bool:
 			return self.digest.matches(candidate)
 
-		@classmethod
-		def check(cls, value: object):
-			if not isinstance(value, cls):
-				raise TypeError(f"expected a Code, got {type(value).__name__}")
+		class Codec(Codec):
+			def check(self, value: object):
+				if not isinstance(value, Recovery.Code):
+					raise TypeError(f"expected a Code, got {type(value).__name__}")
 
-		@classmethod
-		def encode(cls, value: Recovery.Code) -> Scalar:
-			cls.check(value)
-			return value.digest.encode()
+			def encode(self, value: Recovery.Code) -> Scalar:
+				self.check(value)
+				return value.digest.encode()
 
-		@classmethod
-		def decode(cls, value: Scalar) -> Recovery.Code:
-			if not isinstance(value, str):
-				raise TypeError(f"expected a string, got {type(value).__name__}")
-			return cls(Digest.decode(value))
+			def decode(self, value: Scalar) -> Recovery.Code:
+				if not isinstance(value, str):
+					raise TypeError(f"expected a string, got {type(value).__name__}")
+				return Recovery.Code(Digest.decode(value))
 
 	user_id: UUID
 	code: Code
