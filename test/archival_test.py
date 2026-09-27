@@ -154,3 +154,49 @@ def test_unsharing_the_board_keeps_the_recipients_archival():
 			[archival.id for archival in store.find_all(Archival)],
 			[archival.id],
 		)
+
+
+def test_arrange_lists_the_newest_archival_first():
+	with TestStore() as store:
+		reader = store.create(User, name="Reader")
+		board = store.create(Board, title="Reading", creator_id=reader.id)
+		placements = []
+		for index in range(3):
+			pin = store.create(
+				Pin,
+				title=f"Pin {index}",
+				url=f"https://example.com/{index}",
+				creator_id=reader.id,
+			)
+			placements.append(Placement.create(store, pin, board, reader))
+		first = Archival.archive(store, placements[2], reader)
+		second = Archival.archive(store, placements[0], reader)
+		third = Archival.archive(store, placements[1], reader)
+
+		archivals = Archival.arrange(store, board, reader)
+
+		assert_eq(
+			[archival.id for archival in archivals],
+			[third.id, second.id, first.id],
+		)
+
+
+def test_arrange_lists_only_the_users_archivals_on_the_board():
+	with TestStore() as store:
+		reader = store.create(User, name="Reader")
+		other_reader = store.create(User, name="Other reader")
+		board = store.create(Board, title="Reading", creator_id=reader.id)
+		other_board = store.create(Board, title="Essays", creator_id=reader.id)
+		Share.replace(store, board, [other_reader])
+		pin = store.create(
+			Pin, title="Sartre", url="https://sartre.example", creator_id=reader.id
+		)
+		placement = Placement.create(store, pin, board, reader)
+		elsewhere = Placement.create(store, pin, other_board, reader)
+		archival = Archival.archive(store, placement, reader)
+		Archival.archive(store, elsewhere, reader)
+		Archival.archive(store, placement, other_reader)
+
+		archivals = Archival.arrange(store, board, reader)
+
+		assert_eq([archival.id for archival in archivals], [archival.id])
