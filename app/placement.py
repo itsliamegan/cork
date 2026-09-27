@@ -3,6 +3,7 @@ from uuid import UUID
 
 from helios.database import Model, Store
 
+from app.move import Move
 from app.user import User
 
 if TYPE_CHECKING:
@@ -62,17 +63,23 @@ class Placement(Model):
 				placed_board_ids.add(board.id)
 
 	@classmethod
-	def reorder(cls, store: Store, board: Board, placements: list[Placement]) -> None:
-		placement_ids = [placement.id for placement in placements]
-		if len(set(placement_ids)) != len(placement_ids):
-			raise ValueError("Placements must be ordered once each")
-		misplaced_ids = {
-			placement.id for placement in placements if placement.board_id != board.id
-		}
-		if misplaced_ids:
-			raise ValueError(f"Placements {misplaced_ids} are not on Board {board.id}")
+	def arrange(cls, store: Store, board: Board) -> list[Placement]:
+		placements = store.find_by(Placement, board_id=board.id)
+		placements.sort(key=lambda placement: placement.id)
+		placements.sort(key=lambda placement: placement.created_at, reverse=True)
+		placements.sort(key=lambda placement: placement.position)
+		return placements
 
-		for position, placement in enumerate(placements):
+	@classmethod
+	def move(cls, store: Store, board: Board, move: Move):
+		placements = cls.arrange(store, board)
+		order = move.apply([placement.id for placement in placements])
+		if order is None:
+			return
+
+		placements_by_id = {placement.id: placement for placement in placements}
+		for position, id in enumerate(order):
+			placement = placements_by_id[id]
 			placement.position = position
 			store.save(placement)
 

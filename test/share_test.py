@@ -1,6 +1,6 @@
 from luna.test.assertion import assert_eq, assert_raises, assert_that
 
-from app import Board, Share, User
+from app import Board, Ordering, Share, User
 from test.support import TestStore
 
 
@@ -128,3 +128,61 @@ def test_replace_refuses_the_creator_without_changes():
 
 		shares = store.find_by(Share, board_id=board.id)
 		assert_eq([stored.id for stored in shares], [share.id])
+
+
+def test_replace_resets_the_owners_row_when_a_board_is_first_shared():
+	with TestStore() as store:
+		creator = store.create(User, name="Creator")
+		participant = store.create(User, name="Participant")
+		board = store.create(Board, title="Reading", creator_id=creator.id)
+		store.create(Ordering, user_id=creator.id, board_id=board.id, position=0)
+
+		Share.replace(store, board, [participant])
+
+		assert_eq(store.find_by(Ordering, board_id=board.id), [])
+
+
+def test_replace_resets_the_owners_row_when_a_board_is_unshared():
+	with TestStore() as store:
+		creator = store.create(User, name="Creator")
+		participant = store.create(User, name="Participant")
+		board = store.create(Board, title="Reading", creator_id=creator.id)
+		store.create(Share, board_id=board.id, user_id=participant.id)
+		store.create(Ordering, user_id=creator.id, board_id=board.id, position=0)
+
+		Share.replace(store, board, [])
+
+		assert_eq(store.find_by(Ordering, user_id=creator.id), [])
+
+
+def test_replace_keeps_the_owners_row_while_a_board_stays_shared():
+	with TestStore() as store:
+		creator = store.create(User, name="Creator")
+		removed = store.create(User, name="Removed")
+		added = store.create(User, name="Added")
+		board = store.create(Board, title="Reading", creator_id=creator.id)
+		store.create(Share, board_id=board.id, user_id=removed.id)
+		ordering = store.create(
+			Ordering, user_id=creator.id, board_id=board.id, position=0
+		)
+
+		Share.replace(store, board, [added])
+
+		orderings = store.find_by(Ordering, board_id=board.id)
+		assert_eq([stored.id for stored in orderings], [ordering.id])
+
+
+def test_replace_keeps_recipients_rows_when_a_board_is_unshared():
+	with TestStore() as store:
+		creator = store.create(User, name="Creator")
+		participant = store.create(User, name="Participant")
+		board = store.create(Board, title="Reading", creator_id=creator.id)
+		store.create(Share, board_id=board.id, user_id=participant.id)
+		ordering = store.create(
+			Ordering, user_id=participant.id, board_id=board.id, position=0
+		)
+
+		Share.replace(store, board, [])
+
+		orderings = store.find_by(Ordering, board_id=board.id)
+		assert_eq([stored.id for stored in orderings], [ordering.id])

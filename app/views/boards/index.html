@@ -15,8 +15,6 @@
 <section
 	class="frame"
 	data-controller="reorder"
-	data-reorder-url-value="{{ urls.route("board_orderings.update") }}"
-	data-reorder-field-value="board_ids"
 >
 	<header class="frame-header">
 		<h3 class="frame-title">Private</h3>
@@ -27,7 +25,7 @@
 		data-reorder-target="list"
 		data-action="dragover->reorder#dragOver dragleave->reorder#dragLeave drop->reorder#drop"
 	>
-		{% for board in private_boards %}
+		{% for board in private %}
 		{{ BoardItem(board=board, user=auth.user) }}
 		{% else %}
 		<li class="frame-item frame-empty">No private boards.</li>
@@ -43,7 +41,7 @@
 		data-reorder-target="list"
 		data-action="dragover->reorder#dragOver dragleave->reorder#dragLeave drop->reorder#drop"
 	>
-		{% for board in shared_boards %}
+		{% for board in shared %}
 		{{ BoardItem(board=board, user=auth.user) }}
 		{% else %}
 		<li class="frame-item frame-empty">No shared boards.</li>

@@ -18,8 +18,6 @@
 <section
 	class="frame"
 	data-controller="reorder"
-	data-reorder-url-value="{{ urls.route("pin_orderings.update", {"id": board.id}) }}"
-	data-reorder-field-value="placement_ids"
 >
 	<header class="frame-header">
 		<h3 class="frame-title">Pins</h3>
@@ -38,6 +36,7 @@
 			data-controller="pin-details"
 			data-reorder-target="item"
 			data-reorder-id="{{ placement.id }}"
+			data-reorder-url="{{ urls.route("placement_moves.create", {"id": placement.id}) }}"
 		>
 			<article class="pin">
 				<button

@@ -2,6 +2,7 @@
 	class="frame-item frame-item--reorderable"
 	data-reorder-target="item"
 	data-reorder-id="{{ board.id }}"
+	data-reorder-url="{{ urls.route("board_ordering_moves.create", {"id": board.id}) }}"
 >
 	<article class="board">
 		<button

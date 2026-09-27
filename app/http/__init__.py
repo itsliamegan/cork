@@ -3,12 +3,12 @@ from helios.http import Method, Response
 from helios.routing import Group, Pattern, Route, URLs
 
 from app.http import (
-	board_orderings,
+	board_ordering_moves,
 	boards,
 	home,
 	invites,
-	pin_orderings,
 	pins,
+	placement_moves,
 	placements,
 	recoveries,
 	redemptions,
@@ -99,6 +99,12 @@ routes: list[Route | Group] = [
 				placements.delete,
 				name="placements.delete",
 			),
+			Route(
+				Method.POST,
+				Pattern("/placements/{id:uuid}/moves"),
+				placement_moves.create,
+				name="placement_moves.create",
+			),
 			Group(
 				prefix="/boards",
 				routes=[
@@ -107,12 +113,6 @@ routes: list[Route | Group] = [
 						Method.POST, Pattern("/"), boards.create, name="boards.create"
 					),
 					Route(Method.GET, Pattern("/new"), boards.new, name="boards.new"),
-					Route(
-						Method.PUT,
-						Pattern("/ordering"),
-						board_orderings.update,
-						name="board_orderings.update",
-					),
 					Route(
 						Method.GET,
 						Pattern("/{id:uuid}"),
@@ -138,10 +138,10 @@ routes: list[Route | Group] = [
 						name="boards.delete",
 					),
 					Route(
-						Method.PUT,
-						Pattern("/{id:uuid}/pins/ordering"),
-						pin_orderings.update,
-						name="pin_orderings.update",
+						Method.POST,
+						Pattern("/{id:uuid}/ordering/moves"),
+						board_ordering_moves.create,
+						name="board_ordering_moves.create",
 					),
 				],
 			),
