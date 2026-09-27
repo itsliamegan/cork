@@ -33,6 +33,7 @@ class Share(Model):
 			raise ValueError(f"Board {board.id} cannot be shared with its creator")
 
 		shares = store.find_by(cls, board_id=board.id)
+		was_shared = len(shares) > 0
 		for share in shares:
 			if share.user_id not in user_ids:
 				store.delete(share)
@@ -41,3 +42,14 @@ class Share(Model):
 			if user.id not in shared_user_ids:
 				store.create(cls, board_id=board.id, user_id=user.id)
 				shared_user_ids.add(user.id)
+
+		is_shared = len(user_ids) > 0
+		if was_shared != is_shared:
+			from app.ordering import Ordering
+
+			for ordering in store.find_by(
+				Ordering,
+				user_id=board.creator_id,
+				board_id=board.id,
+			):
+				store.delete(ordering)
