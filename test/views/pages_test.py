@@ -2,7 +2,7 @@ from html.parser import HTMLParser
 
 from luna.test.assertion import assert_eq
 
-from app import Board, Pin, Placement, Recovery, Share, User
+from app import Archival, Board, Pin, Placement, Recovery, Share, User
 from test.support import TestApplication
 
 REFERENCE_ATTRIBUTES = {
@@ -51,9 +51,10 @@ def test_every_page_reference_names_an_element_on_the_page():
 		other_pin = app.store.create(
 			Pin, title="Soup", url="https://example.com/soup", creator_id=participant.id
 		)
-		Placement.create(app.store, own_pin, owned, viewer)
+		own_placement = Placement.create(app.store, own_pin, owned, viewer)
 		Placement.create(app.store, other_pin, owned, participant)
-		Placement.create(app.store, other_pin, shared, participant)
+		shared_placement = Placement.create(app.store, other_pin, shared, participant)
+		Archival.archive(app.store, shared_placement, viewer)
 		Recovery.create(app.store, viewer)
 		app.sign_in(viewer)
 		paths = [
@@ -70,9 +71,12 @@ def test_every_page_reference_names_an_element_on_the_page():
 			"/settings",
 		]
 
+		responses = [(path, app.client.get(path)) for path in paths]
+		archive_path = f"/placements/{own_placement.id}/archival"
+		responses.append((archive_path, app.client.post(archive_path, redirect=True)))
+
 		broken = []
-		for path in paths:
-			res = app.client.get(path)
+		for path, res in responses:
 			assert_eq(res.status_code, 200)
 			page = References()
 			page.feed(res.text)

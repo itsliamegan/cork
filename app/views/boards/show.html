@@ -15,6 +15,17 @@
 	</section>
 </header>
 
+{% if "archived" in flash %}
+{% set archived = flash["archived"] %}
+<p class="archive-notice" role="status" data-controller="notice">
+	<span>Archived <b>{{ archived.title }}</b>.</span>
+	<button class="button button--small" type="submit" form="archive-notice-unarchive">Unarchive</button>
+</p>
+<form id="archive-notice-unarchive" action="{{ urls.route("archivals.delete", {"id": archived.placement_id}) }}" method="POST" hidden>
+	<input type="hidden" name="_method" value="DELETE">
+</form>
+{% endif %}
+
 <section
 	class="frame"
 	data-controller="reorder"
@@ -25,4 +36,18 @@
 
 	{{ PinList(rows=pin_rows, user=auth.user, has_archived_pins=archived_rows | length > 0) }}
 </section>
+
+{% if archived_rows %}
+<details id="archived" class="frame archive-frame">
+	<summary class="frame-header">
+		<h3 class="frame-title">Archived</h3>
+		<span id="archived-count" class="frame-meta">{{ archived_rows | length }}</span>
+	</summary>
+	<ol id="archived-pins" class="frame-items">
+		{% for row in archived_rows %}
+		{{ ArchivedPin(archival=row.archival, placement=row.placement, pin=row.pin, user=auth.user, can_remove=row.can_remove) }}
+		{% endfor %}
+	</ol>
+</details>
+{% endif %}
 {% endblock %}
