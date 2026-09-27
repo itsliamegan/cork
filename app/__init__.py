@@ -1,6 +1,7 @@
 from app.access import Access
 from app.board import Board
 from app.invite import Invite
+from app.move import Move
 from app.ordering import Ordering
 from app.ownership import Ownership
 from app.pin import Pin
@@ -14,6 +15,7 @@ __all__ = [
 	"Access",
 	"Board",
 	"Invite",
+	"Move",
 	"Ordering",
 	"Ownership",
 	"Pin",
