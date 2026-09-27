@@ -120,7 +120,7 @@ def show(req: Request, ctx: Context, id: UUID) -> Response:
 
 	access = Access(store, user)
 	board = access.find_board(id)
-	placements = store.find_by(Placement, board_id=board.id)
+	placements = Placement.arrange(store, board)
 	pin_ids = [placement.pin_id for placement in placements]
 	pins_by_id = {pin.id: pin for pin in store.query(Pin).where_in(id=pin_ids).all()}
 	pin_rows: list[dict[str, Any]] = []
@@ -133,8 +133,6 @@ def show(req: Request, ctx: Context, id: UUID) -> Response:
 				"can_remove": Removal(placement, pin, board).is_authorized(access),
 			}
 		)
-	pin_rows.sort(key=lambda row: row["pin"].created_at, reverse=True)
-	pin_rows.sort(key=lambda row: row["placement"].position)
 
 	return views.render(
 		"boards.show",

@@ -3,6 +3,7 @@ from uuid import UUID
 
 from helios.database import Model, Store
 
+from app.move import Move
 from app.user import User
 
 if TYPE_CHECKING:
@@ -60,6 +61,27 @@ class Placement(Model):
 			if board.id not in placed_board_ids:
 				cls.create(store, pin, board, access.user)
 				placed_board_ids.add(board.id)
+
+	@classmethod
+	def arrange(cls, store: Store, board: Board) -> list[Placement]:
+		placements = store.find_by(Placement, board_id=board.id)
+		placements.sort(key=lambda placement: placement.id)
+		placements.sort(key=lambda placement: placement.created_at, reverse=True)
+		placements.sort(key=lambda placement: placement.position)
+		return placements
+
+	@classmethod
+	def move(cls, store: Store, board: Board, move: Move):
+		placements = cls.arrange(store, board)
+		order = move.apply([placement.id for placement in placements])
+		if order is None:
+			return
+
+		placements_by_id = {placement.id: placement for placement in placements}
+		for position, id in enumerate(order):
+			placement = placements_by_id[id]
+			placement.position = position
+			store.save(placement)
 
 	@classmethod
 	def reorder(cls, store: Store, board: Board, placements: list[Placement]) -> None:
