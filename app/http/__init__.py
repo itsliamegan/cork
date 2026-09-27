@@ -3,6 +3,7 @@ from helios.http import Method, Response
 from helios.routing import Group, Pattern, Route, URLs
 
 from app.http import (
+	archivals,
 	board_ordering_moves,
 	boards,
 	home,
@@ -104,6 +105,18 @@ routes: list[Route | Group] = [
 				Pattern("/placements/{id:uuid}/moves"),
 				placement_moves.create,
 				name="placement_moves.create",
+			),
+			Route(
+				Method.POST,
+				Pattern("/placements/{id:uuid}/archival"),
+				archivals.create,
+				name="archivals.create",
+			),
+			Route(
+				Method.DELETE,
+				Pattern("/placements/{id:uuid}/archival"),
+				archivals.delete,
+				name="archivals.delete",
 			),
 			Group(
 				prefix="/boards",
