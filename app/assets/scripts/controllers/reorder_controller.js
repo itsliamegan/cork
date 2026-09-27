@@ -1,6 +1,5 @@
 export default class extends Stimulus.Controller {
 	static targets = ["item", "list"]
-	static values = { field: String, url: String }
 
 	connect() {
 		this.draggedItem = null
@@ -149,16 +148,30 @@ export default class extends Stimulus.Controller {
 	}
 
 	async saveOrdering(item, originalList, originalNextSibling) {
+		let siblings = this.itemTargets.filter(
+			(target) => target.parentElement === item.parentElement,
+		)
+		let index = siblings.indexOf(item)
+		let above = siblings[index - 1]
+		let below = siblings[index + 1]
+
 		let body = new URLSearchParams()
-		for (let orderedItem of this.itemTargets) {
-			body.append(this.fieldValue, orderedItem.dataset.reorderId)
+		if (above) {
+			body.append("above_id", above.dataset.reorderId)
+		}
+		if (below) {
+			body.append("below_id", below.dataset.reorderId)
 		}
 
 		try {
-			let response = await fetch(this.urlValue, {
-				method: "PUT",
+			let response = await fetch(item.dataset.reorderUrl, {
+				method: "POST",
 				body,
 			})
+			if (response.status === 404 || response.status === 409) {
+				Turbo.visit(window.location.href, { action: "replace" })
+				return
+			}
 			if (!response.ok) {
 				throw new Error(`Could not save order: ${response.status}`)
 			}

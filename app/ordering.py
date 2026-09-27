@@ -96,22 +96,3 @@ class Ordering(Model):
 			else:
 				ordering.position = position
 				store.save(ordering)
-
-	@classmethod
-	def replace(cls, store: Store, access: Access, boards: list[Board]) -> None:
-		board_ids = [board.id for board in boards]
-		if len(set(board_ids)) != len(board_ids):
-			raise ValueError("Boards must be ordered once each")
-		inaccessible_board_ids = set(board_ids) - set(access.find_board_ids())
-		if inaccessible_board_ids:
-			raise ValueError(f"Boards {inaccessible_board_ids} are not accessible")
-
-		for ordering in store.find_by(cls, user_id=access.user.id):
-			store.delete(ordering)
-		for position, board in enumerate(boards):
-			store.create(
-				cls,
-				user_id=access.user.id,
-				board_id=board.id,
-				position=position,
-			)
