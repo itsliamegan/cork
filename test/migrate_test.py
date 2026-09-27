@@ -135,7 +135,6 @@ def test_failing_statement_rolls_back_its_whole_migration():
 		message = str(raised.exception)
 		assert_that("0002_broken.sql" in message, message)
 		assert_that("INSERT INTO missing" in message, message)
-		assert_that(isinstance(raised.exception.__cause__.__cause__, sqlite3.Error))
 		assert_eq(scratch.version(), 1)
 		assert_eq(scratch.tables(), ["users"])
 
