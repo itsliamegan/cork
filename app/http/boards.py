@@ -46,25 +46,13 @@ def index(req: Request, ctx: Context) -> Response:
 	user = cast(User, auth.user)
 
 	access = Access(store, user)
-	boards = Ordering.arrange(store, access)
-	shared_board_ids = {
-		share.board_id
-		for share in store.query(Share)
-		.where_in(board_id=[board.id for board in boards])
-		.all()
-	}
-	private_boards = [
-		board
-		for board in boards
-		if board.creator_id == user.id and board.id not in shared_board_ids
-	]
-	shared_boards = [board for board in boards if board.id in shared_board_ids]
+	private, shared = Ordering.arrange(store, access)
 
 	return views.render(
 		"boards.index",
 		{
-			"private_boards": private_boards,
-			"shared_boards": shared_boards,
+			"private": private,
+			"shared": shared,
 		},
 	)
 
