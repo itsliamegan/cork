@@ -1,0 +1,11 @@
+<turbo-stream action="remove" target="archival-{{ placement.id }}"></turbo-stream>
+{% if archived_rows %}
+<turbo-stream action="update" target="archived-count"><template>{{ archived_rows | length }}</template></turbo-stream>
+{% else %}
+<turbo-stream action="remove" target="archived"></turbo-stream>
+{% endif %}
+<turbo-stream action="replace" target="pins">
+	<template>
+		{{ PinList(rows=pin_rows, user=auth.user, has_archived_pins=archived_rows | length > 0) }}
+	</template>
+</turbo-stream>

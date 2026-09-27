@@ -11,8 +11,12 @@ from helios.form import Form, Rules
 from helios.form.rule import Rule, RuleError
 from helios.http import Headers, Request, Response, Status
 from helios.routing import URLs
+from helios.view import Views
 
 from app import Access, Archival, Pin, Placement, User
+from app.http.boards import build_pin_rows
+
+STREAM = "text/vnd.turbo-stream.html"
 
 
 @dataclass(init=False)
@@ -26,6 +30,10 @@ class OneOf(Rule[str]):
 	def check(self, value: str):
 		if value not in self.allowed:
 			raise RuleError("must be one of the allowed values")
+
+
+def wants_stream(req: Request) -> bool:
+	return "Accept" in req.headers and STREAM in str(req.headers["Accept"])
 
 
 class ArchivalForm(Form):
@@ -54,10 +62,12 @@ def delete(req: Request, ctx: Context, id: UUID) -> Response:
 	store = ctx.get(Store)
 	auth = ctx.get(Authenticator)
 	urls = ctx.get(URLs)
+	views = ctx.get(Views)
 	user = cast(User, auth.user)
 
 	placement = store.find_one(Placement, id)
-	board = Access(store, user).find_board(placement.board_id)
+	access = Access(store, user)
+	board = access.find_board(placement.board_id)
 	form, errors = ArchivalForm.validate(req.input)
 	if errors:
 		return Response.text("400 Bad Request", status=Status.BAD_REQUEST)
@@ -66,6 +76,18 @@ def delete(req: Request, ctx: Context, id: UUID) -> Response:
 	board_url = urls.route("boards.show", {"id": board.id})
 	if form.section is None:
 		return Response.redirect(board_url)
+	elif wants_stream(req):
+		pin_rows, archived_rows = build_pin_rows(store, access, board)
+		res = views.render(
+			"archivals.delete",
+			{
+				"placement": placement,
+				"pin_rows": pin_rows,
+				"archived_rows": archived_rows,
+			},
+		)
+		res.headers["Content-Type"] = STREAM
+		return res
 	else:
 		return Response(
 			Status.FOUND,

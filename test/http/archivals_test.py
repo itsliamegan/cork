@@ -146,3 +146,47 @@ def test_unarchive_rejects_an_unknown_section():
 			[archival.id for archival in app.store.find_all(Archival)],
 			[archival.id],
 		)
+
+
+def test_unarchive_from_the_archived_section_streams_under_turbo():
+	with TestApplication() as app:
+		owner = app.store.create(User, name="Owner")
+		board = app.store.create(Board, title="Reading", creator_id=owner.id)
+		pin = app.store.create(
+			Pin, title="Sartre", url="https://sartre.example", creator_id=owner.id
+		)
+		placement = Placement.create(app.store, pin, board, owner)
+		Archival.archive(app.store, placement, owner)
+		app.sign_in(owner)
+
+		res = app.client.post(
+			f"/placements/{placement.id}/archival",
+			form={"_method": "DELETE", "section": "archived"},
+			headers={"Accept": "text/vnd.turbo-stream.html, text/html"},
+		)
+
+		assert_eq(res.status_code, 200)
+		assert_eq(res.headers["Content-Type"], "text/vnd.turbo-stream.html")
+		assert_eq(app.store.find_all(Archival), [])
+
+
+def test_unarchive_from_the_notice_redirects_under_turbo():
+	with TestApplication() as app:
+		owner = app.store.create(User, name="Owner")
+		board = app.store.create(Board, title="Reading", creator_id=owner.id)
+		pin = app.store.create(
+			Pin, title="Sartre", url="https://sartre.example", creator_id=owner.id
+		)
+		placement = Placement.create(app.store, pin, board, owner)
+		Archival.archive(app.store, placement, owner)
+		app.sign_in(owner)
+
+		res = app.client.post(
+			f"/placements/{placement.id}/archival",
+			form={"_method": "DELETE"},
+			headers={"Accept": "text/vnd.turbo-stream.html, text/html"},
+		)
+
+		assert_eq(res.status_code, 302)
+		assert_eq(res.headers["Location"], f"/boards/{board.id}")
+		assert_eq(app.store.find_all(Archival), [])
