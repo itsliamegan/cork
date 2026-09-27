@@ -1,0 +1,57 @@
+<ol
+	id="pins"
+	class="frame-items"
+	data-reorder-target="list"
+	data-action="dragover->reorder#dragOver dragleave->reorder#dragLeave drop->reorder#drop"
+>
+	{% for row in rows %}
+	{% set pin = row.pin %}
+	{% set placement = row.placement %}
+	<li
+		class="frame-item frame-item--reorderable pin-row"
+		data-controller="pin-details"
+		data-reorder-target="item"
+		data-reorder-id="{{ placement.id }}"
+		data-reorder-url="{{ urls.route("placement_moves.create", {"id": placement.id}) }}"
+	>
+		<article class="pin">
+			<button
+				class="reorder-handle"
+				type="button"
+				draggable="true"
+				title="Drag to reorder"
+				data-action="dragstart->reorder#dragStart dragend->reorder#dragEnd"
+			>
+				⠿
+			</button>
+			<section class="pin-details">
+				{% render ExternalLink(url=pin.url, new_tab=user.open_in_new_tab, class="pin-link") %}<h3 class="pin-title">{{ pin.title }}</h3>{% endrender %}
+				<section class="pin-meta">
+					{% render ExternalLink(url=pin.url, new_tab=user.open_in_new_tab, class="pin-url") %}{{ pin.display_url() }}{% endrender %}
+					<time class="pin-date" datetime="{{ pin.created_at }}">
+						{{ pin.created_at | date }}
+					</time>
+					<a
+						class="pin-details-link"
+						href="{{ urls.route("pins.show", {"id": pin.id}) }}"
+						data-turbo-frame="pin-{{ pin.id }}-details"
+						data-pin-details-target="link"
+						data-action="click->pin-details#toggle"
+					>Details</a>
+				</section>
+			</section>
+
+			<section class="pin-actions">
+				{{ PinMenu(pin=pin, placement=placement, user=user, can_remove=row.can_remove) }}
+			</section>
+		</article>
+		<turbo-frame id="pin-{{ pin.id }}-details" data-pin-details-target="frame"></turbo-frame>
+	</li>
+	{% else %}
+	{% if has_archived_pins %}
+	<li class="frame-item frame-empty">All pins archived.</li>
+	{% else %}
+	<li class="frame-item frame-empty">No pins yet.</li>
+	{% endif %}
+	{% endfor %}
+</ol>

@@ -3,10 +3,13 @@ from uuid import uuid4
 from helios.view import Attributes, Engine
 from luna.test.assertion import assert_not, assert_raises, assert_that
 
-from app import Board, User
+from app import Archival, Board, Pin, Placement, User
+from app.views.boards.archived import ArchivedPin
 from app.views.boards.chips import BoardChips
+from app.views.boards.pins import PinList
 from app.views.components.confirm_button import ConfirmButton
 from app.views.components.external_link import ExternalLink
+from app.views.pins.menu import PinMenu
 from app.views.pins.placements import PinPlacements, PlacementOption
 from test.support import TestApplication
 
@@ -117,3 +120,93 @@ def test_board_chips_without_boards_leave_a_filed_pin_unmarked():
 		html = engine.render(chips)
 
 		assert_not("Not on any boards" in html)
+
+
+def test_pin_menu_offers_edit_only_to_the_pins_creator():
+	with TestApplication() as app:
+		engine = app.container.get(Engine)
+		creator = User(name="Creator")
+		reader = User(name="Reader")
+		board = Board(title="Reading", creator_id=creator.id)
+		pin = Pin(title="Sartre", url="https://sartre.example", creator_id=creator.id)
+		placement = Placement(pin_id=pin.id, board_id=board.id, adder_id=creator.id)
+
+		creator_html = engine.render(
+			PinMenu(pin=pin, placement=placement, user=creator, can_remove=False)
+		)
+		reader_html = engine.render(
+			PinMenu(pin=pin, placement=placement, user=reader, can_remove=False)
+		)
+
+		assert_that(f'href="/pins/{pin.id}">View</a>' in creator_html)
+		assert_that(f'href="/pins/{pin.id}/edit">Edit</a>' in creator_html)
+		assert_that(f'href="/pins/{pin.id}">View</a>' in reader_html)
+		assert_not(">Edit</a>" in reader_html)
+
+
+def test_pin_menu_offers_remove_only_when_allowed():
+	with TestApplication() as app:
+		engine = app.container.get(Engine)
+		reader = User(name="Reader")
+		board = Board(title="Reading", creator_id=reader.id)
+		pin = Pin(title="Sartre", url="https://sartre.example", creator_id=reader.id)
+		placement = Placement(pin_id=pin.id, board_id=board.id, adder_id=reader.id)
+
+		removable_html = engine.render(
+			PinMenu(pin=pin, placement=placement, user=reader, can_remove=True)
+		)
+		fixed_html = engine.render(
+			PinMenu(pin=pin, placement=placement, user=reader, can_remove=False)
+		)
+
+		assert_that(f'action="/placements/{placement.id}"' in removable_html)
+		assert_not(f'action="/placements/{placement.id}"' in fixed_html)
+
+
+def test_pin_list_without_pins_reads_no_pins_yet():
+	with TestApplication() as app:
+		engine = app.container.get(Engine)
+		pins = PinList(rows=[], user=User(name="Reader"), has_archived_pins=False)
+
+		html = engine.render(pins)
+
+		assert_that("No pins yet." in html)
+		assert_not("All pins archived." in html)
+
+
+def test_pin_list_with_every_pin_archived_says_so():
+	with TestApplication() as app:
+		engine = app.container.get(Engine)
+		pins = PinList(rows=[], user=User(name="Reader"), has_archived_pins=True)
+
+		html = engine.render(pins)
+
+		assert_that("All pins archived." in html)
+		assert_not("No pins yet." in html)
+
+
+def test_archived_pin_unarchives_back_into_the_archived_section():
+	with TestApplication() as app:
+		engine = app.container.get(Engine)
+		reader = app.store.create(User, name="Reader")
+		board = app.store.create(Board, title="Reading", creator_id=reader.id)
+		pin = app.store.create(
+			Pin, title="Sartre", url="https://sartre.example", creator_id=reader.id
+		)
+		placement = Placement.create(app.store, pin, board, reader)
+		archival = Archival.archive(app.store, placement, reader)
+		row = ArchivedPin(
+			archival=archival,
+			placement=placement,
+			pin=pin,
+			user=reader,
+			can_remove=True,
+		)
+
+		html = engine.render(row)
+
+		assert_that(
+			f'<form action="/placements/{placement.id}/archival" method="POST">' in html
+		)
+		assert_that('name="_method" value="DELETE"' in html)
+		assert_that('name="section" value="archived"' in html)

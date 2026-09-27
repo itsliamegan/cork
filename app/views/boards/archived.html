@@ -1,0 +1,10 @@
+<li id="archival-{{ placement.id }}" class="frame-item archived-row">
+	{% render ExternalLink(url=pin.url, new_tab=user.open_in_new_tab, class="archived-row-title") %}{{ pin.title }}{% endrender %}
+	<time datetime="{{ archival.created_at }}">{{ archival.created_at | date }}</time>
+	<form action="{{ urls.route("archivals.delete", {"id": placement.id}) }}" method="POST">
+		<input type="hidden" name="_method" value="DELETE">
+		<input type="hidden" name="section" value="archived">
+		<button class="button button--small" type="submit">Unarchive</button>
+	</form>
+	{{ PinMenu(pin=pin, placement=placement, user=user, can_remove=can_remove) }}
+</li>
