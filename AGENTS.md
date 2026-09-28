@@ -23,5 +23,12 @@ file represents a current working state, not a historical record.
 - `mise run serve`: Run a devserver on port 4000 with the reloader watching views
   and assets. This should always already be running in the background, never
   start one yourself.
-- `mise run lint`: Run Ruff for formatting & linting and Ty for type checking.
-  This should be run before considering any changes finished.
+- `mise run lint`: Run Ruff for formatting & linting.
+- `mise run check`: Run Ty for type checking.
+
+## Workflow
+
+Always ensure the test suite passes, the formatter is clean, and the type
+checker reports no errors before considering any work complete.
+
+CI runs these steps on every pull request and before every deploy.

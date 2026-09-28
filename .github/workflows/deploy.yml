@@ -6,7 +6,11 @@ on:
   workflow_dispatch:
 
 jobs:
+  check:
+    uses: ./.github/workflows/check.yml
+
   deploy:
+    needs: check
     runs-on: ubuntu-latest
     env:
       DEPLOY_KEY: ${{ secrets.DEPLOY_KEY }}
@@ -15,19 +19,6 @@ jobs:
       DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
 
     steps:
-      - name: "Check out repository"
-        uses: actions/checkout@v4
-
-      - name: "Install uv"
-        run: |
-          curl -LsSf https://astral.sh/uv/install.sh | sh
-          echo "$HOME/.local/bin" >> "$GITHUB_PATH"
-
-      - name: "Install and test"
-        run: |
-          uv sync --locked
-          uv run -m luna.test.runner
-
       - name: "Set up SSH key"
         run: |
           mkdir -p ~/.ssh
