@@ -22,11 +22,11 @@
 
 {% if "archived" in flash %}
 {% set archived = flash["archived"] %}
-<p class="archive-notice" role="status" data-controller="notice">
+<p id="archive-notice-{{ archived.archival_id }}" class="archive-notice" role="status" data-controller="notice">
 	<span>Archived <b>{{ archived.title }}</b>.</span>
-	<button class="button button--small" type="submit" form="archive-notice-unarchive">Unarchive</button>
+	<button class="button button--small" type="submit" form="archive-notice-{{ archived.archival_id }}-unarchive">Unarchive</button>
 </p>
-<form id="archive-notice-unarchive" action="{{ urls.route("archivals.delete", {"id": archived.placement_id}) }}" method="POST" hidden>
+<form id="archive-notice-{{ archived.archival_id }}-unarchive" action="{{ urls.route("archivals.delete", {"id": archived.archival_id}) }}" method="POST" hidden>
 	<input type="hidden" name="_method" value="DELETE">
 </form>
 {% endif %}

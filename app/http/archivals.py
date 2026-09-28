@@ -3,27 +3,35 @@ from uuid import UUID
 
 from helios.app import Context
 from helios.auth import Authenticator
-from helios.database import Store
+from helios.database import NotFoundError, Store
 from helios.flash import Flashes
-from helios.http import Request, Response
+from helios.form import Form
+from helios.http import Request, Response, Status
 from helios.routing import URLs
 
 from app import Access, Archival, Pin, Placement, User
 
 
-def create(req: Request, ctx: Context, id: UUID) -> Response:
+class ArchivalForm(Form):
+	placement_id: UUID
+
+
+def create(req: Request, ctx: Context) -> Response:
 	store = ctx.get(Store)
 	auth = ctx.get(Authenticator)
 	flash = ctx.get(Flashes)
 	urls = ctx.get(URLs)
 	user = cast(User, auth.user)
 
-	placement = store.find_one(Placement, id)
+	form, errors = ArchivalForm.validate(req.input)
+	if errors:
+		return Response.text("400 Bad Request", status=Status.BAD_REQUEST)
+	placement = store.find_one(Placement, form.placement_id)
 	board = Access(store, user).find_board(placement.board_id)
 	pin = store.find_one(Pin, placement.pin_id)
 
-	Archival.create(store, placement, user)
-	flash["archived"] = {"placement_id": str(placement.id), "title": pin.title}
+	archival = Archival.create(store, placement, user)
+	flash["archived"] = {"archival_id": str(archival.id), "title": pin.title}
 	return Response.redirect(urls.route("boards.show", {"id": board.id}))
 
 
@@ -33,13 +41,11 @@ def delete(req: Request, ctx: Context, id: UUID) -> Response:
 	urls = ctx.get(URLs)
 	user = cast(User, auth.user)
 
-	placement = store.find_one(Placement, id)
+	archival = store.find_one(Archival, id)
+	if archival.user_id != user.id:
+		raise NotFoundError(Archival, id)
+	placement = store.find_one(Placement, archival.placement_id)
 	board = Access(store, user).find_board(placement.board_id)
 
-	for archival in store.find_by(
-		Archival,
-		placement_id=placement.id,
-		user_id=user.id,
-	):
-		store.delete(archival)
+	store.delete(archival)
 	return Response.redirect(urls.route("boards.show", {"id": board.id}))

@@ -72,8 +72,12 @@ def test_every_page_reference_names_an_element_on_the_page():
 		]
 
 		responses = [(path, app.client.get(path)) for path in paths]
-		archive_path = f"/placements/{own_placement.id}/archival"
-		responses.append((archive_path, app.client.post(archive_path, redirect=True)))
+		archive = app.client.post(
+			"/archivals/",
+			form={"placement_id": str(own_placement.id)},
+			redirect=True,
+		)
+		responses.append(("/archivals/", archive))
 
 		broken = []
 		for path, res in responses:

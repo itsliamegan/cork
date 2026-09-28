@@ -205,7 +205,5 @@ def test_archived_pin_unarchives_its_placement():
 
 		html = engine.render(row)
 
-		assert_that(
-			f'<form action="/placements/{placement.id}/archival" method="POST">' in html
-		)
+		assert_that(f'<form action="/archivals/{archival.id}" method="POST">' in html)
 		assert_that('name="_method" value="DELETE"' in html)

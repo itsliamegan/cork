@@ -106,17 +106,22 @@ routes: list[Route | Group] = [
 				placement_moves.create,
 				name="placement_moves.create",
 			),
-			Route(
-				Method.POST,
-				Pattern("/placements/{id:uuid}/archival"),
-				archivals.create,
-				name="archivals.create",
-			),
-			Route(
-				Method.DELETE,
-				Pattern("/placements/{id:uuid}/archival"),
-				archivals.delete,
-				name="archivals.delete",
+			Group(
+				prefix="/archivals",
+				routes=[
+					Route(
+						Method.POST,
+						Pattern("/"),
+						archivals.create,
+						name="archivals.create",
+					),
+					Route(
+						Method.DELETE,
+						Pattern("/{id:uuid}"),
+						archivals.delete,
+						name="archivals.delete",
+					),
+				],
 			),
 			Group(
 				prefix="/boards",
