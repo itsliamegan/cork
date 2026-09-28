@@ -45,7 +45,7 @@
 		data-action="dragover->reorder#dragOver dragleave->reorder#dragLeave drop->reorder#drop"
 	>
 		{% for row in placement_rows %}
-		{{ PlacementItem(pin=row.pin, placement=row.placement, board=board, access=access) }}
+		{{ PlacementItem(pin=row.pin, placement=row.placement, board=board, access=access, preferences=auth.user.preferences) }}
 		{% else %}
 		{% if archived_rows %}
 		<li class="frame-item frame-empty">All pins archived.</li>
@@ -67,7 +67,7 @@
 	</summary>
 	<ol class="frame-items">
 		{% for row in archived_rows %}
-		{{ ArchivalItem(archival=row.archival, pin=row.pin, placement=row.placement, board=board, access=access) }}
+		{{ ArchivalItem(archival=row.archival, pin=row.pin, placement=row.placement, board=board, access=access, preferences=auth.user.preferences) }}
 		{% endfor %}
 	</ol>
 </details>

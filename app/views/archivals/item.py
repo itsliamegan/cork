@@ -1,6 +1,6 @@
 from helios.view import Component
 
-from app import Access, Archival, Board, Pin, Placement
+from app import Access, Archival, Board, Pin, Placement, Preferences
 
 
 class ArchivalItem(Component):
@@ -11,3 +11,4 @@ class ArchivalItem(Component):
 	placement: Placement
 	board: Board
 	access: Access
+	preferences: Preferences

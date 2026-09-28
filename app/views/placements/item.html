@@ -16,10 +16,10 @@
 			{{ Icon(name="drag") }}
 		</button>
 		<section class="pin-details">
-			{% render PinLink(pin=pin, new_tab=access.user.open_in_new_tab, class="pin-link") %}<h3 class="pin-title">{{ pin.title }}</h3>{% endrender %}
+			{% render PinLink(pin=pin, new_tab=preferences.open_in_new_tab, class="pin-link") %}<h3 class="pin-title">{{ pin.title }}</h3>{% endrender %}
 			<section class="pin-meta">
 				{% if pin.url %}
-				{% render ExternalLink(url=pin.url, new_tab=access.user.open_in_new_tab, class="pin-url") %}{{ pin.url | site }}{% endrender %}
+				{% render ExternalLink(url=pin.url, new_tab=preferences.open_in_new_tab, class="pin-url") %}{{ pin.url | site }}{% endrender %}
 				{% endif %}
 				<time class="pin-date" datetime="{{ pin.created_at }}">
 					{{ pin.created_at | date }}

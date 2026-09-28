@@ -7,6 +7,7 @@ from app.ordering import Ordering
 from app.ownership import Ownership
 from app.pin import Pin
 from app.placement import Placement
+from app.preferences import Preferences
 from app.recovery import Recovery
 from app.share import Share
 from app.user import User
@@ -21,6 +22,7 @@ __all__ = [
 	"Ownership",
 	"Pin",
 	"Placement",
+	"Preferences",
 	"Recovery",
 	"Share",
 	"User",

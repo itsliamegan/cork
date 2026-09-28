@@ -1,6 +1,6 @@
 from helios.view import Component
 
-from app import Board, Pin, User
+from app import Board, Pin, Preferences, User
 
 
 class PinDetails(Component):
@@ -10,4 +10,4 @@ class PinDetails(Component):
 	boards: list[Board]
 	adder: User | None
 	is_unfiled: bool
-	new_tab: bool = False
+	preferences: Preferences

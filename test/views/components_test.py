@@ -3,7 +3,7 @@ from uuid import uuid4
 from helios.view import Attributes, Engine
 from luna.test.assertion import assert_not, assert_raises, assert_that
 
-from app import Access, Archival, Board, Pin, Placement, User
+from app import Access, Archival, Board, Pin, Placement, Preferences, User
 from app.views.archivals.item import ArchivalItem
 from app.views.boards.chips import BoardChips
 from app.views.boards.item import BoardItem
@@ -245,6 +245,7 @@ def test_placement_item_archives_its_placement():
 			placement=placement,
 			board=board,
 			access=Access(app.store, reader),
+			preferences=Preferences(),
 		)
 
 		html = engine.render(item)
@@ -269,9 +270,32 @@ def test_archival_item_unarchives_its_archival():
 			pin=pin,
 			board=board,
 			access=Access(app.store, reader),
+			preferences=Preferences(),
 		)
 
 		html = engine.render(item)
 
 		assert_that(f'<form action="/archivals/{archival.id}" method="POST">' in html)
 		assert_that('name="_method" value="DELETE"' in html)
+
+
+def test_placement_item_opens_its_pin_in_a_new_tab_when_set():
+	with TestApplication() as app:
+		engine = app.container.get(Engine)
+		reader = app.store.create(User, name="Reader")
+		board = app.store.create(Board, title="Reading", creator_id=reader.id)
+		pin = app.store.create(
+			Pin, title="Sartre", url="https://sartre.example", creator_id=reader.id
+		)
+		placement = Placement.create(app.store, pin, board, reader)
+		item = PlacementItem(
+			pin=pin,
+			placement=placement,
+			board=board,
+			access=Access(app.store, reader),
+			preferences=Preferences(open_in_new_tab=True),
+		)
+
+		html = engine.render(item)
+
+		assert_that('target="_blank"' in html)

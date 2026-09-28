@@ -2,7 +2,7 @@
 	<div class="pin-detail-row">
 		<span class="pin-detail-label">URL</span>
 		{% if pin.url %}
-		{{ ExternalLink(url=pin.url, new_tab=new_tab, class="pin-detail-value pin-detail-url") }}
+		{{ ExternalLink(url=pin.url, new_tab=preferences.open_in_new_tab, class="pin-detail-value pin-detail-url") }}
 		{% else %}
 		<span class="pin-detail-value pin-detail-empty">No URL.</span>
 		{% endif %}

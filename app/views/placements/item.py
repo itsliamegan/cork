@@ -1,6 +1,6 @@
 from helios.view import Component
 
-from app import Access, Board, Pin, Placement
+from app import Access, Board, Pin, Placement, Preferences
 
 
 class PlacementItem(Component):
@@ -10,3 +10,4 @@ class PlacementItem(Component):
 	placement: Placement
 	board: Board
 	access: Access
+	preferences: Preferences
