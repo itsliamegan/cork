@@ -1,4 +1,3 @@
-from typing import cast
 from uuid import UUID
 
 from helios.app import Context
@@ -18,10 +17,9 @@ class PlacementMoveForm(Form):
 
 def create(req: Request, ctx: Context, id: UUID) -> Response:
 	store = ctx.get(Store)
-	auth = ctx.get(Authenticator)
-	user = cast(User, auth.user)
+	auth = ctx.get(Authenticator[User])
 
-	access = Access(store, user)
+	access = Access(store, auth.user)
 	placement = access.find_placement(id)
 	board = access.find_board(placement.board_id)
 
@@ -37,7 +35,7 @@ def create(req: Request, ctx: Context, id: UUID) -> Response:
 		Placement.move(
 			store,
 			board,
-			user,
+			auth.user,
 			Move(placement.id, form.above_id, form.below_id),
 		)
 	except OutOfDate:

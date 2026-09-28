@@ -1,4 +1,3 @@
-from typing import cast
 from uuid import UUID
 
 from helios.app import Context
@@ -21,7 +20,7 @@ class InviteForm(Form):
 
 def create(req: Request, ctx: Context) -> Response:
 	store = ctx.get(Store)
-	auth = ctx.get(Authenticator)
+	auth = ctx.get(Authenticator[User])
 	flash = ctx.get(Flashes)
 	submissions = ctx.get(Submissions)
 	urls = ctx.get(URLs)
@@ -31,11 +30,10 @@ def create(req: Request, ctx: Context) -> Response:
 		submissions.flash(errors)
 		return Response.redirect(urls.route("settings.show"))
 
-	creator = cast(User, auth.user)
 	invite = Invite.create(
 		store,
-		creator,
-		target=creator if form.targeted else None,
+		auth.user,
+		target=auth.user if form.targeted else None,
 	)
 	flash["invite_id"] = str(invite.id)
 	flash["invite_token"] = invite.token.value
@@ -44,13 +42,12 @@ def create(req: Request, ctx: Context) -> Response:
 
 def show(req: Request, ctx: Context, id: UUID) -> Response:
 	store = ctx.get(Store)
-	auth = ctx.get(Authenticator)
+	auth = ctx.get(Authenticator[User])
 	flash = ctx.get(Flashes)
 	views = ctx.get(Views)
 	urls = ctx.get(URLs)
 
-	creator = cast(User, auth.user)
-	invite = Invite.find_created_by(store, id, creator)
+	invite = Invite.find_created_by(store, id, auth.user)
 	if (
 		"invite_id" not in flash
 		or flash["invite_id"] != str(invite.id)

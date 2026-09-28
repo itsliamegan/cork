@@ -79,7 +79,7 @@ wheels = [
 [[package]]
 name = "helios"
 version = "0.1"
-source = { git = "https://github.com/itsliamegan/helios?branch=main#5d390eb368da9ee4015ae3c7a8b686bad0473d0b" }
+source = { git = "https://github.com/itsliamegan/helios?branch=main#630f78068f120dfd860682aa12245e7cc83d42ab" }
 dependencies = [
     { name = "jinja2" },
     { name = "luna" },

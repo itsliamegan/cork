@@ -1,5 +1,3 @@
-from typing import cast
-
 from helios.app import Context
 from helios.auth import Authenticator
 from helios.database import Store
@@ -47,13 +45,13 @@ def show(req: Request, ctx: Context) -> Response:
 
 def update(req: Request, ctx: Context) -> Response:
 	store = ctx.get(Store)
-	auth = ctx.get(Authenticator)
-	user = cast(User, auth.user)
+	auth = ctx.get(Authenticator[User])
 
 	form, errors = SettingsForm.validate(req.input)
 	if errors:
 		return Response.text("400 Bad Request", status=Status.BAD_REQUEST)
 
+	user = auth.user
 	user.open_in_new_tab = form.open_in_new_tab
 	store.save(user)
 

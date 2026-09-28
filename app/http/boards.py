@@ -1,4 +1,3 @@
-from typing import cast
 from uuid import UUID
 
 from helios.app import Context
@@ -51,11 +50,10 @@ def _sharable_users(ctx: Context, owner_id: UUID) -> list[User]:
 
 def index(req: Request, ctx: Context) -> Response:
 	store = ctx.get(Store)
-	auth = ctx.get(Authenticator)
+	auth = ctx.get(Authenticator[User])
 	views = ctx.get(Views)
-	user = cast(User, auth.user)
 
-	access = Access(store, user)
+	access = Access(store, auth.user)
 	private, shared = Ordering.arrange(store, access)
 
 	return views.render(
@@ -70,15 +68,14 @@ def index(req: Request, ctx: Context) -> Response:
 
 def create(req: Request, ctx: Context) -> Response:
 	store = ctx.get(Store)
-	auth = ctx.get(Authenticator)
+	auth = ctx.get(Authenticator[User])
 	submissions = ctx.get(Submissions)
 	urls = ctx.get(URLs)
-	user = cast(User, auth.user)
 
 	form, errors = BoardForm.validate(req.input)
 	if "user_ids" in errors:
 		return Response.text("400 Bad Request", status=Status.BAD_REQUEST)
-	sharable_users = _sharable_users(ctx, user.id)
+	sharable_users = _sharable_users(ctx, auth.user.id)
 	if not set(form.user_ids) <= {user.id for user in sharable_users}:
 		return Response.text("400 Bad Request", status=Status.BAD_REQUEST)
 	if errors:
@@ -87,7 +84,7 @@ def create(req: Request, ctx: Context) -> Response:
 
 	board = Board.create(
 		store,
-		user,
+		auth.user,
 		title=form.title,
 		users=[user for user in sharable_users if user.id in form.user_ids],
 	)
@@ -96,16 +93,15 @@ def create(req: Request, ctx: Context) -> Response:
 
 
 def new(req: Request, ctx: Context) -> Response:
-	auth = ctx.get(Authenticator)
+	auth = ctx.get(Authenticator[User])
 	views = ctx.get(Views)
 	submission = ctx.get(Submission)
-	user = cast(User, auth.user)
 
 	return views.render(
 		"boards.new",
 		{
 			"owner": auth.user,
-			"users": _sharable_users(ctx, user.id),
+			"users": _sharable_users(ctx, auth.user.id),
 			"shared_user_ids": set(submission.value("user_ids", [])),
 		},
 	)
@@ -113,14 +109,13 @@ def new(req: Request, ctx: Context) -> Response:
 
 def show(req: Request, ctx: Context, id: UUID) -> Response:
 	store = ctx.get(Store)
-	auth = ctx.get(Authenticator)
+	auth = ctx.get(Authenticator[User])
 	views = ctx.get(Views)
-	user = cast(User, auth.user)
 
-	access = Access(store, user)
+	access = Access(store, auth.user)
 	board = access.find_board(id)
 	placements = Placement.arrange(store, board)
-	archivals = Archival.arrange(store, board, user)
+	archivals = Archival.arrange(store, board, auth.user)
 	archivals_by_placement_id = {
 		archival.placement_id: archival for archival in archivals
 	}
@@ -157,12 +152,11 @@ def show(req: Request, ctx: Context, id: UUID) -> Response:
 
 def edit(req: Request, ctx: Context, id: UUID) -> Response:
 	store = ctx.get(Store)
-	auth = ctx.get(Authenticator)
+	auth = ctx.get(Authenticator[User])
 	views = ctx.get(Views)
 	submission = ctx.get(Submission)
-	user = cast(User, auth.user)
 
-	access = Access(store, user)
+	access = Access(store, auth.user)
 	board = access.find_board(id)
 	if not board.is_editable_by(access):
 		raise NotPermitted(board)
@@ -184,12 +178,11 @@ def edit(req: Request, ctx: Context, id: UUID) -> Response:
 
 def update(req: Request, ctx: Context, id: UUID) -> Response:
 	store = ctx.get(Store)
-	auth = ctx.get(Authenticator)
+	auth = ctx.get(Authenticator[User])
 	submissions = ctx.get(Submissions)
 	urls = ctx.get(URLs)
-	user = cast(User, auth.user)
 
-	access = Access(store, user)
+	access = Access(store, auth.user)
 	board = access.find_board(id)
 	form, errors = BoardForm.validate(req.input)
 	if "user_ids" in errors:
@@ -214,11 +207,10 @@ def update(req: Request, ctx: Context, id: UUID) -> Response:
 
 def delete(req: Request, ctx: Context, id: UUID) -> Response:
 	store = ctx.get(Store)
-	auth = ctx.get(Authenticator)
+	auth = ctx.get(Authenticator[User])
 	urls = ctx.get(URLs)
-	user = cast(User, auth.user)
 
-	access = Access(store, user)
+	access = Access(store, auth.user)
 	board = access.find_board(id)
 	board.delete(store, access)
 

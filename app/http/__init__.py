@@ -2,6 +2,7 @@ from helios.auth import Authenticator
 from helios.http import Method, Response
 from helios.routing import Group, Pattern, Route, URLs
 
+from app import User
 from app.http import (
 	archivals,
 	board_ordering_moves,
@@ -19,7 +20,7 @@ from app.http import (
 
 
 def ensure_signed_in(req, ctx, **params):
-	auth = ctx.get(Authenticator)
+	auth = ctx.get(Authenticator[User])
 	urls = ctx.get(URLs)
 
 	if not auth.is_signed_in():

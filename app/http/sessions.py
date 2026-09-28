@@ -9,7 +9,7 @@ from helios.http import Request, Response
 from helios.routing import URLs
 from helios.view import Views
 
-from app import Recovery
+from app import Recovery, User
 
 
 class SignInForm(Form):
@@ -28,7 +28,7 @@ class SignInForm(Form):
 
 def create(req: Request, ctx: Context) -> Response:
 	store = ctx.get(Store)
-	auth = ctx.get(Authenticator)
+	auth = ctx.get(Authenticator[User])
 	flash = ctx.get(Flashes)
 	submissions = ctx.get(Submissions)
 	urls = ctx.get(URLs)
@@ -55,7 +55,7 @@ def create(req: Request, ctx: Context) -> Response:
 
 
 def new(req: Request, ctx: Context) -> Response:
-	auth = ctx.get(Authenticator)
+	auth = ctx.get(Authenticator[User])
 	views = ctx.get(Views)
 	urls = ctx.get(URLs)
 
@@ -66,7 +66,7 @@ def new(req: Request, ctx: Context) -> Response:
 
 
 def delete(req: Request, ctx: Context) -> Response:
-	auth = ctx.get(Authenticator)
+	auth = ctx.get(Authenticator[User])
 	urls = ctx.get(URLs)
 
 	auth.sign_out()

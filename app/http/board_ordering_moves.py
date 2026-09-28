@@ -1,4 +1,3 @@
-from typing import cast
 from uuid import UUID
 
 from helios.app import Context
@@ -18,10 +17,9 @@ class BoardOrderingMoveForm(Form):
 
 def create(req: Request, ctx: Context, id: UUID) -> Response:
 	store = ctx.get(Store)
-	auth = ctx.get(Authenticator)
-	user = cast(User, auth.user)
+	auth = ctx.get(Authenticator[User])
 
-	access = Access(store, user)
+	access = Access(store, auth.user)
 	board = access.find_board(id)
 
 	form, errors = BoardOrderingMoveForm.validate(req.input)

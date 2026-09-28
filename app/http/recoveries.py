@@ -1,4 +1,3 @@
-from typing import cast
 from uuid import UUID
 
 from helios.app import Context
@@ -14,12 +13,11 @@ from app import Recovery, User
 
 def create(req: Request, ctx: Context) -> Response:
 	store = ctx.get(Store)
-	auth = ctx.get(Authenticator)
+	auth = ctx.get(Authenticator[User])
 	flash = ctx.get(Flashes)
 	urls = ctx.get(URLs)
-	user = cast(User, auth.user)
 
-	recovery = Recovery.create(store, user)
+	recovery = Recovery.create(store, auth.user)
 	flash["recovery_id"] = str(recovery.id)
 	flash["recovery_code"] = recovery.code.plaintext
 	return Response.redirect(urls.route("recoveries.show", {"id": recovery.id}))
@@ -27,13 +25,12 @@ def create(req: Request, ctx: Context) -> Response:
 
 def show(req: Request, ctx: Context, id: UUID) -> Response:
 	store = ctx.get(Store)
-	auth = ctx.get(Authenticator)
+	auth = ctx.get(Authenticator[User])
 	flash = ctx.get(Flashes)
 	views = ctx.get(Views)
 	urls = ctx.get(URLs)
-	user = cast(User, auth.user)
 
-	recovery = Recovery.find_owned(store, id, user)
+	recovery = Recovery.find_owned(store, id, auth.user)
 	if (
 		"recovery_id" not in flash
 		or flash["recovery_id"] != str(recovery.id)
