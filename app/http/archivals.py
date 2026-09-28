@@ -53,7 +53,7 @@ def create(req: Request, ctx: Context, id: UUID) -> Response:
 	board = Access(store, user).find_board(placement.board_id)
 	pin = store.find_one(Pin, placement.pin_id)
 
-	Archival.archive(store, placement, user)
+	Archival.create(store, placement, user)
 	flash["archived"] = {"placement_id": str(placement.id), "title": pin.title}
 	return Response.redirect(urls.route("boards.show", {"id": board.id}))
 
@@ -72,7 +72,12 @@ def delete(req: Request, ctx: Context, id: UUID) -> Response:
 	if errors:
 		return Response.text("400 Bad Request", status=Status.BAD_REQUEST)
 
-	Archival.unarchive(store, placement, user)
+	for archival in store.find_by(
+		Archival,
+		placement_id=placement.id,
+		user_id=user.id,
+	):
+		store.delete(archival)
 	board_url = urls.route("boards.show", {"id": board.id})
 	if form.section is None:
 		return Response.redirect(board_url)

@@ -344,7 +344,7 @@ def test_move_renumbers_archived_placements_too():
 			placement.position = position
 			store.save(placement)
 		first, archived, last = placements
-		Archival.archive(store, archived, viewer)
+		Archival.create(store, archived, viewer)
 
 		Placement.move(store, reading, viewer, Move(last.id, None, first.id))
 
@@ -360,7 +360,7 @@ def test_move_ignores_another_users_archivals():
 		reading = store.create(Board, title="Reading", creator_id=viewer.id)
 		Share.replace(store, reading, [other_reader])
 		third, second, first = place_pins(store, reading, viewer, 3)
-		Archival.archive(store, second, other_reader)
+		Archival.create(store, second, other_reader)
 
 		with assert_raises(OutOfDate):
 			Placement.move(store, reading, viewer, Move(third.id, first.id, None))

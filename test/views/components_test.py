@@ -194,7 +194,7 @@ def test_archived_pin_unarchives_back_into_the_archived_section():
 			Pin, title="Sartre", url="https://sartre.example", creator_id=reader.id
 		)
 		placement = Placement.create(app.store, pin, board, reader)
-		archival = Archival.archive(app.store, placement, reader)
+		archival = Archival.create(app.store, placement, reader)
 		row = ArchivedPin(
 			archival=archival,
 			placement=placement,

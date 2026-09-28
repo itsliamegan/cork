@@ -192,7 +192,7 @@ def test_moving_an_archived_placement_conflicts():
 		)
 		first = Placement.create(app.store, first_pin, board, owner)
 		second = Placement.create(app.store, second_pin, board, owner)
-		Archival.archive(app.store, second, owner)
+		Archival.create(app.store, second, owner)
 		app.sign_in(owner)
 
 		res = app.client.post(

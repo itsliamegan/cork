@@ -54,7 +54,7 @@ def test_every_page_reference_names_an_element_on_the_page():
 		own_placement = Placement.create(app.store, own_pin, owned, viewer)
 		Placement.create(app.store, other_pin, owned, participant)
 		shared_placement = Placement.create(app.store, other_pin, shared, participant)
-		Archival.archive(app.store, shared_placement, viewer)
+		Archival.create(app.store, shared_placement, viewer)
 		Recovery.create(app.store, viewer)
 		app.sign_in(viewer)
 		paths = [

@@ -30,13 +30,13 @@ __all__ = [
 ]
 
 models = [
-	User,
-	Recovery,
-	Invite,
-	Pin,
-	Board,
-	Placement,
-	Share,
-	Ordering,
 	Archival,
+	Board,
+	Invite,
+	Ordering,
+	Pin,
+	Placement,
+	Recovery,
+	Share,
+	User,
 ]

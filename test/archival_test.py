@@ -12,35 +12,13 @@ def test_archiving_twice_keeps_the_first_archival():
 			Pin, title="Sartre", url="https://sartre.example", creator_id=reader.id
 		)
 		placement = Placement.create(store, pin, board, reader)
-		first = Archival.archive(store, placement, reader)
+		first = Archival.create(store, placement, reader)
 
-		Archival.archive(store, placement, reader)
+		Archival.create(store, placement, reader)
 
 		archivals = store.find_all(Archival)
 		assert_eq([archival.id for archival in archivals], [first.id])
 		assert_eq(archivals[0].created_at, first.created_at)
-
-
-def test_unarchiving_an_active_placement_changes_nothing():
-	with TestStore() as store:
-		reader = store.create(User, name="Reader")
-		board = store.create(Board, title="Reading", creator_id=reader.id)
-		pin = store.create(
-			Pin, title="Sartre", url="https://sartre.example", creator_id=reader.id
-		)
-		placement = Placement.create(store, pin, board, reader)
-		other_pin = store.create(
-			Pin, title="Camus", url="https://camus.example", creator_id=reader.id
-		)
-		other = Placement.create(store, other_pin, board, reader)
-		archival = Archival.archive(store, other, reader)
-
-		Archival.unarchive(store, placement, reader)
-
-		assert_eq(
-			[archival.id for archival in store.find_all(Archival)],
-			[archival.id],
-		)
 
 
 def test_archiving_and_unarchiving_keep_every_position():
@@ -60,11 +38,11 @@ def test_archiving_and_unarchiving_keep_every_position():
 			store.save(placement)
 			placements.append(placement)
 
-		Archival.archive(store, placements[1], reader)
+		archival = Archival.create(store, placements[1], reader)
 		archived = [
 			store.find_one(Placement, placement.id).position for placement in placements
 		]
-		Archival.unarchive(store, placements[1], reader)
+		store.delete(archival)
 		unarchived = [
 			store.find_one(Placement, placement.id).position for placement in placements
 		]
@@ -81,7 +59,7 @@ def test_removing_a_pin_from_the_board_deletes_its_archival():
 			Pin, title="Sartre", url="https://sartre.example", creator_id=reader.id
 		)
 		placement = Placement.create(store, pin, board, reader)
-		Archival.archive(store, placement, reader)
+		Archival.create(store, placement, reader)
 
 		Placement.replace(store, pin, [], Access(store, reader))
 
@@ -96,7 +74,7 @@ def test_deleting_the_pin_deletes_its_archival():
 			Pin, title="Sartre", url="https://sartre.example", creator_id=reader.id
 		)
 		placement = Placement.create(store, pin, board, reader)
-		Archival.archive(store, placement, reader)
+		Archival.create(store, placement, reader)
 
 		store.delete(pin)
 
@@ -111,7 +89,7 @@ def test_deleting_the_board_deletes_its_archivals():
 			Pin, title="Sartre", url="https://sartre.example", creator_id=reader.id
 		)
 		placement = Placement.create(store, pin, board, reader)
-		Archival.archive(store, placement, reader)
+		Archival.create(store, placement, reader)
 
 		store.delete(board)
 
@@ -126,7 +104,7 @@ def test_a_pin_added_back_to_the_board_has_no_archival():
 			Pin, title="Sartre", url="https://sartre.example", creator_id=reader.id
 		)
 		placement = Placement.create(store, pin, board, reader)
-		Archival.archive(store, placement, reader)
+		Archival.create(store, placement, reader)
 		access = Access(store, reader)
 
 		Placement.replace(store, pin, [], access)
@@ -146,7 +124,7 @@ def test_unsharing_the_board_keeps_the_recipients_archival():
 			Pin, title="Sartre", url="https://sartre.example", creator_id=owner.id
 		)
 		placement = Placement.create(store, pin, board, owner)
-		archival = Archival.archive(store, placement, recipient)
+		archival = Archival.create(store, placement, recipient)
 
 		Share.replace(store, board, [])
 
@@ -169,9 +147,9 @@ def test_arrange_lists_the_newest_archival_first():
 				creator_id=reader.id,
 			)
 			placements.append(Placement.create(store, pin, board, reader))
-		first = Archival.archive(store, placements[2], reader)
-		second = Archival.archive(store, placements[0], reader)
-		third = Archival.archive(store, placements[1], reader)
+		first = Archival.create(store, placements[2], reader)
+		second = Archival.create(store, placements[0], reader)
+		third = Archival.create(store, placements[1], reader)
 
 		archivals = Archival.arrange(store, board, reader)
 
@@ -193,9 +171,9 @@ def test_arrange_lists_only_the_users_archivals_on_the_board():
 		)
 		placement = Placement.create(store, pin, board, reader)
 		elsewhere = Placement.create(store, pin, other_board, reader)
-		archival = Archival.archive(store, placement, reader)
-		Archival.archive(store, elsewhere, reader)
-		Archival.archive(store, placement, other_reader)
+		archival = Archival.create(store, placement, reader)
+		Archival.create(store, elsewhere, reader)
+		Archival.create(store, placement, other_reader)
 
 		archivals = Archival.arrange(store, board, reader)
 

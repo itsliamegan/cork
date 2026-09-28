@@ -45,7 +45,7 @@ def test_archiving_an_archived_pin_keeps_it_archived():
 			Pin, title="Sartre", url="https://sartre.example", creator_id=owner.id
 		)
 		placement = Placement.create(app.store, pin, board, owner)
-		archival = Archival.archive(app.store, placement, owner)
+		archival = Archival.create(app.store, placement, owner)
 		app.sign_in(owner)
 
 		res = app.client.post(f"/placements/{placement.id}/archival")
@@ -65,7 +65,7 @@ def test_unarchive_redirects_to_the_board():
 			Pin, title="Sartre", url="https://sartre.example", creator_id=owner.id
 		)
 		placement = Placement.create(app.store, pin, board, owner)
-		Archival.archive(app.store, placement, owner)
+		Archival.create(app.store, placement, owner)
 		app.sign_in(owner)
 
 		res = app.client.post(
@@ -86,7 +86,7 @@ def test_unarchive_from_the_archived_section_redirects_to_it():
 			Pin, title="Sartre", url="https://sartre.example", creator_id=owner.id
 		)
 		placement = Placement.create(app.store, pin, board, owner)
-		Archival.archive(app.store, placement, owner)
+		Archival.create(app.store, placement, owner)
 		app.sign_in(owner)
 
 		res = app.client.post(
@@ -108,7 +108,7 @@ def test_outsider_cannot_archive_or_unarchive():
 			Pin, title="Sartre", url="https://sartre.example", creator_id=owner.id
 		)
 		placement = Placement.create(app.store, pin, board, owner)
-		archival = Archival.archive(app.store, placement, owner)
+		archival = Archival.create(app.store, placement, owner)
 		app.sign_in(outsider)
 
 		create_res = app.client.post(f"/placements/{placement.id}/archival")
@@ -133,7 +133,7 @@ def test_unarchive_rejects_an_unknown_section():
 			Pin, title="Sartre", url="https://sartre.example", creator_id=owner.id
 		)
 		placement = Placement.create(app.store, pin, board, owner)
-		archival = Archival.archive(app.store, placement, owner)
+		archival = Archival.create(app.store, placement, owner)
 		app.sign_in(owner)
 
 		res = app.client.post(
@@ -156,7 +156,7 @@ def test_unarchive_from_the_archived_section_streams_under_turbo():
 			Pin, title="Sartre", url="https://sartre.example", creator_id=owner.id
 		)
 		placement = Placement.create(app.store, pin, board, owner)
-		Archival.archive(app.store, placement, owner)
+		Archival.create(app.store, placement, owner)
 		app.sign_in(owner)
 
 		res = app.client.post(
@@ -178,7 +178,7 @@ def test_unarchive_from_the_notice_redirects_under_turbo():
 			Pin, title="Sartre", url="https://sartre.example", creator_id=owner.id
 		)
 		placement = Placement.create(app.store, pin, board, owner)
-		Archival.archive(app.store, placement, owner)
+		Archival.create(app.store, placement, owner)
 		app.sign_in(owner)
 
 		res = app.client.post(
