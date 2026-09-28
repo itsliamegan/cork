@@ -6,6 +6,7 @@ from luna.test.assertion import assert_not, assert_raises, assert_that
 from app import Access, Archival, Board, Pin, Placement, User
 from app.views.archivals.item import ArchivalItem
 from app.views.boards.chips import BoardChips
+from app.views.boards.item import BoardItem
 from app.views.components.confirm_button import ConfirmButton
 from app.views.components.external_link import ExternalLink
 from app.views.pins.placements import PinPlacements, PlacementOption
@@ -120,6 +121,25 @@ def test_board_chips_without_boards_leave_a_filed_pin_unmarked():
 		html = engine.render(chips)
 
 		assert_not("Not on any boards" in html)
+
+
+def test_board_item_offers_its_menu_only_to_the_boards_creator():
+	with TestApplication() as app:
+		engine = app.container.get(Engine)
+		creator = app.store.create(User, name="Creator")
+		participant = app.store.create(User, name="Participant")
+		board = app.store.create(Board, title="Reading", creator_id=creator.id)
+
+		creator_html = engine.render(
+			BoardItem(board=board, access=Access(app.store, creator))
+		)
+		participant_html = engine.render(
+			BoardItem(board=board, access=Access(app.store, participant))
+		)
+
+		assert_that(f'href="/boards/{board.id}/edit">Edit</a>' in creator_html)
+		assert_that(f'action="/boards/{board.id}"' in creator_html)
+		assert_not('class="board-actions"' in participant_html)
 
 
 def test_placement_menu_offers_edit_only_to_the_pins_creator():

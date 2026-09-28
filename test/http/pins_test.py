@@ -479,3 +479,83 @@ def test_deletes_pin():
 		assert_eq(res.status_code, 302)
 		assert_eq(res.headers["Location"], "/pins/")
 		assert_eq(app.store.find_all(Pin), [])
+
+
+def test_edit_form_is_refused_to_participants_and_hidden_from_strangers():
+	with TestApplication() as app:
+		creator = app.store.create(User, name="Creator")
+		participant = app.store.create(User, name="Participant")
+		stranger = app.store.create(User, name="Stranger")
+		board = app.store.create(Board, title="Reading", creator_id=creator.id)
+		app.store.create(Share, board_id=board.id, user_id=participant.id)
+		pin = app.store.create(
+			Pin, title="Sartre", url="https://sartre.example", creator_id=creator.id
+		)
+		Placement.create(app.store, pin, board, creator)
+
+		app.sign_in(participant)
+		participant_res = app.client.get(f"/pins/{pin.id}/edit")
+		app.sign_in(stranger)
+		stranger_res = app.client.get(f"/pins/{pin.id}/edit")
+
+		assert_eq(participant_res.status_code, 403)
+		assert_eq(stranger_res.status_code, 404)
+
+
+def test_update_is_refused_to_participants_and_hidden_from_strangers():
+	with TestApplication() as app:
+		creator = app.store.create(User, name="Creator")
+		participant = app.store.create(User, name="Participant")
+		stranger = app.store.create(User, name="Stranger")
+		board = app.store.create(Board, title="Reading", creator_id=creator.id)
+		app.store.create(Share, board_id=board.id, user_id=participant.id)
+		pin = app.store.create(
+			Pin, title="Sartre", url="https://sartre.example", creator_id=creator.id
+		)
+		Placement.create(app.store, pin, board, creator)
+		form = {
+			"_method": "PUT",
+			"title": "Beauvoir",
+			"url": "https://beauvoir.example",
+			"note": "Read next",
+			"board_ids": [],
+		}
+
+		app.sign_in(participant)
+		participant_res = app.client.post(f"/pins/{pin.id}", form=form)
+		app.sign_in(stranger)
+		stranger_res = app.client.post(f"/pins/{pin.id}", form=form)
+		stored = app.store.find_one(Pin, pin.id)
+
+		assert_eq(participant_res.status_code, 403)
+		assert_eq(stranger_res.status_code, 404)
+		assert_eq(stored.title, "Sartre")
+		assert_eq(stored.url, "https://sartre.example")
+		assert_eq(stored.note, "")
+		assert_eq(
+			[placement.board_id for placement in stored.find_placements(app.store)],
+			[board.id],
+		)
+
+
+def test_delete_is_refused_to_participants_and_hidden_from_strangers():
+	with TestApplication() as app:
+		creator = app.store.create(User, name="Creator")
+		participant = app.store.create(User, name="Participant")
+		stranger = app.store.create(User, name="Stranger")
+		board = app.store.create(Board, title="Reading", creator_id=creator.id)
+		app.store.create(Share, board_id=board.id, user_id=participant.id)
+		pin = app.store.create(
+			Pin, title="Sartre", url="https://sartre.example", creator_id=creator.id
+		)
+		Placement.create(app.store, pin, board, creator)
+		form = {"_method": "DELETE"}
+
+		app.sign_in(participant)
+		participant_res = app.client.post(f"/pins/{pin.id}", form=form)
+		app.sign_in(stranger)
+		stranger_res = app.client.post(f"/pins/{pin.id}", form=form)
+
+		assert_eq(participant_res.status_code, 403)
+		assert_eq(stranger_res.status_code, 404)
+		assert_eq([stored.id for stored in app.store.find_all(Pin)], [pin.id])
