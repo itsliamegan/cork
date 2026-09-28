@@ -7,7 +7,7 @@
 <header id="page-header">
 	<h2 id="page-title">{{ pin.title }}</h2>
 
-	{% if pin.creator_id == auth.user.id %}
+	{% if pin.is_editable_by(access) %}
 	<section id="page-actions">
 		<a class="button" href="{{ urls.route("pins.edit", {"id": pin.id}) }}">Edit</a>
 	</section>

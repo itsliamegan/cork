@@ -1,40 +1,7 @@
-from helios.database import NotFoundError
-from luna.test.assertion import assert_eq, assert_raises
+from luna.test.assertion import assert_eq, assert_not, assert_that
 
 from app import Board, Ownership, Pin, Placement, Share, User
 from test.support import TestStore
-
-
-def test_only_the_creator_owns_a_shared_board():
-	with TestStore() as store:
-		creator = store.create(User, name="Creator")
-		participant = store.create(User, name="Participant")
-		board = store.create(Board, title="Reading", creator_id=creator.id)
-		store.create(Share, board_id=board.id, user_id=participant.id)
-
-		found = Ownership(store, creator).find_board(board.id)
-
-		assert_eq(found.id, board.id)
-		with assert_raises(NotFoundError):
-			Ownership(store, participant).find_board(board.id)
-
-
-def test_only_the_creator_owns_a_pin():
-	with TestStore() as store:
-		creator = store.create(User, name="Creator")
-		stranger = store.create(User, name="Stranger")
-		pin = store.create(
-			Pin,
-			title="Sartre",
-			url="https://plato.stanford.edu/entries/sartre/",
-			creator_id=creator.id,
-		)
-
-		found = Ownership(store, creator).find_pin(pin.id)
-
-		assert_eq(found.id, pin.id)
-		with assert_raises(NotFoundError):
-			Ownership(store, stranger).find_pin(pin.id)
 
 
 def test_find_boards_returns_only_created_boards():
@@ -78,3 +45,22 @@ def test_find_pins_returns_only_created_pins():
 		pins = Ownership(store, viewer).find_pins()
 
 		assert_eq({pin.id for pin in pins}, {older.id, newer.id})
+
+
+def test_only_the_adder_added_a_placement():
+	with TestStore() as store:
+		board_creator = store.create(User, name="Board creator")
+		pin_creator = store.create(User, name="Pin creator")
+		adder = store.create(User, name="Adder")
+		board = store.create(Board, title="Reading", creator_id=board_creator.id)
+		pin = store.create(
+			Pin,
+			title="Sartre",
+			url="https://plato.stanford.edu/entries/sartre/",
+			creator_id=pin_creator.id,
+		)
+		placement = Placement.create(store, pin, board, adder)
+
+		assert_that(Ownership(store, adder).added(placement))
+		assert_not(Ownership(store, pin_creator).added(placement))
+		assert_not(Ownership(store, board_creator).added(placement))

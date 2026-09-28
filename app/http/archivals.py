@@ -3,7 +3,7 @@ from uuid import UUID
 
 from helios.app import Context
 from helios.auth import Authenticator
-from helios.database import NotFoundError, Store
+from helios.database import Store
 from helios.flash import Flashes
 from helios.form import Form
 from helios.http import Request, Response, Status
@@ -26,8 +26,9 @@ def create(req: Request, ctx: Context) -> Response:
 	form, errors = ArchivalForm.validate(req.input)
 	if errors:
 		return Response.text("400 Bad Request", status=Status.BAD_REQUEST)
-	placement = store.find_one(Placement, form.placement_id)
-	board = Access(store, user).find_board(placement.board_id)
+	access = Access(store, user)
+	placement = access.find_placement(form.placement_id)
+	board = access.find_board(placement.board_id)
 	pin = store.find_one(Pin, placement.pin_id)
 
 	archival = Archival.create(store, placement, user)
@@ -41,11 +42,10 @@ def delete(req: Request, ctx: Context, id: UUID) -> Response:
 	urls = ctx.get(URLs)
 	user = cast(User, auth.user)
 
-	archival = store.find_one(Archival, id)
-	if archival.user_id != user.id:
-		raise NotFoundError(Archival, id)
+	access = Access(store, user)
+	archival = access.find_archival(id)
 	placement = store.find_one(Placement, archival.placement_id)
-	board = Access(store, user).find_board(placement.board_id)
+	board = access.find_board(placement.board_id)
 	store.delete(archival)
 
 	return Response.redirect(urls.route("boards.show", {"id": board.id}))

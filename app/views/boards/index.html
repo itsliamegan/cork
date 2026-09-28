@@ -26,7 +26,7 @@
 		data-action="dragover->reorder#dragOver dragleave->reorder#dragLeave drop->reorder#drop"
 	>
 		{% for board in private %}
-		{{ BoardItem(board=board, user=auth.user) }}
+		{{ BoardItem(board=board, access=access) }}
 		{% else %}
 		<li class="frame-item frame-empty">No private boards.</li>
 		{% endfor %}
@@ -42,7 +42,7 @@
 		data-action="dragover->reorder#dragOver dragleave->reorder#dragLeave drop->reorder#drop"
 	>
 		{% for board in shared %}
-		{{ BoardItem(board=board, user=auth.user) }}
+		{{ BoardItem(board=board, access=access) }}
 		{% else %}
 		<li class="frame-item frame-empty">No shared boards.</li>
 		{% endfor %}

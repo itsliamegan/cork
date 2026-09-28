@@ -1,14 +1,10 @@
 from helios.view import Component
 
-from app import Board, User
+from app import Access, Board
 
 
 class BoardItem(Component):
 	template = "boards.item"
 
 	board: Board
-	user: User
-
-	@property
-	def owned(self) -> bool:
-		return self.board.creator_id == self.user.id
+	access: Access

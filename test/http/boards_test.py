@@ -134,14 +134,14 @@ def test_shares_board():
 			form={"_method": "PUT", "title": "Participant's Reading"},
 		)
 
-		assert_eq(res.status_code, 404)
+		assert_eq(res.status_code, 403)
 
 		res = app.client.post(
 			f"/pins/{pin.id}",
 			form={"_method": "DELETE"},
 		)
 
-		assert_eq(res.status_code, 404)
+		assert_eq(res.status_code, 403)
 		assert_eq(app.store.find_one(Pin, pin.id).title, "Stanford Entry on Sartre")
 
 		app.sign_in(stranger)
@@ -175,3 +175,60 @@ def test_update_changes_board_and_its_shares():
 		assert_eq(res.headers["Location"], f"/boards/{board.id}")
 		assert_eq(app.store.find_one(Board, board.id).title, "Philosophy Reading")
 		assert_eq([share.user_id for share in shares], [new_participant.id])
+
+
+def test_edit_form_is_refused_to_participants_and_hidden_from_strangers():
+	with TestApplication() as app:
+		creator = app.store.create(User, name="Creator")
+		participant = app.store.create(User, name="Participant")
+		stranger = app.store.create(User, name="Stranger")
+		board = app.store.create(Board, title="Reading", creator_id=creator.id)
+		app.store.create(Share, board_id=board.id, user_id=participant.id)
+
+		app.sign_in(participant)
+		participant_res = app.client.get(f"/boards/{board.id}/edit")
+		app.sign_in(stranger)
+		stranger_res = app.client.get(f"/boards/{board.id}/edit")
+
+		assert_eq(participant_res.status_code, 403)
+		assert_eq(stranger_res.status_code, 404)
+
+
+def test_update_is_refused_to_participants_and_hidden_from_strangers():
+	with TestApplication() as app:
+		creator = app.store.create(User, name="Creator")
+		participant = app.store.create(User, name="Participant")
+		stranger = app.store.create(User, name="Stranger")
+		board = app.store.create(Board, title="Reading", creator_id=creator.id)
+		app.store.create(Share, board_id=board.id, user_id=participant.id)
+		form = {"_method": "PUT", "title": "Philosophy", "user_ids": []}
+
+		app.sign_in(participant)
+		participant_res = app.client.post(f"/boards/{board.id}", form=form)
+		app.sign_in(stranger)
+		stranger_res = app.client.post(f"/boards/{board.id}", form=form)
+		shares = app.store.find_by(Share, board_id=board.id)
+
+		assert_eq(participant_res.status_code, 403)
+		assert_eq(stranger_res.status_code, 404)
+		assert_eq(app.store.find_one(Board, board.id).title, "Reading")
+		assert_eq([share.user_id for share in shares], [participant.id])
+
+
+def test_delete_is_refused_to_participants_and_hidden_from_strangers():
+	with TestApplication() as app:
+		creator = app.store.create(User, name="Creator")
+		participant = app.store.create(User, name="Participant")
+		stranger = app.store.create(User, name="Stranger")
+		board = app.store.create(Board, title="Reading", creator_id=creator.id)
+		app.store.create(Share, board_id=board.id, user_id=participant.id)
+		form = {"_method": "DELETE"}
+
+		app.sign_in(participant)
+		participant_res = app.client.post(f"/boards/{board.id}", form=form)
+		app.sign_in(stranger)
+		stranger_res = app.client.post(f"/boards/{board.id}", form=form)
+
+		assert_eq(participant_res.status_code, 403)
+		assert_eq(stranger_res.status_code, 404)
+		assert_eq([stored.id for stored in app.store.find_all(Board)], [board.id])

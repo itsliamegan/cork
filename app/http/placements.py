@@ -3,11 +3,11 @@ from uuid import UUID
 
 from helios.app import Context
 from helios.auth import Authenticator
-from helios.database import NotFoundError, Store
+from helios.database import Store
 from helios.http import Request, Response
 from helios.routing import URLs
 
-from app import Access, Board, Pin, Placement, Removal, User
+from app import Access, Pin, User
 
 
 def delete(req: Request, ctx: Context, id: UUID) -> Response:
@@ -16,12 +16,10 @@ def delete(req: Request, ctx: Context, id: UUID) -> Response:
 	urls = ctx.get(URLs)
 	user = cast(User, auth.user)
 
-	placement = store.find_one(Placement, id)
-	pin = store.find_one(Pin, placement.pin_id)
-	board = store.find_one(Board, placement.board_id)
 	access = Access(store, user)
-	if not Removal(placement, pin, board).is_authorized(access):
-		raise NotFoundError(Placement, id)
+	placement = access.find_placement(id)
+	pin = store.find_one(Pin, placement.pin_id)
+	board = access.find_board(placement.board_id)
+	placement.remove(store, access, pin, board)
 
-	store.delete(placement)
 	return Response.redirect(urls.route("boards.show", {"id": board.id}))

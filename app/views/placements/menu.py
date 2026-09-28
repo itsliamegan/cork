@@ -1,6 +1,6 @@
 from helios.view import Component
 
-from app import Pin, Placement, User
+from app import Access, Board, Pin, Placement
 
 
 class PlacementMenu(Component):
@@ -8,5 +8,5 @@ class PlacementMenu(Component):
 
 	pin: Pin
 	placement: Placement
-	user: User
-	can_remove: bool
+	board: Board
+	access: Access

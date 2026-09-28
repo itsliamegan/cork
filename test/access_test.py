@@ -1,7 +1,7 @@
 from helios.database import NotFoundError
-from luna.test.assertion import assert_eq, assert_raises, assert_that
+from luna.test.assertion import assert_eq, assert_raises
 
-from app import Access, Board, Pin, Placement, Share, User
+from app import Access, Archival, Board, Pin, Placement, Share, User
 from test.support import TestStore
 
 
@@ -13,9 +13,13 @@ def test_board_is_accessible_to_its_creator_and_participants_only():
 		board = store.create(Board, title="Reading", creator_id=creator.id)
 		store.create(Share, board_id=board.id, user_id=participant.id)
 
-		assert_that(Access(store, creator).allows_board(board))
-		assert_that(Access(store, participant).allows_board(board))
-		assert_that(not Access(store, stranger).allows_board(board))
+		found_by_creator = Access(store, creator).find_board(board.id)
+		found_by_participant = Access(store, participant).find_board(board.id)
+
+		assert_eq(found_by_creator.id, board.id)
+		assert_eq(found_by_participant.id, board.id)
+		with assert_raises(NotFoundError):
+			Access(store, stranger).find_board(board.id)
 
 
 def test_find_board_hides_inaccessible_boards():
@@ -66,9 +70,9 @@ def test_pin_is_accessible_to_the_creator_of_a_board_it_is_placed_on():
 		)
 		Placement.create(store, pin, board, pin_creator)
 
-		allowed = Access(store, board_creator).allows_pin(pin)
+		found = Access(store, board_creator).find_pin(pin.id)
 
-		assert_that(allowed)
+		assert_eq(found.id, pin.id)
 
 
 def test_pin_is_inaccessible_to_users_without_a_placed_board():
@@ -91,10 +95,10 @@ def test_pin_is_inaccessible_to_users_without_a_placed_board():
 		Placement.create(store, filed, board, creator)
 		access = Access(store, stranger)
 
-		assert_that(not access.allows_pin(filed))
-		assert_that(not access.allows_pin(unfiled))
 		with assert_raises(NotFoundError):
 			access.find_pin(filed.id)
+		with assert_raises(NotFoundError):
+			access.find_pin(unfiled.id)
 
 
 def test_unfiled_pin_is_accessible_to_its_creator():
@@ -107,9 +111,9 @@ def test_unfiled_pin_is_accessible_to_its_creator():
 			creator_id=creator.id,
 		)
 
-		allowed = Access(store, creator).allows_pin(pin)
+		found = Access(store, creator).find_pin(pin.id)
 
-		assert_that(allowed)
+		assert_eq(found.id, pin.id)
 
 
 def test_find_boards_returns_created_and_shared_boards():
@@ -138,3 +142,108 @@ def test_find_board_ids_covers_created_and_shared_boards():
 		board_ids = Access(store, viewer).find_board_ids()
 
 		assert_eq(sorted(board_ids), sorted([created.id, shared.id]))
+
+
+def test_find_placement_returns_placements_on_owned_and_shared_boards():
+	with TestStore() as store:
+		viewer = store.create(User, name="Viewer")
+		other_creator = store.create(User, name="Other creator")
+		owned = store.create(Board, title="Owned", creator_id=viewer.id)
+		shared = store.create(Board, title="Shared", creator_id=other_creator.id)
+		store.create(Share, board_id=shared.id, user_id=viewer.id)
+		pin = store.create(
+			Pin,
+			title="Sartre",
+			url="https://plato.stanford.edu/entries/sartre/",
+			creator_id=other_creator.id,
+		)
+		on_owned = Placement.create(store, pin, owned, viewer)
+		on_shared = Placement.create(store, pin, shared, other_creator)
+		access = Access(store, viewer)
+
+		found_on_owned = access.find_placement(on_owned.id)
+		found_on_shared = access.find_placement(on_shared.id)
+
+		assert_eq(found_on_owned.id, on_owned.id)
+		assert_eq(found_on_shared.id, on_shared.id)
+
+
+def test_find_placement_hides_placements_on_unseen_boards():
+	with TestStore() as store:
+		board_creator = store.create(User, name="Board creator")
+		former_adder = store.create(User, name="Former adder")
+		stranger = store.create(User, name="Stranger")
+		board = store.create(Board, title="Reading", creator_id=board_creator.id)
+		Share.replace(store, board, [former_adder])
+		pin = store.create(
+			Pin,
+			title="Sartre",
+			url="https://plato.stanford.edu/entries/sartre/",
+			creator_id=board_creator.id,
+		)
+		placement = Placement.create(store, pin, board, former_adder)
+		Share.replace(store, board, [])
+
+		with assert_raises(NotFoundError):
+			Access(store, stranger).find_placement(placement.id)
+		with assert_raises(NotFoundError):
+			Access(store, former_adder).find_placement(placement.id)
+
+
+def test_find_archival_returns_the_users_own_archival():
+	with TestStore() as store:
+		owner = store.create(User, name="Owner")
+		participant = store.create(User, name="Participant")
+		board = store.create(Board, title="Reading", creator_id=owner.id)
+		store.create(Share, board_id=board.id, user_id=participant.id)
+		pin = store.create(
+			Pin,
+			title="Sartre",
+			url="https://plato.stanford.edu/entries/sartre/",
+			creator_id=owner.id,
+		)
+		placement = Placement.create(store, pin, board, owner)
+		archival = Archival.create(store, placement, participant)
+
+		found = Access(store, participant).find_archival(archival.id)
+
+		assert_eq(found.id, archival.id)
+
+
+def test_find_archival_hides_another_users_archival():
+	with TestStore() as store:
+		owner = store.create(User, name="Owner")
+		participant = store.create(User, name="Participant")
+		board = store.create(Board, title="Reading", creator_id=owner.id)
+		store.create(Share, board_id=board.id, user_id=participant.id)
+		pin = store.create(
+			Pin,
+			title="Sartre",
+			url="https://plato.stanford.edu/entries/sartre/",
+			creator_id=owner.id,
+		)
+		placement = Placement.create(store, pin, board, owner)
+		archival = Archival.create(store, placement, participant)
+
+		with assert_raises(NotFoundError):
+			Access(store, owner).find_archival(archival.id)
+
+
+def test_find_archival_hides_own_archival_on_a_board_no_longer_shared():
+	with TestStore() as store:
+		owner = store.create(User, name="Owner")
+		participant = store.create(User, name="Participant")
+		board = store.create(Board, title="Reading", creator_id=owner.id)
+		Share.replace(store, board, [participant])
+		pin = store.create(
+			Pin,
+			title="Sartre",
+			url="https://plato.stanford.edu/entries/sartre/",
+			creator_id=owner.id,
+		)
+		placement = Placement.create(store, pin, board, owner)
+		archival = Archival.create(store, placement, participant)
+		Share.replace(store, board, [])
+
+		with assert_raises(NotFoundError):
+			Access(store, participant).find_archival(archival.id)

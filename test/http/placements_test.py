@@ -48,5 +48,5 @@ def test_unrelated_participant_cannot_remove_another_users_placement():
 		)
 
 		assert_eq(show_res.status_code, 200)
-		assert_eq(delete_res.status_code, 404)
+		assert_eq(delete_res.status_code, 403)
 		assert_eq(app.store.find_one(Placement, placement.id).id, placement.id)

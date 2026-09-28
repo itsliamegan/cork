@@ -2,6 +2,7 @@ from helios.database import Store
 from luna.test.assertion import assert_eq, assert_raises, assert_that
 
 from app import Access, Archival, Board, Move, Pin, Placement, Share, User
+from app.access import NotPermitted
 from app.move import OutOfDate
 from test.support import TestStore
 
@@ -368,3 +369,70 @@ def test_move_ignores_another_users_archivals():
 			Placement.move(store, reading, viewer, Move(first.id, None, third.id))
 
 		assert_eq(Placement.arrange(store, reading), [first, second, third])
+
+
+def test_pin_creator_board_creator_and_adder_may_remove_a_placement():
+	with TestStore() as store:
+		board_creator = store.create(User, name="Board creator")
+		pin_creator = store.create(User, name="Pin creator")
+		adder = store.create(User, name="Adder")
+		participant = store.create(User, name="Participant")
+		board = store.create(Board, title="Reading", creator_id=board_creator.id)
+		for user in [pin_creator, adder, participant]:
+			store.create(Share, board_id=board.id, user_id=user.id)
+		pin = store.create(
+			Pin,
+			title="Sartre",
+			url="https://plato.stanford.edu/entries/sartre/",
+			creator_id=pin_creator.id,
+		)
+		placement = Placement.create(store, pin, board, adder)
+
+		assert_that(placement.is_removable_by(Access(store, pin_creator), pin, board))
+		assert_that(placement.is_removable_by(Access(store, board_creator), pin, board))
+		assert_that(placement.is_removable_by(Access(store, adder), pin, board))
+		assert_that(
+			not placement.is_removable_by(Access(store, participant), pin, board)
+		)
+
+
+def test_adder_removes_a_placement():
+	with TestStore() as store:
+		board_creator = store.create(User, name="Board creator")
+		adder = store.create(User, name="Adder")
+		board = store.create(Board, title="Reading", creator_id=board_creator.id)
+		store.create(Share, board_id=board.id, user_id=adder.id)
+		pin = store.create(
+			Pin,
+			title="Sartre",
+			url="https://plato.stanford.edu/entries/sartre/",
+			creator_id=board_creator.id,
+		)
+		placement = Placement.create(store, pin, board, adder)
+
+		placement.remove(store, Access(store, adder), pin, board)
+
+		assert_eq(store.find_all(Placement), [])
+
+
+def test_participant_may_not_remove_another_users_placement():
+	with TestStore() as store:
+		board_creator = store.create(User, name="Board creator")
+		participant = store.create(User, name="Participant")
+		board = store.create(Board, title="Reading", creator_id=board_creator.id)
+		store.create(Share, board_id=board.id, user_id=participant.id)
+		pin = store.create(
+			Pin,
+			title="Sartre",
+			url="https://plato.stanford.edu/entries/sartre/",
+			creator_id=board_creator.id,
+		)
+		placement = Placement.create(store, pin, board, board_creator)
+
+		with assert_raises(NotPermitted):
+			placement.remove(store, Access(store, participant), pin, board)
+
+		assert_eq(
+			[stored.id for stored in store.find_all(Placement)],
+			[placement.id],
+		)

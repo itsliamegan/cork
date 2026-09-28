@@ -16,9 +16,9 @@
 			{{ Icon(name="drag") }}
 		</button>
 		<section class="pin-details">
-			{% render ExternalLink(url=pin.url, new_tab=user.open_in_new_tab, class="pin-link") %}<h3 class="pin-title">{{ pin.title }}</h3>{% endrender %}
+			{% render ExternalLink(url=pin.url, new_tab=access.user.open_in_new_tab, class="pin-link") %}<h3 class="pin-title">{{ pin.title }}</h3>{% endrender %}
 			<section class="pin-meta">
-				{% render ExternalLink(url=pin.url, new_tab=user.open_in_new_tab, class="pin-url") %}{{ pin.display_url() }}{% endrender %}
+				{% render ExternalLink(url=pin.url, new_tab=access.user.open_in_new_tab, class="pin-url") %}{{ pin.display_url() }}{% endrender %}
 				<time class="pin-date" datetime="{{ pin.created_at }}">
 					{{ pin.created_at | date }}
 				</time>
@@ -39,7 +39,7 @@
 					{{ Icon(name="archive") }}
 				</button>
 			</form>
-			{{ PlacementMenu(pin=pin, placement=placement, user=user, can_remove=can_remove) }}
+			{{ PlacementMenu(pin=pin, placement=placement, board=board, access=access) }}
 		</section>
 	</article>
 	<turbo-frame id="pin-{{ pin.id }}-details" data-pin-details-target="frame"></turbo-frame>
