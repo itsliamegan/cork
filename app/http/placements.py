@@ -13,9 +13,8 @@ def delete(req: Request, ctx: Context, id: UUID) -> Response:
 	store = ctx.get(Store)
 	auth = ctx.get(Authenticator[User])
 	urls = ctx.get(URLs)
-	user = auth.current()
 
-	access = Access(store, user)
+	access = Access(store, auth.user)
 	placement = access.find_placement(id)
 	pin = store.find_one(Pin, placement.pin_id)
 	board = access.find_board(placement.board_id)

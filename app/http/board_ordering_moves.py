@@ -18,9 +18,8 @@ class BoardOrderingMoveForm(Form):
 def create(req: Request, ctx: Context, id: UUID) -> Response:
 	store = ctx.get(Store)
 	auth = ctx.get(Authenticator[User])
-	user = auth.current()
 
-	access = Access(store, user)
+	access = Access(store, auth.user)
 	board = access.find_board(id)
 
 	form, errors = BoardOrderingMoveForm.validate(req.input)

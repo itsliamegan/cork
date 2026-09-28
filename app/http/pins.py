@@ -62,9 +62,8 @@ def _pin_return_url(
 def build_placement_options(ctx: Context) -> list[PlacementOption]:
 	store = ctx.get(Store)
 	auth = ctx.get(Authenticator[User])
-	user = auth.current()
 
-	access = Access(store, user)
+	access = Access(store, auth.user)
 	boards = access.find_boards()
 	board_ids = {board.id for board in boards}
 	shares_by_board_id: dict[UUID, list[Share]] = {board.id: [] for board in boards}
@@ -82,7 +81,7 @@ def build_placement_options(ctx: Context) -> list[PlacementOption]:
 	for board in boards:
 		visible_user_ids = {share.user_id for share in shares_by_board_id[board.id]}
 		visible_user_ids.add(board.creator_id)
-		visible_user_ids.discard(user.id)
+		visible_user_ids.discard(auth.user.id)
 		others = [users_by_id[user_id] for user_id in visible_user_ids]
 		placement_options.append(PlacementOption(board=board, others=others))
 	return placement_options
@@ -92,9 +91,8 @@ def index(req: Request, ctx: Context) -> Response:
 	store = ctx.get(Store)
 	auth = ctx.get(Authenticator[User])
 	views = ctx.get(Views)
-	user = auth.current()
 
-	pins = Ownership(store, user).find_pins()
+	pins = Ownership(store, auth.user).find_pins()
 	pins.sort(key=lambda pin: pin.created_at, reverse=True)
 	board_counts = Counter(
 		placement.pin_id
@@ -117,13 +115,12 @@ def create(req: Request, ctx: Context) -> Response:
 	auth = ctx.get(Authenticator[User])
 	submissions = ctx.get(Submissions)
 	urls = ctx.get(URLs)
-	user = auth.current()
 
 	form, errors = PinForm.validate(req.input)
 	if "board_ids" in errors:
 		return Response.text("400 Bad Request", status=Status.BAD_REQUEST)
 
-	access = Access(store, user)
+	access = Access(store, auth.user)
 	try:
 		boards = [access.find_board(board_id) for board_id in form.board_ids]
 	except NotFoundError:
@@ -164,9 +161,8 @@ def new(req: Request, ctx: Context) -> Response:
 	views = ctx.get(Views)
 	submission = ctx.get(Submission)
 	urls = ctx.get(URLs)
-	user = auth.current()
 
-	access = Access(store, user)
+	access = Access(store, auth.user)
 	board_id = req.url.query.first("board_id")
 	if board_id is not None:
 		try:
@@ -198,9 +194,8 @@ def show(req: Request, ctx: Context, id: UUID) -> Response:
 	store = ctx.get(Store)
 	auth = ctx.get(Authenticator[User])
 	views = ctx.get(Views)
-	user = auth.current()
 
-	access = Access(store, user)
+	access = Access(store, auth.user)
 	pin = access.find_pin(id)
 	placements = pin.find_accessible_placements(store, access)
 	boards = (
@@ -231,9 +226,8 @@ def edit(req: Request, ctx: Context, id: UUID) -> Response:
 	auth = ctx.get(Authenticator[User])
 	views = ctx.get(Views)
 	submission = ctx.get(Submission)
-	user = auth.current()
 
-	access = Access(store, user)
+	access = Access(store, auth.user)
 	pin = access.find_pin(id)
 	if not pin.is_editable_by(access):
 		raise NotPermitted(pin)
@@ -263,9 +257,8 @@ def update(req: Request, ctx: Context, id: UUID) -> Response:
 	auth = ctx.get(Authenticator[User])
 	submissions = ctx.get(Submissions)
 	urls = ctx.get(URLs)
-	user = auth.current()
 
-	access = Access(store, user)
+	access = Access(store, auth.user)
 	pin = access.find_pin(id)
 
 	form, errors = PinForm.validate(req.input)
@@ -303,9 +296,8 @@ def delete(req: Request, ctx: Context, id: UUID) -> Response:
 	store = ctx.get(Store)
 	auth = ctx.get(Authenticator[User])
 	urls = ctx.get(URLs)
-	user = auth.current()
 
-	access = Access(store, user)
+	access = Access(store, auth.user)
 	pin = access.find_pin(id)
 	pin.delete(store, access)
 

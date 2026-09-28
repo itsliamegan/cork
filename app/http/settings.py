@@ -46,13 +46,12 @@ def show(req: Request, ctx: Context) -> Response:
 def update(req: Request, ctx: Context) -> Response:
 	store = ctx.get(Store)
 	auth = ctx.get(Authenticator[User])
-	user = auth.current()
 
 	form, errors = SettingsForm.validate(req.input)
 	if errors:
 		return Response.text("400 Bad Request", status=Status.BAD_REQUEST)
 
-	user.open_in_new_tab = form.open_in_new_tab
-	store.save(user)
+	auth.user.open_in_new_tab = form.open_in_new_tab
+	store.save(auth.user)
 
 	return Response.redirect(_settings_return_url(ctx, form.return_to))

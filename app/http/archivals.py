@@ -20,17 +20,16 @@ def create(req: Request, ctx: Context) -> Response:
 	auth = ctx.get(Authenticator[User])
 	flash = ctx.get(Flashes)
 	urls = ctx.get(URLs)
-	user = auth.current()
 
 	form, errors = ArchivalForm.validate(req.input)
 	if errors:
 		return Response.text("400 Bad Request", status=Status.BAD_REQUEST)
-	access = Access(store, user)
+	access = Access(store, auth.user)
 	placement = access.find_placement(form.placement_id)
 	board = access.find_board(placement.board_id)
 	pin = store.find_one(Pin, placement.pin_id)
 
-	archival = Archival.create(store, placement, user)
+	archival = Archival.create(store, placement, auth.user)
 	flash["archived"] = {"archival_id": str(archival.id), "title": pin.title}
 	return Response.redirect(urls.route("boards.show", {"id": board.id}))
 
@@ -39,9 +38,8 @@ def delete(req: Request, ctx: Context, id: UUID) -> Response:
 	store = ctx.get(Store)
 	auth = ctx.get(Authenticator[User])
 	urls = ctx.get(URLs)
-	user = auth.current()
 
-	access = Access(store, user)
+	access = Access(store, auth.user)
 	archival = access.find_archival(id)
 	placement = store.find_one(Placement, archival.placement_id)
 	board = access.find_board(placement.board_id)

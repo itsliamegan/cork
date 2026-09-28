@@ -52,9 +52,8 @@ def index(req: Request, ctx: Context) -> Response:
 	store = ctx.get(Store)
 	auth = ctx.get(Authenticator[User])
 	views = ctx.get(Views)
-	user = auth.current()
 
-	access = Access(store, user)
+	access = Access(store, auth.user)
 	private, shared = Ordering.arrange(store, access)
 
 	return views.render(
@@ -72,12 +71,11 @@ def create(req: Request, ctx: Context) -> Response:
 	auth = ctx.get(Authenticator[User])
 	submissions = ctx.get(Submissions)
 	urls = ctx.get(URLs)
-	user = auth.current()
 
 	form, errors = BoardForm.validate(req.input)
 	if "user_ids" in errors:
 		return Response.text("400 Bad Request", status=Status.BAD_REQUEST)
-	sharable_users = _sharable_users(ctx, user.id)
+	sharable_users = _sharable_users(ctx, auth.user.id)
 	if not set(form.user_ids) <= {user.id for user in sharable_users}:
 		return Response.text("400 Bad Request", status=Status.BAD_REQUEST)
 	if errors:
@@ -86,7 +84,7 @@ def create(req: Request, ctx: Context) -> Response:
 
 	board = Board.create(
 		store,
-		user,
+		auth.user,
 		title=form.title,
 		users=[user for user in sharable_users if user.id in form.user_ids],
 	)
@@ -98,13 +96,12 @@ def new(req: Request, ctx: Context) -> Response:
 	auth = ctx.get(Authenticator[User])
 	views = ctx.get(Views)
 	submission = ctx.get(Submission)
-	user = auth.current()
 
 	return views.render(
 		"boards.new",
 		{
-			"owner": user,
-			"users": _sharable_users(ctx, user.id),
+			"owner": auth.user,
+			"users": _sharable_users(ctx, auth.user.id),
 			"shared_user_ids": set(submission.value("user_ids", [])),
 		},
 	)
@@ -114,12 +111,11 @@ def show(req: Request, ctx: Context, id: UUID) -> Response:
 	store = ctx.get(Store)
 	auth = ctx.get(Authenticator[User])
 	views = ctx.get(Views)
-	user = auth.current()
 
-	access = Access(store, user)
+	access = Access(store, auth.user)
 	board = access.find_board(id)
 	placements = Placement.arrange(store, board)
-	archivals = Archival.arrange(store, board, user)
+	archivals = Archival.arrange(store, board, auth.user)
 	archivals_by_placement_id = {
 		archival.placement_id: archival for archival in archivals
 	}
@@ -159,9 +155,8 @@ def edit(req: Request, ctx: Context, id: UUID) -> Response:
 	auth = ctx.get(Authenticator[User])
 	views = ctx.get(Views)
 	submission = ctx.get(Submission)
-	user = auth.current()
 
-	access = Access(store, user)
+	access = Access(store, auth.user)
 	board = access.find_board(id)
 	if not board.is_editable_by(access):
 		raise NotPermitted(board)
@@ -173,7 +168,7 @@ def edit(req: Request, ctx: Context, id: UUID) -> Response:
 		"boards.edit",
 		{
 			"board": board,
-			"owner": user,
+			"owner": auth.user,
 			"users": _sharable_users(ctx, board.creator_id),
 			"shared_user_ids": set(submission.value("user_ids", shared_user_ids)),
 			"return_to": _board_return_url(ctx, req.referrer, board.id),
@@ -186,9 +181,8 @@ def update(req: Request, ctx: Context, id: UUID) -> Response:
 	auth = ctx.get(Authenticator[User])
 	submissions = ctx.get(Submissions)
 	urls = ctx.get(URLs)
-	user = auth.current()
 
-	access = Access(store, user)
+	access = Access(store, auth.user)
 	board = access.find_board(id)
 	form, errors = BoardForm.validate(req.input)
 	if "user_ids" in errors:
@@ -215,9 +209,8 @@ def delete(req: Request, ctx: Context, id: UUID) -> Response:
 	store = ctx.get(Store)
 	auth = ctx.get(Authenticator[User])
 	urls = ctx.get(URLs)
-	user = auth.current()
 
-	access = Access(store, user)
+	access = Access(store, auth.user)
 	board = access.find_board(id)
 	board.delete(store, access)
 

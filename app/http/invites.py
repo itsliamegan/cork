@@ -30,11 +30,10 @@ def create(req: Request, ctx: Context) -> Response:
 		submissions.flash(errors)
 		return Response.redirect(urls.route("settings.show"))
 
-	creator = auth.current()
 	invite = Invite.create(
 		store,
-		creator,
-		target=creator if form.targeted else None,
+		auth.user,
+		target=auth.user if form.targeted else None,
 	)
 	flash["invite_id"] = str(invite.id)
 	flash["invite_token"] = invite.token.value
@@ -48,8 +47,7 @@ def show(req: Request, ctx: Context, id: UUID) -> Response:
 	views = ctx.get(Views)
 	urls = ctx.get(URLs)
 
-	creator = auth.current()
-	invite = Invite.find_created_by(store, id, creator)
+	invite = Invite.find_created_by(store, id, auth.user)
 	if (
 		"invite_id" not in flash
 		or flash["invite_id"] != str(invite.id)
