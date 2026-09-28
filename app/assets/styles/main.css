@@ -367,7 +367,6 @@ a {
 	border: 0;
 	appearance: none;
 
-	font-size: var(--font-size-meta);
 	line-height: 1;
 	cursor: grab;
 	-webkit-touch-callout: none;
@@ -377,6 +376,10 @@ a {
 	background: transparent;
 	color: var(--color-text-muted);
 	opacity: 0;
+
+	& svg {
+		flex: none;
+	}
 }
 
 .reorder-drop-target {
