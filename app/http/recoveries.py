@@ -1,4 +1,3 @@
-from typing import cast
 from uuid import UUID
 
 from helios.app import Context
@@ -14,10 +13,10 @@ from app import Recovery, User
 
 def create(req: Request, ctx: Context) -> Response:
 	store = ctx.get(Store)
-	auth = ctx.get(Authenticator)
+	auth = ctx.get(Authenticator[User])
 	flash = ctx.get(Flashes)
 	urls = ctx.get(URLs)
-	user = cast(User, auth.user)
+	user = auth.current()
 
 	recovery = Recovery.create(store, user)
 	flash["recovery_id"] = str(recovery.id)
@@ -27,11 +26,11 @@ def create(req: Request, ctx: Context) -> Response:
 
 def show(req: Request, ctx: Context, id: UUID) -> Response:
 	store = ctx.get(Store)
-	auth = ctx.get(Authenticator)
+	auth = ctx.get(Authenticator[User])
 	flash = ctx.get(Flashes)
 	views = ctx.get(Views)
 	urls = ctx.get(URLs)
-	user = cast(User, auth.user)
+	user = auth.current()
 
 	recovery = Recovery.find_owned(store, id, user)
 	if (

@@ -1,5 +1,3 @@
-from typing import cast
-
 from helios.app import Context
 from helios.auth import Authenticator
 from helios.database import Store
@@ -47,8 +45,8 @@ def show(req: Request, ctx: Context) -> Response:
 
 def update(req: Request, ctx: Context) -> Response:
 	store = ctx.get(Store)
-	auth = ctx.get(Authenticator)
-	user = cast(User, auth.user)
+	auth = ctx.get(Authenticator[User])
+	user = auth.current()
 
 	form, errors = SettingsForm.validate(req.input)
 	if errors:

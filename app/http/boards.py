@@ -1,4 +1,3 @@
-from typing import cast
 from uuid import UUID
 
 from helios.app import Context
@@ -51,9 +50,9 @@ def _sharable_users(ctx: Context, owner_id: UUID) -> list[User]:
 
 def index(req: Request, ctx: Context) -> Response:
 	store = ctx.get(Store)
-	auth = ctx.get(Authenticator)
+	auth = ctx.get(Authenticator[User])
 	views = ctx.get(Views)
-	user = cast(User, auth.user)
+	user = auth.current()
 
 	access = Access(store, user)
 	private, shared = Ordering.arrange(store, access)
@@ -70,10 +69,10 @@ def index(req: Request, ctx: Context) -> Response:
 
 def create(req: Request, ctx: Context) -> Response:
 	store = ctx.get(Store)
-	auth = ctx.get(Authenticator)
+	auth = ctx.get(Authenticator[User])
 	submissions = ctx.get(Submissions)
 	urls = ctx.get(URLs)
-	user = cast(User, auth.user)
+	user = auth.current()
 
 	form, errors = BoardForm.validate(req.input)
 	if "user_ids" in errors:
@@ -96,15 +95,15 @@ def create(req: Request, ctx: Context) -> Response:
 
 
 def new(req: Request, ctx: Context) -> Response:
-	auth = ctx.get(Authenticator)
+	auth = ctx.get(Authenticator[User])
 	views = ctx.get(Views)
 	submission = ctx.get(Submission)
-	user = cast(User, auth.user)
+	user = auth.current()
 
 	return views.render(
 		"boards.new",
 		{
-			"owner": auth.user,
+			"owner": user,
 			"users": _sharable_users(ctx, user.id),
 			"shared_user_ids": set(submission.value("user_ids", [])),
 		},
@@ -113,9 +112,9 @@ def new(req: Request, ctx: Context) -> Response:
 
 def show(req: Request, ctx: Context, id: UUID) -> Response:
 	store = ctx.get(Store)
-	auth = ctx.get(Authenticator)
+	auth = ctx.get(Authenticator[User])
 	views = ctx.get(Views)
-	user = cast(User, auth.user)
+	user = auth.current()
 
 	access = Access(store, user)
 	board = access.find_board(id)
@@ -157,10 +156,10 @@ def show(req: Request, ctx: Context, id: UUID) -> Response:
 
 def edit(req: Request, ctx: Context, id: UUID) -> Response:
 	store = ctx.get(Store)
-	auth = ctx.get(Authenticator)
+	auth = ctx.get(Authenticator[User])
 	views = ctx.get(Views)
 	submission = ctx.get(Submission)
-	user = cast(User, auth.user)
+	user = auth.current()
 
 	access = Access(store, user)
 	board = access.find_board(id)
@@ -174,7 +173,7 @@ def edit(req: Request, ctx: Context, id: UUID) -> Response:
 		"boards.edit",
 		{
 			"board": board,
-			"owner": auth.user,
+			"owner": user,
 			"users": _sharable_users(ctx, board.creator_id),
 			"shared_user_ids": set(submission.value("user_ids", shared_user_ids)),
 			"return_to": _board_return_url(ctx, req.referrer, board.id),
@@ -184,10 +183,10 @@ def edit(req: Request, ctx: Context, id: UUID) -> Response:
 
 def update(req: Request, ctx: Context, id: UUID) -> Response:
 	store = ctx.get(Store)
-	auth = ctx.get(Authenticator)
+	auth = ctx.get(Authenticator[User])
 	submissions = ctx.get(Submissions)
 	urls = ctx.get(URLs)
-	user = cast(User, auth.user)
+	user = auth.current()
 
 	access = Access(store, user)
 	board = access.find_board(id)
@@ -214,9 +213,9 @@ def update(req: Request, ctx: Context, id: UUID) -> Response:
 
 def delete(req: Request, ctx: Context, id: UUID) -> Response:
 	store = ctx.get(Store)
-	auth = ctx.get(Authenticator)
+	auth = ctx.get(Authenticator[User])
 	urls = ctx.get(URLs)
-	user = cast(User, auth.user)
+	user = auth.current()
 
 	access = Access(store, user)
 	board = access.find_board(id)

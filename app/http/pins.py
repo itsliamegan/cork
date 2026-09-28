@@ -1,5 +1,4 @@
 from collections import Counter
-from typing import cast
 from uuid import UUID
 
 from helios import http
@@ -62,8 +61,8 @@ def _pin_return_url(
 
 def build_placement_options(ctx: Context) -> list[PlacementOption]:
 	store = ctx.get(Store)
-	auth = ctx.get(Authenticator)
-	user = cast(User, auth.user)
+	auth = ctx.get(Authenticator[User])
+	user = auth.current()
 
 	access = Access(store, user)
 	boards = access.find_boards()
@@ -91,9 +90,9 @@ def build_placement_options(ctx: Context) -> list[PlacementOption]:
 
 def index(req: Request, ctx: Context) -> Response:
 	store = ctx.get(Store)
-	auth = ctx.get(Authenticator)
+	auth = ctx.get(Authenticator[User])
 	views = ctx.get(Views)
-	user = cast(User, auth.user)
+	user = auth.current()
 
 	pins = Ownership(store, user).find_pins()
 	pins.sort(key=lambda pin: pin.created_at, reverse=True)
@@ -115,10 +114,10 @@ def index(req: Request, ctx: Context) -> Response:
 
 def create(req: Request, ctx: Context) -> Response:
 	store = ctx.get(Store)
-	auth = ctx.get(Authenticator)
+	auth = ctx.get(Authenticator[User])
 	submissions = ctx.get(Submissions)
 	urls = ctx.get(URLs)
-	user = cast(User, auth.user)
+	user = auth.current()
 
 	form, errors = PinForm.validate(req.input)
 	if "board_ids" in errors:
@@ -161,11 +160,11 @@ def create(req: Request, ctx: Context) -> Response:
 
 def new(req: Request, ctx: Context) -> Response:
 	store = ctx.get(Store)
-	auth = ctx.get(Authenticator)
+	auth = ctx.get(Authenticator[User])
 	views = ctx.get(Views)
 	submission = ctx.get(Submission)
 	urls = ctx.get(URLs)
-	user = cast(User, auth.user)
+	user = auth.current()
 
 	access = Access(store, user)
 	board_id = req.url.query.first("board_id")
@@ -197,9 +196,9 @@ def new(req: Request, ctx: Context) -> Response:
 
 def show(req: Request, ctx: Context, id: UUID) -> Response:
 	store = ctx.get(Store)
-	auth = ctx.get(Authenticator)
+	auth = ctx.get(Authenticator[User])
 	views = ctx.get(Views)
-	user = cast(User, auth.user)
+	user = auth.current()
 
 	access = Access(store, user)
 	pin = access.find_pin(id)
@@ -229,10 +228,10 @@ def show(req: Request, ctx: Context, id: UUID) -> Response:
 
 def edit(req: Request, ctx: Context, id: UUID) -> Response:
 	store = ctx.get(Store)
-	auth = ctx.get(Authenticator)
+	auth = ctx.get(Authenticator[User])
 	views = ctx.get(Views)
 	submission = ctx.get(Submission)
-	user = cast(User, auth.user)
+	user = auth.current()
 
 	access = Access(store, user)
 	pin = access.find_pin(id)
@@ -261,10 +260,10 @@ def edit(req: Request, ctx: Context, id: UUID) -> Response:
 
 def update(req: Request, ctx: Context, id: UUID) -> Response:
 	store = ctx.get(Store)
-	auth = ctx.get(Authenticator)
+	auth = ctx.get(Authenticator[User])
 	submissions = ctx.get(Submissions)
 	urls = ctx.get(URLs)
-	user = cast(User, auth.user)
+	user = auth.current()
 
 	access = Access(store, user)
 	pin = access.find_pin(id)
@@ -302,9 +301,9 @@ def update(req: Request, ctx: Context, id: UUID) -> Response:
 
 def delete(req: Request, ctx: Context, id: UUID) -> Response:
 	store = ctx.get(Store)
-	auth = ctx.get(Authenticator)
+	auth = ctx.get(Authenticator[User])
 	urls = ctx.get(URLs)
-	user = cast(User, auth.user)
+	user = auth.current()
 
 	access = Access(store, user)
 	pin = access.find_pin(id)

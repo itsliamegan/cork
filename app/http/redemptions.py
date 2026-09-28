@@ -17,7 +17,7 @@ class RedemptionForm(Form):
 
 def create(req: Request, ctx: Context) -> Response:
 	store = ctx.get(Store)
-	auth = ctx.get(Authenticator)
+	auth = ctx.get(Authenticator[User])
 	flash = ctx.get(Flashes)
 	submissions = ctx.get(Submissions)
 	urls = ctx.get(URLs)
@@ -60,7 +60,7 @@ def create(req: Request, ctx: Context) -> Response:
 
 def new(req: Request, ctx: Context) -> Response:
 	store = ctx.get(Store)
-	auth = ctx.get(Authenticator)
+	auth = ctx.get(Authenticator[User])
 	views = ctx.get(Views)
 	urls = ctx.get(URLs)
 

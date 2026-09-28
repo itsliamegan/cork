@@ -1,4 +1,3 @@
-from typing import cast
 from uuid import UUID
 
 from helios.app import Context
@@ -18,10 +17,10 @@ class ArchivalForm(Form):
 
 def create(req: Request, ctx: Context) -> Response:
 	store = ctx.get(Store)
-	auth = ctx.get(Authenticator)
+	auth = ctx.get(Authenticator[User])
 	flash = ctx.get(Flashes)
 	urls = ctx.get(URLs)
-	user = cast(User, auth.user)
+	user = auth.current()
 
 	form, errors = ArchivalForm.validate(req.input)
 	if errors:
@@ -38,9 +37,9 @@ def create(req: Request, ctx: Context) -> Response:
 
 def delete(req: Request, ctx: Context, id: UUID) -> Response:
 	store = ctx.get(Store)
-	auth = ctx.get(Authenticator)
+	auth = ctx.get(Authenticator[User])
 	urls = ctx.get(URLs)
-	user = cast(User, auth.user)
+	user = auth.current()
 
 	access = Access(store, user)
 	archival = access.find_archival(id)

@@ -1,4 +1,3 @@
-from typing import cast
 from uuid import UUID
 
 from helios.app import Context
@@ -12,9 +11,9 @@ from app import Access, Pin, User
 
 def delete(req: Request, ctx: Context, id: UUID) -> Response:
 	store = ctx.get(Store)
-	auth = ctx.get(Authenticator)
+	auth = ctx.get(Authenticator[User])
 	urls = ctx.get(URLs)
-	user = cast(User, auth.user)
+	user = auth.current()
 
 	access = Access(store, user)
 	placement = access.find_placement(id)
