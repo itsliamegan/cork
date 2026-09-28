@@ -50,40 +50,6 @@ def _sharable_users(ctx: Context, owner_id: UUID) -> list[User]:
 	return users
 
 
-def build_pin_rows(
-	store: Store,
-	access: Access,
-	board: Board,
-) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
-	placements = Placement.arrange(store, board)
-	archivals = Archival.arrange(store, board, access.user)
-	archivals_by_placement_id = {
-		archival.placement_id: archival for archival in archivals
-	}
-	placements_by_id = {placement.id: placement for placement in placements}
-	pin_ids = [placement.pin_id for placement in placements]
-	pins_by_id = {pin.id: pin for pin in store.query(Pin).where_in(id=pin_ids).all()}
-
-	def pin_row(placement: Placement) -> dict[str, Any]:
-		pin = pins_by_id[placement.pin_id]
-		return {
-			"placement": placement,
-			"pin": pin,
-			"can_remove": Removal(placement, pin, board).is_authorized(access),
-		}
-
-	pin_rows = [
-		pin_row(placement)
-		for placement in placements
-		if placement.id not in archivals_by_placement_id
-	]
-	archived_rows = [
-		{"archival": archival, **pin_row(placements_by_id[archival.placement_id])}
-		for archival in archivals
-	]
-	return pin_rows, archived_rows
-
-
 def index(req: Request, ctx: Context) -> Response:
 	store = ctx.get(Store)
 	auth = ctx.get(Authenticator)
@@ -153,7 +119,32 @@ def show(req: Request, ctx: Context, id: UUID) -> Response:
 
 	access = Access(store, user)
 	board = access.find_board(id)
-	pin_rows, archived_rows = build_pin_rows(store, access, board)
+	placements = Placement.arrange(store, board)
+	archivals = Archival.arrange(store, board, user)
+	archivals_by_placement_id = {
+		archival.placement_id: archival for archival in archivals
+	}
+	placements_by_id = {placement.id: placement for placement in placements}
+	pin_ids = [placement.pin_id for placement in placements]
+	pins_by_id = {pin.id: pin for pin in store.query(Pin).where_in(id=pin_ids).all()}
+
+	def pin_row(placement: Placement) -> dict[str, Any]:
+		pin = pins_by_id[placement.pin_id]
+		return {
+			"placement": placement,
+			"pin": pin,
+			"can_remove": Removal(placement, pin, board).is_authorized(access),
+		}
+
+	pin_rows = [
+		pin_row(placement)
+		for placement in placements
+		if placement.id not in archivals_by_placement_id
+	]
+	archived_rows = [
+		{"archival": archival, **pin_row(placements_by_id[archival.placement_id])}
+		for archival in archivals
+	]
 
 	return views.render(
 		"boards.show",

@@ -3,6 +3,11 @@
 
 {% block title %}Cork - {{ board.title }}{% endblock %}
 
+{% block turbo_control %}
+<meta name="turbo-refresh-method" content="morph">
+<meta name="turbo-refresh-scroll" content="preserve">
+{% endblock %}
+
 {% block content %}
 <header id="page-header">
 	<h2 id="page-title">{{ board.title }}</h2>
@@ -38,7 +43,12 @@
 </section>
 
 {% if archived_rows %}
-<details id="archived" class="frame archive-frame">
+<details
+	id="archived"
+	class="frame archive-frame"
+	data-controller="keep-open"
+	data-action="turbo:before-morph-attribute->keep-open#keep"
+>
 	<summary class="frame-header">
 		<h3 class="frame-title">Archived</h3>
 		<span id="archived-count" class="frame-meta">{{ archived_rows | length }}</span>

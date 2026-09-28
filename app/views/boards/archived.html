@@ -3,7 +3,6 @@
 	<time datetime="{{ archival.created_at }}">{{ archival.created_at | date }}</time>
 	<form action="{{ urls.route("archivals.delete", {"id": placement.id}) }}" method="POST">
 		<input type="hidden" name="_method" value="DELETE">
-		<input type="hidden" name="section" value="archived">
 		<button class="button button--small" type="submit">Unarchive</button>
 	</form>
 	{{ PinMenu(pin=pin, placement=placement, user=user, can_remove=can_remove) }}

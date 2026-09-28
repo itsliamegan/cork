@@ -185,7 +185,7 @@ def test_pin_list_with_every_pin_archived_says_so():
 		assert_not("No pins yet." in html)
 
 
-def test_archived_pin_unarchives_back_into_the_archived_section():
+def test_archived_pin_unarchives_its_placement():
 	with TestApplication() as app:
 		engine = app.container.get(Engine)
 		reader = app.store.create(User, name="Reader")
@@ -209,4 +209,3 @@ def test_archived_pin_unarchives_back_into_the_archived_section():
 			f'<form action="/placements/{placement.id}/archival" method="POST">' in html
 		)
 		assert_that('name="_method" value="DELETE"' in html)
-		assert_that('name="section" value="archived"' in html)
