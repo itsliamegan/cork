@@ -1,4 +1,4 @@
-export default class extends Stimulus.Controller {
+export default class FilterController extends Stimulus.Controller {
 	static targets = ["query", "item", "empty"]
 
 	connect() {

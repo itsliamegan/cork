@@ -1,4 +1,4 @@
-export default class extends Stimulus.Controller {
+export default class ReorderController extends Stimulus.Controller {
 	static targets = ["item", "list"]
 
 	connect() {

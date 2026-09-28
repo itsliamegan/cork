@@ -1,4 +1,4 @@
-export default class extends Stimulus.Controller {
+export default class CopyController extends Stimulus.Controller {
 	static targets = ["source", "button"]
 
 	connect() {

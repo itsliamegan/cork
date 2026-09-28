@@ -1,9 +1,9 @@
-const DELAY = 5000
-const DURATION = 400
+export default class NoticeController extends Stimulus.Controller {
+	static DELAY = 5000
+	static DURATION = 400
 
-export default class extends Stimulus.Controller {
 	connect() {
-		this.timeout = setTimeout(() => this.fade(), DELAY)
+		this.timeout = setTimeout(() => this.fade(), NoticeController.DELAY)
 	}
 
 	disconnect() {
@@ -12,7 +12,7 @@ export default class extends Stimulus.Controller {
 
 	async fade() {
 		let animation = this.element.animate([{ opacity: 1 }, { opacity: 0 }], {
-			duration: DURATION,
+			duration: NoticeController.DURATION,
 			easing: "ease-out",
 			fill: "forwards",
 		})
