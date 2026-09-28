@@ -11,6 +11,7 @@ from app.views.components.external_link import ExternalLink
 from app.views.components.icon import Icon
 from app.views.helpers import helpers
 from app.views.pins.details import PinDetails
+from app.views.pins.link import PinLink
 from app.views.pins.placements import PinPlacements
 from app.views.placements.item import PlacementItem
 from app.views.placements.menu import PlacementMenu
@@ -26,6 +27,7 @@ components: list[type[Component]] = [
 	ExternalLink,
 	Icon,
 	PinDetails,
+	PinLink,
 	PinPlacements,
 	PlacementItem,
 	PlacementMenu,

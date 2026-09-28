@@ -422,6 +422,57 @@ def test_new_form_and_creation_allow_no_board():
 		assert_eq(app.store.find_by(Placement, pin_id=pin.id), [])
 
 
+def test_creates_pin_without_url_from_blank_field():
+	with TestApplication() as app:
+		creator = app.store.create(User, name="Creator")
+		app.sign_in(creator)
+
+		res = app.client.post("/pins/", form={"title": "Sartre", "url": ""})
+		pin = app.store.find_by(Pin, title="Sartre")[0]
+
+		assert_eq(res.status_code, 302)
+		assert_eq(pin.url, None)
+
+
+def test_update_clears_url_from_blank_field():
+	with TestApplication() as app:
+		creator = app.store.create(User, name="Creator")
+		pin = app.store.create(
+			Pin, title="Sartre", url="https://sartre.example", creator_id=creator.id
+		)
+		app.sign_in(creator)
+
+		res = app.client.post(
+			f"/pins/{pin.id}",
+			form={"_method": "PUT", "title": "Sartre", "url": ""},
+		)
+		stored = app.store.find_one(Pin, pin.id)
+
+		assert_eq(res.status_code, 302)
+		assert_eq(stored.url, None)
+
+
+def test_pages_render_a_pin_without_url():
+	with TestApplication() as app:
+		creator = app.store.create(User, name="Creator")
+		board = app.store.create(Board, title="Reading", creator_id=creator.id)
+		pin = app.store.create(Pin, title="Sartre", creator_id=creator.id)
+		app.store.create(
+			Placement, pin_id=pin.id, board_id=board.id, adder_id=creator.id
+		)
+		app.sign_in(creator)
+
+		index_res = app.client.get("/pins/")
+		show_res = app.client.get(f"/pins/{pin.id}")
+		edit_res = app.client.get(f"/pins/{pin.id}/edit")
+		board_res = app.client.get(f"/boards/{board.id}")
+
+		assert_eq(index_res.status_code, 200)
+		assert_eq(show_res.status_code, 200)
+		assert_eq(edit_res.status_code, 200)
+		assert_eq(board_res.status_code, 200)
+
+
 def test_owned_unfiled_pin_is_accessible_only_to_creator():
 	with TestApplication() as app:
 		creator = app.store.create(User, name="Creator")
