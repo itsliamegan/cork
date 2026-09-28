@@ -1,5 +1,4 @@
-from helios.view import Component
-from markupsafe import Markup
+from helios.view import Component, Markup
 
 
 class ActionMenu(Component):

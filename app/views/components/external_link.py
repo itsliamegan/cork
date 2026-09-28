@@ -1,5 +1,4 @@
-from helios.view import Attributes, Component
-from markupsafe import Markup
+from helios.view import Attributes, Component, Markup
 
 
 class ExternalLink(Component):
