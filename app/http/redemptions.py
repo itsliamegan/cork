@@ -67,11 +67,10 @@ def new(req: Request, ctx: Context) -> Response:
 	if auth.is_signed_in():
 		return Response.redirect(urls.route("home.show"))
 
-	token = req.url.query.get("token")
-	if isinstance(token, str):
+	token = req.url.query.first("token")
+	if token is not None:
 		invite = Invite.find_valid(store, token)
 	else:
-		token = None
 		invite = None
 
 	creator = None

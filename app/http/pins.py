@@ -169,8 +169,8 @@ def new(req: Request, ctx: Context) -> Response:
 	user = cast(User, auth.user)
 
 	access = Access(store, user)
-	board_id = req.url.query.get("board_id")
-	if isinstance(board_id, str):
+	board_id = req.url.query.first("board_id")
+	if board_id is not None:
 		try:
 			id = UUID(board_id)
 		except ValueError:
