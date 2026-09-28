@@ -34,7 +34,12 @@ def create(req: Request, ctx: Context, id: UUID) -> Response:
 		return Response.text("400 Bad Request", status=Status.BAD_REQUEST)
 
 	try:
-		Placement.move(store, board, Move(placement.id, form.above_id, form.below_id))
+		Placement.move(
+			store,
+			board,
+			user,
+			Move(placement.id, form.above_id, form.below_id),
+		)
 	except OutOfDate:
 		return Response.text("409 Conflict", status=Status.CONFLICT)
 

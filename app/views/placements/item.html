@@ -1,0 +1,46 @@
+<li
+	class="frame-item frame-item--reorderable pin-row"
+	data-controller="pin-details"
+	data-reorder-target="item"
+	data-reorder-id="{{ placement.id }}"
+	data-reorder-url="{{ urls.route("placement_moves.create", {"id": placement.id}) }}"
+>
+	<article class="pin">
+		<button
+			class="reorder-handle"
+			type="button"
+			draggable="true"
+			title="Drag to reorder"
+			data-action="dragstart->reorder#dragStart dragend->reorder#dragEnd"
+		>
+			{{ Icon(name="drag") }}
+		</button>
+		<section class="pin-details">
+			{% render ExternalLink(url=pin.url, new_tab=user.open_in_new_tab, class="pin-link") %}<h3 class="pin-title">{{ pin.title }}</h3>{% endrender %}
+			<section class="pin-meta">
+				{% render ExternalLink(url=pin.url, new_tab=user.open_in_new_tab, class="pin-url") %}{{ pin.display_url() }}{% endrender %}
+				<time class="pin-date" datetime="{{ pin.created_at }}">
+					{{ pin.created_at | date }}
+				</time>
+				<a
+					class="pin-details-link"
+					href="{{ urls.route("pins.show", {"id": pin.id}) }}"
+					data-turbo-frame="pin-{{ pin.id }}-details"
+					data-pin-details-target="link"
+					data-action="click->pin-details#toggle"
+				>Details</a>
+			</section>
+		</section>
+
+		<section class="pin-actions">
+			<form action="{{ urls.route("archivals.create") }}" method="POST">
+				<input type="hidden" name="placement_id" value="{{ placement.id }}">
+				<button class="button button--icon pin-archive-button" type="submit" title="Archive">
+					{{ Icon(name="archive") }}
+				</button>
+			</form>
+			{{ PlacementMenu(pin=pin, placement=placement, user=user, can_remove=can_remove) }}
+		</section>
+	</article>
+	<turbo-frame id="pin-{{ pin.id }}-details" data-pin-details-target="frame"></turbo-frame>
+</li>

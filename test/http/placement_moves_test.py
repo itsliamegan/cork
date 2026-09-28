@@ -1,6 +1,6 @@
 from luna.test.assertion import assert_eq
 
-from app import Board, Pin, Placement, Share, User
+from app import Archival, Board, Pin, Placement, Share, User
 from test.support import TestApplication
 
 
@@ -165,6 +165,42 @@ def test_outsider_cannot_move_placements():
 		)
 
 		assert_eq(res.status_code, 404)
+		assert_eq(
+			[
+				app.store.find_one(Placement, placement.id).position
+				for placement in [first, second]
+			],
+			[0, 0],
+		)
+
+
+def test_moving_an_archived_placement_conflicts():
+	with TestApplication() as app:
+		owner = app.store.create(User, name="Owner")
+		board = app.store.create(Board, title="Reading", creator_id=owner.id)
+		first_pin = app.store.create(
+			Pin,
+			title="First pin",
+			url="https://first.example",
+			creator_id=owner.id,
+		)
+		second_pin = app.store.create(
+			Pin,
+			title="Second pin",
+			url="https://second.example",
+			creator_id=owner.id,
+		)
+		first = Placement.create(app.store, first_pin, board, owner)
+		second = Placement.create(app.store, second_pin, board, owner)
+		Archival.create(app.store, second, owner)
+		app.sign_in(owner)
+
+		res = app.client.post(
+			f"/placements/{second.id}/moves",
+			form={"above_id": str(first.id)},
+		)
+
+		assert_eq(res.status_code, 409)
 		assert_eq(
 			[
 				app.store.find_one(Placement, placement.id).position

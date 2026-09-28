@@ -10,7 +10,18 @@ from helios.http import Request, Response, Status, URL
 from helios.routing import URLs
 from helios.view import Views
 
-from app import Access, Board, Ordering, Ownership, Pin, Placement, Removal, Share, User
+from app import (
+	Access,
+	Archival,
+	Board,
+	Ordering,
+	Ownership,
+	Pin,
+	Placement,
+	Removal,
+	Share,
+	User,
+)
 
 
 class BoardForm(Form):
@@ -109,24 +120,38 @@ def show(req: Request, ctx: Context, id: UUID) -> Response:
 	access = Access(store, user)
 	board = access.find_board(id)
 	placements = Placement.arrange(store, board)
+	archivals = Archival.arrange(store, board, user)
+	archivals_by_placement_id = {
+		archival.placement_id: archival for archival in archivals
+	}
+	placements_by_id = {placement.id: placement for placement in placements}
 	pin_ids = [placement.pin_id for placement in placements]
 	pins_by_id = {pin.id: pin for pin in store.query(Pin).where_in(id=pin_ids).all()}
-	pin_rows: list[dict[str, Any]] = []
-	for placement in placements:
+
+	def placement_row(placement: Placement) -> dict[str, Any]:
 		pin = pins_by_id[placement.pin_id]
-		pin_rows.append(
-			{
-				"placement": placement,
-				"pin": pin,
-				"can_remove": Removal(placement, pin, board).is_authorized(access),
-			}
-		)
+		return {
+			"placement": placement,
+			"pin": pin,
+			"can_remove": Removal(placement, pin, board).is_authorized(access),
+		}
+
+	placement_rows = [
+		placement_row(placement)
+		for placement in placements
+		if placement.id not in archivals_by_placement_id
+	]
+	archived_rows = [
+		{"archival": archival, **placement_row(placements_by_id[archival.placement_id])}
+		for archival in archivals
+	]
 
 	return views.render(
 		"boards.show",
 		{
 			"board": board,
-			"pin_rows": pin_rows,
+			"placement_rows": placement_rows,
+			"archived_rows": archived_rows,
 		},
 	)
 

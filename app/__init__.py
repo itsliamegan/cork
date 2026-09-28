@@ -1,4 +1,5 @@
 from app.access import Access
+from app.archival import Archival
 from app.board import Board
 from app.invite import Invite
 from app.move import Move
@@ -13,6 +14,7 @@ from app.user import User
 
 __all__ = [
 	"Access",
+	"Archival",
 	"Board",
 	"Invite",
 	"Move",
@@ -28,12 +30,13 @@ __all__ = [
 ]
 
 models = [
-	User,
-	Recovery,
-	Invite,
-	Pin,
+	Archival,
 	Board,
-	Placement,
-	Share,
+	Invite,
 	Ordering,
+	Pin,
+	Placement,
+	Recovery,
+	Share,
+	User,
 ]

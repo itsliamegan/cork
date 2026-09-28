@@ -1,4 +1,4 @@
-export default class extends Stimulus.Controller {
+export default class PinDetailsController extends Stimulus.Controller {
 	static targets = ["link", "frame"]
 
 	toggle(event) {

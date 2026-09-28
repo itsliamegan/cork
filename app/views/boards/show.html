@@ -3,6 +3,11 @@
 
 {% block title %}Cork - {{ board.title }}{% endblock %}
 
+{% block turbo_control %}
+<meta name="turbo-refresh-method" content="morph">
+<meta name="turbo-refresh-scroll" content="preserve">
+{% endblock %}
+
 {% block content %}
 <header id="page-header">
 	<h2 id="page-title">{{ board.title }}</h2>
@@ -14,6 +19,17 @@
 		<a class="button button--action" href="{{ urls.route("pins.new", query={"board_id": board.id}) }}">New pin</a>
 	</section>
 </header>
+
+{% if "archived" in flash %}
+{% set archived = flash["archived"] %}
+<p id="archive-notice-{{ archived.archival_id }}" class="archive-notice" data-controller="notice">
+	<span>Archived <b>{{ archived.title }}</b>.</span>
+	<button class="button button--small" type="submit" form="archive-notice-{{ archived.archival_id }}-unarchive">Unarchive</button>
+</p>
+<form id="archive-notice-{{ archived.archival_id }}-unarchive" action="{{ urls.route("archivals.delete", {"id": archived.archival_id}) }}" method="POST" hidden>
+	<input type="hidden" name="_method" value="DELETE">
+</form>
+{% endif %}
 
 <section
 	class="frame"
@@ -28,69 +44,33 @@
 		data-reorder-target="list"
 		data-action="dragover->reorder#dragOver dragleave->reorder#dragLeave drop->reorder#drop"
 	>
-		{% for row in pin_rows %}
-		{% set pin = row.pin %}
-		{% set placement = row.placement %}
-		<li
-			class="frame-item frame-item--reorderable pin-row"
-			data-controller="pin-details"
-			data-reorder-target="item"
-			data-reorder-id="{{ placement.id }}"
-			data-reorder-url="{{ urls.route("placement_moves.create", {"id": placement.id}) }}"
-		>
-			<article class="pin">
-				<button
-					class="reorder-handle"
-					type="button"
-					draggable="true"
-					title="Drag to reorder"
-					data-action="dragstart->reorder#dragStart dragend->reorder#dragEnd"
-				>
-					⠿
-				</button>
-				<section class="pin-details">
-					{% render ExternalLink(url=pin.url, new_tab=auth.user.open_in_new_tab, class="pin-link") %}<h3 class="pin-title">{{ pin.title }}</h3>{% endrender %}
-					<section class="pin-meta">
-						{% render ExternalLink(url=pin.url, new_tab=auth.user.open_in_new_tab, class="pin-url") %}{{ pin.display_url() }}{% endrender %}
-						<time class="pin-date" datetime="{{ pin.created_at }}">
-							{{ pin.created_at | date }}
-						</time>
-						<a
-							class="pin-details-link"
-							href="{{ urls.route("pins.show", {"id": pin.id}) }}"
-							data-turbo-frame="pin-{{ pin.id }}-details"
-							data-pin-details-target="link"
-							data-action="click->pin-details#toggle"
-						>Details</a>
-					</section>
-				</section>
-
-				<section class="pin-actions">
-					{% render ActionMenu(name="placement-" ~ placement.id) %}
-					<li><a class="menu-item" href="{{ urls.route("pins.show", {"id": pin.id}) }}">View</a></li>
-					{% if pin.creator_id == auth.user.id %}
-					<li><a class="menu-item" href="{{ urls.route("pins.edit", {"id": pin.id}) }}">Edit</a></li>
-					{% endif %}
-					{% if row.can_remove %}
-					<li>
-						{% render ConfirmButton(
-							name="placement-" ~ placement.id ~ "-remove",
-							action=urls.route("placements.delete", {"id": placement.id}),
-							confirm="Remove",
-							message="Are you sure you want to remove this pin from this board? It will remain in Pins and on any other boards.",
-							method="DELETE",
-							class="menu-item menu-item--danger",
-						) %}Remove{% endrender %}
-					</li>
-					{% endif %}
-					{% endrender %}
-				</section>
-			</article>
-			<turbo-frame id="pin-{{ pin.id }}-details" data-pin-details-target="frame"></turbo-frame>
-		</li>
+		{% for row in placement_rows %}
+		{{ PlacementItem(pin=row.pin, placement=row.placement, user=auth.user, can_remove=row.can_remove) }}
+		{% else %}
+		{% if archived_rows %}
+		<li class="frame-item frame-empty">All pins archived.</li>
 		{% else %}
 		<li class="frame-item frame-empty">No pins yet.</li>
+		{% endif %}
 		{% endfor %}
 	</ol>
 </section>
+
+{% if archived_rows %}
+<details
+	class="frame archive-frame"
+	data-controller="keep-open"
+	data-action="turbo:before-morph-attribute->keep-open#keep"
+>
+	<summary class="frame-header">
+		<h3 class="frame-title">Archived</h3>
+		<span class="frame-meta">{{ archived_rows | length }}</span>
+	</summary>
+	<ol class="frame-items">
+		{% for row in archived_rows %}
+		{{ ArchivalItem(archival=row.archival, pin=row.pin, placement=row.placement, user=auth.user, can_remove=row.can_remove) }}
+		{% endfor %}
+	</ol>
+</details>
+{% endif %}
 {% endblock %}

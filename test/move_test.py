@@ -80,3 +80,59 @@ def test_a_record_between_neighbours_moves_directly_after_the_one_above():
 	order = Move(fourth, first, second).apply([first, second, third, fourth])
 
 	assert_eq(order, [first, fourth, second, third])
+
+
+def test_a_hidden_record_between_the_neighbours_is_allowed():
+	first, hidden, second, moved = uuid4(), uuid4(), uuid4(), uuid4()
+
+	order = Move(moved, first, second).apply(
+		[first, hidden, second, moved],
+		{hidden},
+	)
+
+	assert_eq(order, [first, moved, hidden, second])
+
+
+def test_a_record_without_a_neighbour_above_moves_before_hidden_records():
+	hidden, first, moved = uuid4(), uuid4(), uuid4()
+
+	order = Move(moved, None, first).apply([hidden, first, moved], {hidden})
+
+	assert_eq(order, [moved, hidden, first])
+
+
+def test_a_record_without_a_neighbour_below_moves_after_hidden_records():
+	moved, last, hidden = uuid4(), uuid4(), uuid4()
+
+	order = Move(moved, last, None).apply([moved, last, hidden], {hidden})
+
+	assert_eq(order, [last, hidden, moved])
+
+
+def test_a_hidden_record_is_out_of_date():
+	first, hidden, second = uuid4(), uuid4(), uuid4()
+
+	with assert_raises(OutOfDate):
+		Move(hidden, None, first).apply([first, hidden, second], {hidden})
+
+
+def test_a_hidden_neighbour_is_allowed():
+	first, hidden, second, moved = uuid4(), uuid4(), uuid4(), uuid4()
+
+	order = Move(moved, hidden, second).apply(
+		[first, hidden, second, moved],
+		{hidden},
+	)
+
+	assert_eq(order, [first, hidden, moved, second])
+
+
+def test_a_record_dropped_back_among_hidden_records_in_its_gap_is_a_no_op():
+	first, above, moved, below, second = uuid4(), uuid4(), uuid4(), uuid4(), uuid4()
+
+	order = Move(moved, first, second).apply(
+		[first, above, moved, below, second],
+		{above, below},
+	)
+
+	assert_that(order is None)
