@@ -53,16 +53,16 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "gunicorn", specifier = ">=26.2.0" },
-    { name = "helios", editable = "../helios" },
+    { name = "helios", git = "https://github.com/itsliamegan/helios?branch=main" },
 ]
 
 [package.metadata.requires-dev]
 backup = [
     { name = "boto3", specifier = ">=1.35" },
-    { name = "luna", editable = "../luna" },
+    { name = "luna", git = "https://github.com/itsliamegan/luna?branch=main" },
 ]
 dev = [
-    { name = "luna", editable = "../luna" },
+    { name = "luna", git = "https://github.com/itsliamegan/luna?branch=main" },
     { name = "ruff", specifier = ">=0.16.6" },
     { name = "ty", specifier = ">=0.0.81" },
 ]
@@ -79,27 +79,12 @@ wheels = [
 [[package]]
 name = "helios"
 version = "0.1"
-source = { editable = "../helios" }
+source = { git = "https://github.com/itsliamegan/helios?branch=main#28dc870952b1acabd3c566f5cf713f34ff178a82" }
 dependencies = [
     { name = "jinja2" },
     { name = "luna" },
     { name = "python-dotenv" },
     { name = "werkzeug" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "jinja2", specifier = "==3.1.*" },
-    { name = "luna", editable = "../luna" },
-    { name = "python-dotenv", specifier = ">=1.2.2" },
-    { name = "werkzeug", specifier = "==3.1.*" },
-]
-
-[package.metadata.requires-dev]
-dev = [
-    { name = "ruff", specifier = ">=0.16.6" },
-    { name = "time-machine", specifier = ">=3.5.1" },
-    { name = "ty", specifier = ">=0.0.80" },
 ]
 
 [[package]]
@@ -126,15 +111,7 @@ wheels = [
 [[package]]
 name = "luna"
 version = "0.1.0"
-source = { editable = "../luna" }
-
-[package.metadata]
-
-[package.metadata.requires-dev]
-dev = [
-    { name = "ruff", specifier = ">=0.16.6" },
-    { name = "ty", specifier = ">=0.0.78" },
-]
+source = { git = "https://github.com/itsliamegan/luna?branch=main#3a0e73d0c5ad3e7b00920764d1f2bb50ef9dbf25" }
 
 [[package]]
 name = "markupsafe"

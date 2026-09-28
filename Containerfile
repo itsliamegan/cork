@@ -7,6 +7,7 @@ RUN apt-get update && apt-get install -y \
 	systemd \
 	systemd-sysv \
 	curl \
+	git \
 	nginx \
 	&& apt-get clean \
 	&& rm -rf /var/lib/apt/lists/*
@@ -29,12 +30,8 @@ RUN chown -R cork:cork /var/lib/cork
 
 WORKDIR /srv/
 
-COPY luna/ luna/
-COPY helios/ helios/
 COPY cork/ cork/
 
-RUN	chown -R cork:cork luna/
-RUN	chown -R cork:cork helios/
 RUN	chown -R cork:cork cork/
 
 WORKDIR /srv/cork/

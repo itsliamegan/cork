@@ -2,9 +2,13 @@
 
 ## Helios
 
-Helios lives outside this repo in `../helios/` (editable path dep, see
-`[tool.uv.sources]`). It is small — read it directly rather than guessing at its
-API. See Helios' own README for the module breakdown.
+Helios lives outside this repo in `../helios/`, but Cork installs it (and Luna)
+as a git dependency pinned in `uv.lock` (see `[tool.uv.sources]`). It is small —
+read it directly rather than guessing at its API. See Helios' own README for the
+module breakdown.
+
+Local changes to `../helios/` or `../luna/` reach Cork only once pushed and
+re-locked with `uv lock --upgrade-package helios` (or `luna`).
 
 ### Friction
 
