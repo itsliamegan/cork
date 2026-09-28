@@ -128,7 +128,7 @@ def show(req: Request, ctx: Context, id: UUID) -> Response:
 	pin_ids = [placement.pin_id for placement in placements]
 	pins_by_id = {pin.id: pin for pin in store.query(Pin).where_in(id=pin_ids).all()}
 
-	def pin_row(placement: Placement) -> dict[str, Any]:
+	def placement_row(placement: Placement) -> dict[str, Any]:
 		pin = pins_by_id[placement.pin_id]
 		return {
 			"placement": placement,
@@ -136,13 +136,13 @@ def show(req: Request, ctx: Context, id: UUID) -> Response:
 			"can_remove": Removal(placement, pin, board).is_authorized(access),
 		}
 
-	pin_rows = [
-		pin_row(placement)
+	placement_rows = [
+		placement_row(placement)
 		for placement in placements
 		if placement.id not in archivals_by_placement_id
 	]
 	archived_rows = [
-		{"archival": archival, **pin_row(placements_by_id[archival.placement_id])}
+		{"archival": archival, **placement_row(placements_by_id[archival.placement_id])}
 		for archival in archivals
 	]
 
@@ -150,7 +150,7 @@ def show(req: Request, ctx: Context, id: UUID) -> Response:
 		"boards.show",
 		{
 			"board": board,
-			"pin_rows": pin_rows,
+			"placement_rows": placement_rows,
 			"archived_rows": archived_rows,
 		},
 	)

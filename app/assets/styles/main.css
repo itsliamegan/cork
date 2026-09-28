@@ -874,6 +874,8 @@ a {
 }
 
 .pin-archive-button {
+	margin-inline-end: var(--space-2);
+
 	opacity: 0;
 }
 

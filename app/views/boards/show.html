@@ -22,7 +22,7 @@
 
 {% if "archived" in flash %}
 {% set archived = flash["archived"] %}
-<p id="archive-notice-{{ archived.archival_id }}" class="archive-notice" role="status" data-controller="notice">
+<p id="archive-notice-{{ archived.archival_id }}" class="archive-notice" data-controller="notice">
 	<span>Archived <b>{{ archived.title }}</b>.</span>
 	<button class="button button--small" type="submit" form="archive-notice-{{ archived.archival_id }}-unarchive">Unarchive</button>
 </p>
@@ -44,7 +44,7 @@
 		data-reorder-target="list"
 		data-action="dragover->reorder#dragOver dragleave->reorder#dragLeave drop->reorder#drop"
 	>
-		{% for row in pin_rows %}
+		{% for row in placement_rows %}
 		{{ PlacementItem(pin=row.pin, placement=row.placement, user=auth.user, can_remove=row.can_remove) }}
 		{% else %}
 		{% if archived_rows %}

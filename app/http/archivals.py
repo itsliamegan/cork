@@ -46,6 +46,6 @@ def delete(req: Request, ctx: Context, id: UUID) -> Response:
 		raise NotFoundError(Archival, id)
 	placement = store.find_one(Placement, archival.placement_id)
 	board = Access(store, user).find_board(placement.board_id)
-
 	store.delete(archival)
+
 	return Response.redirect(urls.route("boards.show", {"id": board.id}))
