@@ -19,28 +19,23 @@ ENV UV_PYTHON_INSTALL_DIR=/opt/uv/python
 
 RUN useradd --system --user-group cork
 
-COPY cork/etc/cork.service /etc/systemd/system/cork.service
-COPY cork/etc/cork.socket /etc/systemd/system/cork.socket
-
-RUN sed -i '/^ProtectSystem\|^ProtectHome\|^PrivateTmp\|^ReadWritePaths/d' \
-    /etc/systemd/system/cork.service
-
 RUN mkdir -p /var/lib/cork
 RUN chown -R cork:cork /var/lib/cork
 
-WORKDIR /srv/
+ENV UV_PROJECT_ENVIRONMENT=/opt/cork/venv
+WORKDIR /opt/cork/
 
-COPY cork/ cork/
-
-RUN	chown -R cork:cork cork/
-
-WORKDIR /srv/cork/
+COPY .python-version pyproject.toml uv.lock ./
 
 RUN uv python install
-RUN uv sync --locked --no-default-groups --group backup
-RUN chown -R cork:cork .venv/
+RUN uv sync --locked --no-install-project --no-default-groups --group backup
+RUN echo /srv/cork > "$(venv/bin/python -c 'import sysconfig; print(sysconfig.get_path("purelib"))')/cork.pth"
 
-COPY cork/etc/nginx.dev.conf /etc/nginx/sites-available/cork
+COPY etc/cork.service /etc/systemd/system/cork.service
+COPY etc/cork.socket /etc/systemd/system/cork.socket
+COPY etc/cork.dev.conf /etc/systemd/system/cork.service.d/dev.conf
+
+COPY etc/nginx.dev.conf /etc/nginx/sites-available/cork
 
 RUN ln -s /etc/nginx/sites-available/cork /etc/nginx/sites-enabled/ \
 	&& rm -f /etc/nginx/sites-enabled/default
@@ -54,6 +49,6 @@ RUN ln -fs /etc/systemd/system/cork.socket /etc/systemd/system/sockets.target.wa
 EXPOSE 80
 STOPSIGNAL SIGRTMIN+3
 
-COPY cork/etc/entry.sh /usr/local/bin/entry.sh
+COPY etc/entry.sh /usr/local/bin/entry.sh
 RUN chmod +x /usr/local/bin/entry.sh
 CMD ["/usr/local/bin/entry.sh"]
