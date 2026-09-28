@@ -19,7 +19,11 @@
 		<h3 class="frame-title">Details</h3>
 	</header>
 	<section class="frame-item pin-detail">
+		{% if pin.url %}
 		{{ ExternalLink(url=pin.url, new_tab=auth.user.open_in_new_tab, class="pin-detail-url") }}
+		{% else %}
+		<span class="pin-detail-empty">No URL.</span>
+		{% endif %}
 		<p class="pin-detail-meta">
 			<span>Saved by {{ creator.name }}</span>
 			<time datetime="{{ pin.created_at }}">{{ pin.created_at | date }}</time>

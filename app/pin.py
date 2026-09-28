@@ -13,7 +13,7 @@ if TYPE_CHECKING:
 class Pin(Model):
 	table = "pins"
 
-	url: str
+	url: str | None = None
 	title: str
 	note: str = ""
 	creator_id: UUID
@@ -24,7 +24,7 @@ class Pin(Model):
 		store: Store,
 		access: Access,
 		title: str,
-		url: str,
+		url: str | None,
 		note: str,
 		boards: list[Board],
 	) -> Pin:
@@ -43,7 +43,7 @@ class Pin(Model):
 		store: Store,
 		access: Access,
 		title: str,
-		url: str,
+		url: str | None,
 		note: str,
 		boards: list[Board],
 	):

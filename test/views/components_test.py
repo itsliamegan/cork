@@ -9,6 +9,7 @@ from app.views.boards.chips import BoardChips
 from app.views.boards.item import BoardItem
 from app.views.components.confirm_button import ConfirmButton
 from app.views.components.external_link import ExternalLink
+from app.views.pins.link import PinLink
 from app.views.pins.placements import PinPlacements, PlacementOption
 from app.views.placements.item import PlacementItem
 from app.views.placements.menu import PlacementMenu
@@ -54,6 +55,31 @@ def test_external_link_without_content_shows_its_url():
 		html = engine.render(link)
 
 		assert_that(">https://example.com/sartre</a>" in html)
+
+
+def test_pin_link_with_url_opens_the_url():
+	with TestApplication() as app:
+		engine = app.container.get(Engine)
+		pin = Pin(title="Sartre", url="https://sartre.example", creator_id=uuid4())
+		link = PinLink(pin=pin, new_tab=True)
+
+		html = engine.render(link)
+
+		assert_that('href="https://sartre.example"' in html)
+		assert_that('target="_blank"' in html)
+
+
+def test_pin_link_without_url_opens_the_pin_in_the_same_tab():
+	with TestApplication() as app:
+		engine = app.container.get(Engine)
+		pin = Pin(title="Sartre", creator_id=uuid4())
+		link = PinLink(pin=pin, new_tab=True)
+
+		html = engine.render(link)
+
+		assert_that(f'href="/pins/{pin.id}"' in html)
+		assert_not("target=" in html)
+		assert_not("rel=" in html)
 
 
 def test_confirm_button_opens_the_dialog_it_renders():

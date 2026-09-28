@@ -37,7 +37,6 @@
 				type="url"
 				name="url"
 				value="{{ submission.value("url", pin.url) }}"
-				required
 			>
 			{% if submission.invalid("url") %}<span class="form-field-error">{{ submission.error("url") }}</span>{% endif %}
 		</label>

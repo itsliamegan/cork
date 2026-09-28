@@ -1,0 +1,5 @@
+{% if pin.url -%}
+{% render ExternalLink(url=pin.url, new_tab=new_tab, attributes=attributes) %}{{ content }}{% endrender %}
+{%- else -%}
+<a href="{{ urls.route("pins.show", {"id": pin.id}) }}" {{ attributes }}>{{ content }}</a>
+{%- endif %}

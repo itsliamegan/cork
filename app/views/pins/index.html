@@ -32,13 +32,15 @@
 		<li
 			class="frame-item pin-row"
 			data-filter-target="item"
-			data-filter-text="{{ pin.title }} {{ pin.url }} {{ pin.note }}"
+			data-filter-text="{{ pin.title }} {{ pin.url or "" }} {{ pin.note }}"
 		>
 			<article class="pin">
 				<section class="pin-details">
-					{% render ExternalLink(url=pin.url, new_tab=auth.user.open_in_new_tab, class="pin-link") %}<h3 class="pin-title">{{ pin.title }}</h3>{% endrender %}
+					{% render PinLink(pin=pin, new_tab=auth.user.open_in_new_tab, class="pin-link") %}<h3 class="pin-title">{{ pin.title }}</h3>{% endrender %}
 					<section class="pin-meta">
+						{% if pin.url %}
 						{% render ExternalLink(url=pin.url, new_tab=auth.user.open_in_new_tab, class="pin-url") %}{{ pin.url | site }}{% endrender %}
+						{% endif %}
 						<time class="pin-date" datetime="{{ pin.created_at }}">{{ pin.created_at | date }}</time>
 						<span class="pin-board-count">
 							{% if row.board_count %}{{ row.board_count }} board{% if row.board_count != 1 %}s{% endif %}{% else %}No boards{% endif %}

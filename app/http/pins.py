@@ -19,10 +19,9 @@ from app.views.pins.placements import PlacementOption
 
 class PinForm(Form):
 	rules = Rules({"board_ids": [Distinct()]})
-	messages = {"url.required": "URL must be provided."}
 
 	title: str
-	url: str
+	url: str | None = None
 	note: str = ""
 	board_ids: list[UUID] = []
 	return_to: str | None = None

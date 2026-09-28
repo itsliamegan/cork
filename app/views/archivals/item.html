@@ -1,5 +1,5 @@
 <li class="frame-item archived-row">
-	{% render ExternalLink(url=pin.url, new_tab=access.user.open_in_new_tab, class="archived-row-title") %}{{ pin.title }}{% endrender %}
+	{% render PinLink(pin=pin, new_tab=access.user.open_in_new_tab, class="archived-row-title") %}{{ pin.title }}{% endrender %}
 	<time datetime="{{ archival.created_at }}">{{ archival.created_at | date }}</time>
 	<form action="{{ urls.route("archivals.delete", {"id": archival.id}) }}" method="POST">
 		<input type="hidden" name="_method" value="DELETE">
