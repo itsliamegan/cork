@@ -3,11 +3,11 @@ from helios.view import Component
 from app import Archival, Pin, Placement, User
 
 
-class ArchivedPin(Component):
-	template = "boards.archived"
+class ArchivalItem(Component):
+	template = "archivals.item"
 
 	archival: Archival
-	placement: Placement
 	pin: Pin
+	placement: Placement
 	user: User
 	can_remove: bool

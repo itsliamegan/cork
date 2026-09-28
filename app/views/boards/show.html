@@ -39,23 +39,36 @@
 		<h3 class="frame-title">Pins</h3>
 	</header>
 
-	{{ PinList(rows=pin_rows, user=auth.user, has_archived_pins=archived_rows | length > 0) }}
+	<ol
+		class="frame-items"
+		data-reorder-target="list"
+		data-action="dragover->reorder#dragOver dragleave->reorder#dragLeave drop->reorder#drop"
+	>
+		{% for row in pin_rows %}
+		{{ PlacementItem(pin=row.pin, placement=row.placement, user=auth.user, can_remove=row.can_remove) }}
+		{% else %}
+		{% if archived_rows %}
+		<li class="frame-item frame-empty">All pins archived.</li>
+		{% else %}
+		<li class="frame-item frame-empty">No pins yet.</li>
+		{% endif %}
+		{% endfor %}
+	</ol>
 </section>
 
 {% if archived_rows %}
 <details
-	id="archived"
 	class="frame archive-frame"
 	data-controller="keep-open"
 	data-action="turbo:before-morph-attribute->keep-open#keep"
 >
 	<summary class="frame-header">
 		<h3 class="frame-title">Archived</h3>
-		<span id="archived-count" class="frame-meta">{{ archived_rows | length }}</span>
+		<span class="frame-meta">{{ archived_rows | length }}</span>
 	</summary>
-	<ol id="archived-pins" class="frame-items">
+	<ol class="frame-items">
 		{% for row in archived_rows %}
-		{{ ArchivedPin(archival=row.archival, placement=row.placement, pin=row.pin, user=auth.user, can_remove=row.can_remove) }}
+		{{ ArchivalItem(archival=row.archival, pin=row.pin, placement=row.placement, user=auth.user, can_remove=row.can_remove) }}
 		{% endfor %}
 	</ol>
 </details>

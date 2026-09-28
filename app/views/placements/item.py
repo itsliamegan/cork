@@ -3,8 +3,8 @@ from helios.view import Component
 from app import Pin, Placement, User
 
 
-class PinMenu(Component):
-	template = "pins.menu"
+class PlacementItem(Component):
+	template = "placements.item"
 
 	pin: Pin
 	placement: Placement
