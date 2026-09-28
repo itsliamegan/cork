@@ -88,6 +88,16 @@ class Placement(Model):
 			placement.position = position
 			store.save(placement)
 
+	def is_removable_by(self, access: Access, pin: Pin, board: Board) -> bool:
+		return access.owns(pin) or access.owns(board) or access.added(self)
+
+	def remove(self, store: Store, access: Access, pin: Pin, board: Board):
+		from app.access import NotPermitted
+
+		if not self.is_removable_by(access, pin, board):
+			raise NotPermitted(self)
+		store.delete(self)
+
 	@classmethod
 	def find_adder(
 		cls,
