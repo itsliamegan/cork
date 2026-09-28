@@ -1,5 +1,5 @@
 from helios.database import NotFoundError
-from luna.test.assertion import assert_eq, assert_raises, assert_that
+from luna.test.assertion import assert_eq, assert_raises
 
 from app import Access, Board, Pin, Placement, Share, User
 from test.support import TestStore
@@ -13,9 +13,13 @@ def test_board_is_accessible_to_its_creator_and_participants_only():
 		board = store.create(Board, title="Reading", creator_id=creator.id)
 		store.create(Share, board_id=board.id, user_id=participant.id)
 
-		assert_that(Access(store, creator).allows_board(board))
-		assert_that(Access(store, participant).allows_board(board))
-		assert_that(not Access(store, stranger).allows_board(board))
+		found_by_creator = Access(store, creator).find_board(board.id)
+		found_by_participant = Access(store, participant).find_board(board.id)
+
+		assert_eq(found_by_creator.id, board.id)
+		assert_eq(found_by_participant.id, board.id)
+		with assert_raises(NotFoundError):
+			Access(store, stranger).find_board(board.id)
 
 
 def test_find_board_hides_inaccessible_boards():
@@ -66,9 +70,9 @@ def test_pin_is_accessible_to_the_creator_of_a_board_it_is_placed_on():
 		)
 		Placement.create(store, pin, board, pin_creator)
 
-		allowed = Access(store, board_creator).allows_pin(pin)
+		found = Access(store, board_creator).find_pin(pin.id)
 
-		assert_that(allowed)
+		assert_eq(found.id, pin.id)
 
 
 def test_pin_is_inaccessible_to_users_without_a_placed_board():
@@ -91,10 +95,10 @@ def test_pin_is_inaccessible_to_users_without_a_placed_board():
 		Placement.create(store, filed, board, creator)
 		access = Access(store, stranger)
 
-		assert_that(not access.allows_pin(filed))
-		assert_that(not access.allows_pin(unfiled))
 		with assert_raises(NotFoundError):
 			access.find_pin(filed.id)
+		with assert_raises(NotFoundError):
+			access.find_pin(unfiled.id)
 
 
 def test_unfiled_pin_is_accessible_to_its_creator():
@@ -107,9 +111,9 @@ def test_unfiled_pin_is_accessible_to_its_creator():
 			creator_id=creator.id,
 		)
 
-		allowed = Access(store, creator).allows_pin(pin)
+		found = Access(store, creator).find_pin(pin.id)
 
-		assert_that(allowed)
+		assert_eq(found.id, pin.id)
 
 
 def test_find_boards_returns_created_and_shared_boards():

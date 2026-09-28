@@ -15,13 +15,12 @@ from app import (
 	Archival,
 	Board,
 	Ordering,
-	Ownership,
 	Pin,
 	Placement,
-	Removal,
 	Share,
 	User,
 )
+from app.access import NotPermitted
 
 
 class BoardForm(Form):
@@ -62,6 +61,7 @@ def index(req: Request, ctx: Context) -> Response:
 	return views.render(
 		"boards.index",
 		{
+			"access": access,
 			"private": private,
 			"shared": shared,
 		},
@@ -85,11 +85,11 @@ def create(req: Request, ctx: Context) -> Response:
 		submissions.flash(errors, req.input)
 		return Response.redirect(urls.route("boards.new"))
 
-	board = store.create(Board, title=form.title, creator_id=user.id)
-	Share.replace(
+	board = Board.create(
 		store,
-		board,
-		[sharable for sharable in sharable_users if sharable.id in form.user_ids],
+		user,
+		title=form.title,
+		users=[sharable for sharable in sharable_users if sharable.id in form.user_ids],
 	)
 
 	return Response.redirect(urls.route("boards.show", {"id": board.id}))
@@ -133,7 +133,7 @@ def show(req: Request, ctx: Context, id: UUID) -> Response:
 		return {
 			"placement": placement,
 			"pin": pin,
-			"can_remove": Removal(placement, pin, board).is_authorized(access),
+			"can_remove": placement.is_removable_by(access, pin, board),
 		}
 
 	placement_rows = [
@@ -149,6 +149,7 @@ def show(req: Request, ctx: Context, id: UUID) -> Response:
 	return views.render(
 		"boards.show",
 		{
+			"access": access,
 			"board": board,
 			"placement_rows": placement_rows,
 			"archived_rows": archived_rows,
@@ -163,8 +164,10 @@ def edit(req: Request, ctx: Context, id: UUID) -> Response:
 	submission = ctx.get(Submission)
 	user = cast(User, auth.user)
 
-	ownership = Ownership(store, user)
-	board = ownership.find_board(id)
+	access = Access(store, user)
+	board = access.find_board(id)
+	if not board.is_editable_by(access):
+		raise NotPermitted(board)
 	shared_user_ids = [
 		share.user_id for share in store.find_by(Share, board_id=board.id)
 	]
@@ -188,8 +191,8 @@ def update(req: Request, ctx: Context, id: UUID) -> Response:
 	urls = ctx.get(URLs)
 	user = cast(User, auth.user)
 
-	ownership = Ownership(store, user)
-	board = ownership.find_board(id)
+	access = Access(store, user)
+	board = access.find_board(id)
 	form, errors = BoardForm.validate(req.input)
 	if "user_ids" in errors:
 		return Response.text("400 Bad Request", status=Status.BAD_REQUEST)
@@ -200,13 +203,12 @@ def update(req: Request, ctx: Context, id: UUID) -> Response:
 		submissions.flash(errors, req.input)
 		return Response.redirect(urls.route("boards.edit", {"id": board.id}))
 
-	Share.replace(
+	board.edit(
 		store,
-		board,
-		[sharable for sharable in sharable_users if sharable.id in form.user_ids],
+		access,
+		title=form.title,
+		users=[sharable for sharable in sharable_users if sharable.id in form.user_ids],
 	)
-	board.title = form.title
-	store.save(board)
 
 	return_to = _board_return_url(ctx, form.return_to, board.id)
 	return Response.redirect(return_to)
@@ -218,8 +220,8 @@ def delete(req: Request, ctx: Context, id: UUID) -> Response:
 	urls = ctx.get(URLs)
 	user = cast(User, auth.user)
 
-	ownership = Ownership(store, user)
-	board = ownership.find_board(id)
-	store.delete(board)
+	access = Access(store, user)
+	board = access.find_board(id)
+	board.delete(store, access)
 
 	return Response.redirect(urls.route("boards.index"))

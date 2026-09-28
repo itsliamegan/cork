@@ -21,8 +21,8 @@ def create(req: Request, ctx: Context, id: UUID) -> Response:
 	auth = ctx.get(Authenticator)
 	user = cast(User, auth.user)
 
-	placement = store.find_one(Placement, id)
 	access = Access(store, user)
+	placement = access.find_placement(id)
 	board = access.find_board(placement.board_id)
 
 	form, errors = PlacementMoveForm.validate(req.input)

@@ -134,14 +134,14 @@ def test_shares_board():
 			form={"_method": "PUT", "title": "Participant's Reading"},
 		)
 
-		assert_eq(res.status_code, 404)
+		assert_eq(res.status_code, 403)
 
 		res = app.client.post(
 			f"/pins/{pin.id}",
 			form={"_method": "DELETE"},
 		)
 
-		assert_eq(res.status_code, 404)
+		assert_eq(res.status_code, 403)
 		assert_eq(app.store.find_one(Pin, pin.id).title, "Stanford Entry on Sartre")
 
 		app.sign_in(stranger)

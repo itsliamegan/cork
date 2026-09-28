@@ -33,19 +33,6 @@ class Access:
 	def added(self, placement: Placement) -> bool:
 		return self.ownership.added(placement)
 
-	def allows_board(self, board: Board) -> bool:
-		return self.owns(board) or Share.exists(self.store, board, self.user)
-
-	def allows_pin(self, pin: Pin) -> bool:
-		if self.owns(pin):
-			return True
-		else:
-			board_ids = self.find_board_ids()
-			return any(
-				placement.board_id in board_ids
-				for placement in pin.find_placements(self.store)
-			)
-
 	def find_archival(self, id: UUID) -> Archival:
 		archival = self.store.find_one(Archival, id)
 		placement = self.store.find_one(Placement, archival.placement_id)
@@ -58,7 +45,7 @@ class Access:
 
 	def find_board(self, id: UUID) -> Board:
 		board = self.store.find_one(Board, id)
-		if not self.allows_board(board):
+		if not (self.owns(board) or Share.exists(self.store, board, self.user)):
 			raise NotFoundError(Board, id)
 		return board
 
@@ -73,7 +60,13 @@ class Access:
 
 	def find_pin(self, id: UUID) -> Pin:
 		pin = self.store.find_one(Pin, id)
-		if not self.allows_pin(pin):
+		if self.owns(pin):
+			return pin
+		board_ids = self.find_board_ids()
+		if not any(
+			placement.board_id in board_ids
+			for placement in pin.find_placements(self.store)
+		):
 			raise NotFoundError(Pin, id)
 		return pin
 

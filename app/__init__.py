@@ -8,7 +8,6 @@ from app.ownership import Ownership
 from app.pin import Pin
 from app.placement import Placement
 from app.recovery import Recovery
-from app.removal import Removal
 from app.share import Share
 from app.user import User
 
@@ -23,7 +22,6 @@ __all__ = [
 	"Pin",
 	"Placement",
 	"Recovery",
-	"Removal",
 	"Share",
 	"User",
 	"models",

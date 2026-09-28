@@ -13,6 +13,7 @@ from helios.routing import URLs
 from helios.view import Views
 
 from app import Access, Board, Ownership, Pin, Placement, Share, User
+from app.access import NotPermitted
 from app.views.pins.placements import PlacementOption
 
 
@@ -139,14 +140,14 @@ def create(req: Request, ctx: Context) -> Response:
 		else:
 			return Response.redirect(urls.route("pins.new"))
 
-	pin = store.create(
-		Pin,
+	Pin.create(
+		store,
+		access,
 		title=form.title,
 		url=form.url,
 		note=form.note,
-		creator_id=user.id,
+		boards=boards,
 	)
-	Placement.replace(store, pin, boards, access)
 
 	match = urls.match(form.return_to)
 	if (
@@ -217,6 +218,7 @@ def show(req: Request, ctx: Context, id: UUID) -> Response:
 	return views.render(
 		"pins.show",
 		{
+			"access": access,
 			"pin": pin,
 			"accessible_boards": boards,
 			"creator": store.find_one(User, pin.creator_id),
@@ -233,9 +235,10 @@ def edit(req: Request, ctx: Context, id: UUID) -> Response:
 	submission = ctx.get(Submission)
 	user = cast(User, auth.user)
 
-	ownership = Ownership(store, user)
 	access = Access(store, user)
-	pin = ownership.find_pin(id)
+	pin = access.find_pin(id)
+	if not pin.is_editable_by(access):
+		raise NotPermitted(pin)
 	placements = pin.find_accessible_placements(store, access)
 	selected_board_ids = [placement.board_id for placement in placements]
 
@@ -264,9 +267,8 @@ def update(req: Request, ctx: Context, id: UUID) -> Response:
 	urls = ctx.get(URLs)
 	user = cast(User, auth.user)
 
-	ownership = Ownership(store, user)
 	access = Access(store, user)
-	pin = ownership.find_pin(id)
+	pin = access.find_pin(id)
 
 	form, errors = PinForm.validate(req.input)
 	if "board_ids" in errors:
@@ -287,11 +289,14 @@ def update(req: Request, ctx: Context, id: UUID) -> Response:
 		pin,
 		pin.find_accessible_placements(store, access),
 	)
-	Placement.replace(store, pin, boards, access)
-	pin.url = form.url
-	pin.title = form.title
-	pin.note = form.note
-	store.save(pin)
+	pin.edit(
+		store,
+		access,
+		title=form.title,
+		url=form.url,
+		note=form.note,
+		boards=boards,
+	)
 
 	return Response.redirect(return_to)
 
@@ -302,8 +307,8 @@ def delete(req: Request, ctx: Context, id: UUID) -> Response:
 	urls = ctx.get(URLs)
 	user = cast(User, auth.user)
 
-	ownership = Ownership(store, user)
-	pin = ownership.find_pin(id)
-	store.delete(pin)
+	access = Access(store, user)
+	pin = access.find_pin(id)
+	pin.delete(store, access)
 
 	return Response.redirect(urls.route("pins.index"))
