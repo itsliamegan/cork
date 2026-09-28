@@ -22,10 +22,13 @@
 				{{ board.created_at | date }}
 			</time>
 		</section>
-		{% if component.owned %}
+		{% if board.is_editable_by(access) or board.is_deletable_by(access) %}
 		<section class="board-actions">
 			{% render ActionMenu(name="board-" ~ board.id) %}
+			{% if board.is_editable_by(access) %}
 			<li><a class="menu-item" href="{{ urls.route("boards.edit", {"id": board.id}) }}">Edit</a></li>
+			{% endif %}
+			{% if board.is_deletable_by(access) %}
 			<li>
 				{% render ConfirmButton(
 					name="board-" ~ board.id ~ "-delete",
@@ -36,6 +39,7 @@
 					class="menu-item menu-item--danger",
 				) %}Delete{% endrender %}
 			</li>
+			{% endif %}
 			{% endrender %}
 		</section>
 		{% endif %}

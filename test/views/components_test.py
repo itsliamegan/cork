@@ -3,7 +3,7 @@ from uuid import uuid4
 from helios.view import Attributes, Engine
 from luna.test.assertion import assert_not, assert_raises, assert_that
 
-from app import Archival, Board, Pin, Placement, User
+from app import Access, Archival, Board, Pin, Placement, User
 from app.views.archivals.item import ArchivalItem
 from app.views.boards.chips import BoardChips
 from app.views.components.confirm_button import ConfirmButton
@@ -132,10 +132,20 @@ def test_placement_menu_offers_edit_only_to_the_pins_creator():
 		placement = Placement(pin_id=pin.id, board_id=board.id, adder_id=creator.id)
 
 		creator_html = engine.render(
-			PlacementMenu(pin=pin, placement=placement, user=creator, can_remove=False)
+			PlacementMenu(
+				pin=pin,
+				placement=placement,
+				board=board,
+				access=Access(app.store, creator),
+			)
 		)
 		reader_html = engine.render(
-			PlacementMenu(pin=pin, placement=placement, user=reader, can_remove=False)
+			PlacementMenu(
+				pin=pin,
+				placement=placement,
+				board=board,
+				access=Access(app.store, reader),
+			)
 		)
 
 		assert_that(f'href="/pins/{pin.id}">View</a>' in creator_html)
@@ -147,16 +157,28 @@ def test_placement_menu_offers_edit_only_to_the_pins_creator():
 def test_placement_menu_offers_remove_only_when_allowed():
 	with TestApplication() as app:
 		engine = app.container.get(Engine)
+		creator = User(name="Creator")
+		adder = User(name="Adder")
 		reader = User(name="Reader")
-		board = Board(title="Reading", creator_id=reader.id)
-		pin = Pin(title="Sartre", url="https://sartre.example", creator_id=reader.id)
-		placement = Placement(pin_id=pin.id, board_id=board.id, adder_id=reader.id)
+		board = Board(title="Reading", creator_id=creator.id)
+		pin = Pin(title="Sartre", url="https://sartre.example", creator_id=creator.id)
+		placement = Placement(pin_id=pin.id, board_id=board.id, adder_id=adder.id)
 
 		removable_html = engine.render(
-			PlacementMenu(pin=pin, placement=placement, user=reader, can_remove=True)
+			PlacementMenu(
+				pin=pin,
+				placement=placement,
+				board=board,
+				access=Access(app.store, adder),
+			)
 		)
 		fixed_html = engine.render(
-			PlacementMenu(pin=pin, placement=placement, user=reader, can_remove=False)
+			PlacementMenu(
+				pin=pin,
+				placement=placement,
+				board=board,
+				access=Access(app.store, reader),
+			)
 		)
 
 		assert_that(f'action="/placements/{placement.id}"' in removable_html)
@@ -172,7 +194,12 @@ def test_placement_item_archives_its_placement():
 			Pin, title="Sartre", url="https://sartre.example", creator_id=reader.id
 		)
 		placement = Placement.create(app.store, pin, board, reader)
-		item = PlacementItem(pin=pin, placement=placement, user=reader, can_remove=True)
+		item = PlacementItem(
+			pin=pin,
+			placement=placement,
+			board=board,
+			access=Access(app.store, reader),
+		)
 
 		html = engine.render(item)
 
@@ -194,8 +221,8 @@ def test_archival_item_unarchives_its_archival():
 			archival=archival,
 			placement=placement,
 			pin=pin,
-			user=reader,
-			can_remove=True,
+			board=board,
+			access=Access(app.store, reader),
 		)
 
 		html = engine.render(item)

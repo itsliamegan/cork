@@ -129,12 +129,7 @@ def show(req: Request, ctx: Context, id: UUID) -> Response:
 	pins_by_id = {pin.id: pin for pin in store.query(Pin).where_in(id=pin_ids).all()}
 
 	def placement_row(placement: Placement) -> dict[str, Any]:
-		pin = pins_by_id[placement.pin_id]
-		return {
-			"placement": placement,
-			"pin": pin,
-			"can_remove": placement.is_removable_by(access, pin, board),
-		}
+		return {"placement": placement, "pin": pins_by_id[placement.pin_id]}
 
 	placement_rows = [
 		placement_row(placement)
