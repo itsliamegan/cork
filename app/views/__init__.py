@@ -8,6 +8,7 @@ from app.views.boards.sharing import BoardSharing
 from app.views.components.action_menu import ActionMenu
 from app.views.components.confirm_button import ConfirmButton
 from app.views.components.external_link import ExternalLink
+from app.views.components.icon import Icon
 from app.views.pins.details import PinDetails
 from app.views.pins.placements import PinPlacements
 from app.views.placements.item import PlacementItem
@@ -22,6 +23,7 @@ components: list[type[Component]] = [
 	BoardSharing,
 	ConfirmButton,
 	ExternalLink,
+	Icon,
 	PinDetails,
 	PinPlacements,
 	PlacementItem,
