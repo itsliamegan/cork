@@ -1,42 +1,8 @@
-from uuid import uuid4
-
 from luna.test.assertion import assert_eq, assert_raises, assert_that
 
 from app import Access, Board, Pin, Placement, Share, User
 from app.access import NotPermitted
 from test.support import TestStore
-
-
-def test_display_url_shortens_to_hostname():
-	pin = Pin(
-		title="Sartre",
-		url="https://plato.stanford.edu/entries/sartre/",
-		creator_id=uuid4(),
-	)
-
-	display_url = pin.display_url()
-
-	assert_eq(display_url, "plato.stanford.edu")
-
-
-def test_display_url_drops_www_prefix():
-	pin = Pin(
-		title="Example",
-		url="https://www.example.com/articles",
-		creator_id=uuid4(),
-	)
-
-	display_url = pin.display_url()
-
-	assert_eq(display_url, "example.com")
-
-
-def test_display_url_falls_back_to_url_without_a_host():
-	pin = Pin(title="Notes", url="notes about sartre", creator_id=uuid4())
-
-	display_url = pin.display_url()
-
-	assert_eq(display_url, "notes about sartre")
 
 
 def test_pin_without_placements_is_unfiled():

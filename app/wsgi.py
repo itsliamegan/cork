@@ -13,7 +13,7 @@ from helios.wsgi import Application
 from app import User, models
 from app.config import Config
 from app.http import routes
-from app.views import components
+from app.views import components, helpers
 
 
 class Application(Application):
@@ -22,7 +22,11 @@ class Application(Application):
 			helios.app.Config(base_url=config.base_url),
 			Router(routes),
 			[
-				helios.view.Provider(config.views, components=components),
+				helios.view.Provider(
+					config.views,
+					helpers=helpers,
+					components=components,
+				),
 				helios.session.Provider(
 					config.session,
 					Driver(config.session_file, config.session_lock_file),

@@ -2,7 +2,6 @@ from typing import TYPE_CHECKING
 from uuid import UUID
 
 from helios.database import Model, Store
-from helios.http import URL
 
 from app.placement import Placement
 
@@ -87,10 +86,3 @@ class Pin(Model):
 			for placement in self.find_placements(store)
 			if placement.board_id in board_ids
 		]
-
-	def display_url(self) -> str:
-		try:
-			host = URL(self.url).host
-		except ValueError:
-			return self.url
-		return host.removeprefix("www.") if host else self.url
