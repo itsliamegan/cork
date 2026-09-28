@@ -79,7 +79,7 @@ wheels = [
 [[package]]
 name = "helios"
 version = "0.1"
-source = { git = "https://github.com/itsliamegan/helios?branch=main#758b89edc934d6f2909182d75eb3d671c1539942" }
+source = { git = "https://github.com/itsliamegan/helios?branch=main#05e30bcdadb231397630155cecbb20bd31b4745e" }
 dependencies = [
     { name = "jinja2" },
     { name = "luna" },
@@ -111,7 +111,7 @@ wheels = [
 [[package]]
 name = "luna"
 version = "0.1.0"
-source = { git = "https://github.com/itsliamegan/luna?branch=main#3a0e73d0c5ad3e7b00920764d1f2bb50ef9dbf25" }
+source = { git = "https://github.com/itsliamegan/luna?branch=main#6b5bfc3eb169658b772f6edd4dfda9c2ea6435b0" }
 
 [[package]]
 name = "markupsafe"
