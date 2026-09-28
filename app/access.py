@@ -1,12 +1,24 @@
 from uuid import UUID
 
-from helios.database import NotFoundError, Store
+from helios.database import Model, NotFoundError, Store
+from helios.http import Status
+from helios.http.error import HTTPError
 
+from app.archival import Archival
 from app.board import Board
 from app.ownership import Ownership
 from app.pin import Pin
+from app.placement import Placement
 from app.share import Share
 from app.user import User
+
+
+class NotPermitted(HTTPError):
+	status = Status.FORBIDDEN
+
+	def __init__(self, record: Model):
+		self.record = record
+		super().__init__(f"{type(record).__name__} {record.id} not permitted")
 
 
 class Access:
@@ -17,6 +29,9 @@ class Access:
 
 	def owns(self, record: Board | Pin) -> bool:
 		return self.ownership.owns(record)
+
+	def added(self, placement: Placement) -> bool:
+		return self.ownership.added(placement)
 
 	def allows_board(self, board: Board) -> bool:
 		return self.owns(board) or Share.exists(self.store, board, self.user)
@@ -30,6 +45,16 @@ class Access:
 				placement.board_id in board_ids
 				for placement in pin.find_placements(self.store)
 			)
+
+	def find_archival(self, id: UUID) -> Archival:
+		archival = self.store.find_one(Archival, id)
+		placement = self.store.find_one(Placement, archival.placement_id)
+		if (
+			archival.user_id != self.user.id
+			or placement.board_id not in self.find_board_ids()
+		):
+			raise NotFoundError(Archival, id)
+		return archival
 
 	def find_board(self, id: UUID) -> Board:
 		board = self.store.find_one(Board, id)
@@ -51,3 +76,9 @@ class Access:
 		if not self.allows_pin(pin):
 			raise NotFoundError(Pin, id)
 		return pin
+
+	def find_placement(self, id: UUID) -> Placement:
+		placement = self.store.find_one(Placement, id)
+		if placement.board_id not in self.find_board_ids():
+			raise NotFoundError(Placement, id)
+		return placement

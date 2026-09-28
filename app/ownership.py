@@ -4,6 +4,7 @@ from helios.database import NotFoundError, Store
 
 from app.board import Board
 from app.pin import Pin
+from app.placement import Placement
 from app.user import User
 
 
@@ -14,6 +15,9 @@ class Ownership:
 
 	def owns(self, record: Board | Pin) -> bool:
 		return record.creator_id == self.user.id
+
+	def added(self, placement: Placement) -> bool:
+		return placement.adder_id == self.user.id
 
 	def find_board(self, id: UUID) -> Board:
 		board = self.store.find_one(Board, id)
