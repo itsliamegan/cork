@@ -1,4 +1,4 @@
-from typing import Any, cast
+from typing import cast
 from uuid import UUID
 
 from helios.app import Context
@@ -79,7 +79,7 @@ def create(req: Request, ctx: Context) -> Response:
 	if "user_ids" in errors:
 		return Response.text("400 Bad Request", status=Status.BAD_REQUEST)
 	sharable_users = _sharable_users(ctx, user.id)
-	if not set(form.user_ids) <= {sharable.id for sharable in sharable_users}:
+	if not set(form.user_ids) <= {user.id for user in sharable_users}:
 		return Response.text("400 Bad Request", status=Status.BAD_REQUEST)
 	if errors:
 		submissions.flash(errors, req.input)
@@ -89,7 +89,7 @@ def create(req: Request, ctx: Context) -> Response:
 		store,
 		user,
 		title=form.title,
-		users=[sharable for sharable in sharable_users if sharable.id in form.user_ids],
+		users=[user for user in sharable_users if user.id in form.user_ids],
 	)
 
 	return Response.redirect(urls.route("boards.show", {"id": board.id}))
@@ -128,18 +128,21 @@ def show(req: Request, ctx: Context, id: UUID) -> Response:
 	pin_ids = [placement.pin_id for placement in placements]
 	pins_by_id = {pin.id: pin for pin in store.query(Pin).where_in(id=pin_ids).all()}
 
-	def placement_row(placement: Placement) -> dict[str, Any]:
-		return {"placement": placement, "pin": pins_by_id[placement.pin_id]}
-
 	placement_rows = [
-		placement_row(placement)
+		{"placement": placement, "pin": pins_by_id[placement.pin_id]}
 		for placement in placements
 		if placement.id not in archivals_by_placement_id
 	]
-	archived_rows = [
-		{"archival": archival, **placement_row(placements_by_id[archival.placement_id])}
-		for archival in archivals
-	]
+	archived_rows = []
+	for archival in archivals:
+		placement = placements_by_id[archival.placement_id]
+		archived_rows.append(
+			{
+				"archival": archival,
+				"placement": placement,
+				"pin": pins_by_id[placement.pin_id],
+			}
+		)
 
 	return views.render(
 		"boards.show",
@@ -192,7 +195,7 @@ def update(req: Request, ctx: Context, id: UUID) -> Response:
 	if "user_ids" in errors:
 		return Response.text("400 Bad Request", status=Status.BAD_REQUEST)
 	sharable_users = _sharable_users(ctx, board.creator_id)
-	if not set(form.user_ids) <= {sharable.id for sharable in sharable_users}:
+	if not set(form.user_ids) <= {user.id for user in sharable_users}:
 		return Response.text("400 Bad Request", status=Status.BAD_REQUEST)
 	if errors:
 		submissions.flash(errors, req.input)
@@ -202,7 +205,7 @@ def update(req: Request, ctx: Context, id: UUID) -> Response:
 		store,
 		access,
 		title=form.title,
-		users=[sharable for sharable in sharable_users if sharable.id in form.user_ids],
+		users=[user for user in sharable_users if user.id in form.user_ids],
 	)
 
 	return_to = _board_return_url(ctx, form.return_to, board.id)

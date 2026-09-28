@@ -39,12 +39,6 @@ class Pin(Model):
 		Placement.replace(store, pin, boards, access)
 		return pin
 
-	def is_editable_by(self, access: Access) -> bool:
-		return access.owns(self)
-
-	def is_deletable_by(self, access: Access) -> bool:
-		return access.owns(self)
-
 	def edit(
 		self,
 		store: Store,
@@ -58,18 +52,26 @@ class Pin(Model):
 
 		if not self.is_editable_by(access):
 			raise NotPermitted(self)
+
 		Placement.replace(store, self, boards, access)
 		self.url = url
 		self.title = title
 		self.note = note
 		store.save(self)
 
+	def is_editable_by(self, access: Access) -> bool:
+		return access.owns(self)
+
 	def delete(self, store: Store, access: Access):
 		from app.access import NotPermitted
 
 		if not self.is_deletable_by(access):
 			raise NotPermitted(self)
+
 		store.delete(self)
+
+	def is_deletable_by(self, access: Access) -> bool:
+		return access.owns(self)
 
 	def find_placements(self, store: Store) -> list[Placement]:
 		return store.find_by(Placement, pin_id=self.id)
