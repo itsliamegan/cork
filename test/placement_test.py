@@ -4,7 +4,7 @@ from luna.test.assertion import assert_eq, assert_raises, assert_that
 from app import Access, Archival, Board, Move, Pin, Placement, Share, User
 from app.access import NotPermitted
 from app.move import OutOfDate
-from test.support import TestStore
+from test.support import TestStore, ids
 
 
 def place_pins(store: Store, board: Board, adder: User, count: int) -> list[Placement]:
@@ -86,8 +86,10 @@ def test_find_adder_prefers_the_given_board():
 		reading_adder = Placement.find_adder(store, placements, reading.id)
 		essays_adder = Placement.find_adder(store, placements, essays.id)
 
-		assert_that(reading_adder is board_creator)
-		assert_that(essays_adder is participant)
+		assert reading_adder is not None
+		assert essays_adder is not None
+		assert_eq(reading_adder.id, board_creator.id)
+		assert_eq(essays_adder.id, participant.id)
 
 
 def test_find_adder_without_a_board_is_stable_across_orderings():
@@ -110,8 +112,9 @@ def test_find_adder_without_a_board_is_stable_across_orderings():
 		forward = Placement.find_adder(store, placements)
 		backward = Placement.find_adder(store, list(reversed(placements)))
 
-		assert_that(forward is not None)
-		assert_that(forward is backward)
+		assert forward is not None
+		assert backward is not None
+		assert_eq(forward.id, backward.id)
 
 
 def test_replace_adds_and_removes_placements_and_keeps_retained_ones():
@@ -224,7 +227,7 @@ def test_arrange_sorts_by_position_first():
 
 		placements = Placement.arrange(store, reading)
 
-		assert_eq(placements, [second, third, first])
+		assert_eq(ids(placements), ids([second, third, first]))
 
 
 def test_arrange_sorts_equal_positions_newest_first():
@@ -235,7 +238,7 @@ def test_arrange_sorts_equal_positions_newest_first():
 
 		placements = Placement.arrange(store, reading)
 
-		assert_eq(placements, [third, second, first])
+		assert_eq(ids(placements), ids([third, second, first]))
 
 
 def test_arrange_sorts_a_pin_added_back_to_a_board_first():
@@ -267,7 +270,7 @@ def test_move_renumbers_the_whole_board():
 		Placement.move(store, reading, viewer, Move(first.id, second.id, third.id))
 
 		placements = Placement.arrange(store, reading)
-		assert_eq(placements, [second, first, third])
+		assert_eq(ids(placements), ids([second, first, third]))
 		assert_eq([placement.position for placement in placements], [0, 1, 2])
 
 
@@ -304,7 +307,7 @@ def test_move_of_a_placement_on_another_board_is_out_of_date():
 				store, reading, viewer, Move(elsewhere.id, first.id, second.id)
 			)
 
-		assert_eq(Placement.arrange(store, reading), [first, second])
+		assert_eq(ids(Placement.arrange(store, reading)), ids([first, second]))
 		assert_eq(
 			[
 				store.find_one(Placement, placement.id).position
@@ -346,7 +349,7 @@ def test_move_renumbers_archived_placements_too():
 		Placement.move(store, reading, viewer, Move(last.id, None, first.id))
 
 		arranged = Placement.arrange(store, reading)
-		assert_eq(arranged, [last, first, archived])
+		assert_eq(ids(arranged), ids([last, first, archived]))
 		assert_eq([placement.position for placement in arranged], [0, 1, 2])
 
 
@@ -364,7 +367,7 @@ def test_move_ignores_another_users_archivals():
 		with assert_raises(OutOfDate):
 			Placement.move(store, reading, viewer, Move(first.id, None, third.id))
 
-		assert_eq(Placement.arrange(store, reading), [first, second, third])
+		assert_eq(ids(Placement.arrange(store, reading)), ids([first, second, third]))
 
 
 def test_pin_creator_board_creator_and_adder_may_remove_a_placement():

@@ -39,8 +39,9 @@ def test_invite_expires_at_boundary():
 		creator = store.create(User, name="Creator")
 		invite = Invite.create(store, creator)
 
-		assert_that(Invite.find_valid(store, invite.token.value) is invite)
-		invite.expires_at = datetime.now(UTC)
+		found = Invite.find_valid(store, invite.token.value)
+		assert_that(found is not None and found.id == invite.id)
+		store.update(invite, expires_at=datetime.now(UTC))
 		assert_that(Invite.find_valid(store, invite.token.value) is None)
 
 
@@ -75,7 +76,7 @@ def test_redeeming_targeted_invite_returns_target_and_spends_invite():
 
 		redeemed = invite.redeem_for_target(store)
 
-		assert_that(redeemed is creator)
+		assert_eq(redeemed.id, creator.id)
 		assert_eq(len(store.find_all(User)), 1)
 		assert_that(Invite.find_valid(store, invite.token.value) is None)
 
@@ -89,7 +90,8 @@ def test_redeem_refuses_a_targeted_invite():
 			invite.redeem(store, "Newcomer")
 
 		assert_eq(len(store.find_all(User)), 1)
-		assert_that(Invite.find_valid(store, invite.token.value) is invite)
+		found = Invite.find_valid(store, invite.token.value)
+		assert_that(found is not None and found.id == invite.id)
 
 
 def test_redeem_for_target_refuses_an_untargeted_invite():
@@ -100,7 +102,8 @@ def test_redeem_for_target_refuses_an_untargeted_invite():
 		with assert_raises(ValueError):
 			invite.redeem_for_target(store)
 
-		assert_that(Invite.find_valid(store, invite.token.value) is invite)
+		found = Invite.find_valid(store, invite.token.value)
+		assert_that(found is not None and found.id == invite.id)
 
 
 def test_redeeming_one_invite_leaves_others_valid():
@@ -112,7 +115,8 @@ def test_redeeming_one_invite_leaves_others_valid():
 		first.redeem(store, "Newcomer")
 
 		assert_that(Invite.find_valid(store, first.token.value) is None)
-		assert_that(Invite.find_valid(store, second.token.value) is second)
+		found = Invite.find_valid(store, second.token.value)
+		assert_that(found is not None and found.id == second.id)
 
 
 def test_find_target_returns_target_user():
@@ -125,7 +129,8 @@ def test_find_target_returns_target_user():
 		targeted_target = targeted_invite.find_target(store)
 
 		assert_that(untargeted_target is None)
-		assert_that(targeted_target is creator)
+		assert targeted_target is not None
+		assert_eq(targeted_target.id, creator.id)
 
 
 def test_find_created_by_hides_other_creators_invites():
