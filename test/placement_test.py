@@ -220,8 +220,7 @@ def test_arrange_sorts_by_position_first():
 		reading = store.create(Board, title="Reading", creator_id=viewer.id)
 		first, second, third = place_pins(store, reading, viewer, 3)
 		for position, placement in enumerate([second, third, first]):
-			placement.position = position
-			store.save(placement)
+			store.update(placement, position=position)
 
 		placements = Placement.arrange(store, reading)
 
@@ -245,8 +244,7 @@ def test_arrange_sorts_a_pin_added_back_to_a_board_first():
 		reading = store.create(Board, title="Reading", creator_id=viewer.id)
 		placements = place_pins(store, reading, viewer, 3)
 		for position, placement in enumerate(placements):
-			placement.position = position
-			store.save(placement)
+			store.update(placement, position=position)
 		readded = store.find_one(Pin, placements[2].pin_id)
 		access = Access(store, viewer)
 		Placement.replace(store, readded, [], access)
@@ -279,8 +277,7 @@ def test_move_that_changes_nothing_writes_nothing():
 		reading = store.create(Board, title="Reading", creator_id=viewer.id)
 		placements = place_pins(store, reading, viewer, 3)
 		for position, placement in zip([0, 5, 9], placements):
-			placement.position = position
-			store.save(placement)
+			store.update(placement, position=position)
 		first, second, third = placements
 
 		Placement.move(store, reading, viewer, Move(second.id, first.id, third.id))
@@ -342,8 +339,7 @@ def test_move_renumbers_archived_placements_too():
 		reading = store.create(Board, title="Reading", creator_id=viewer.id)
 		placements = place_pins(store, reading, viewer, 3)
 		for position, placement in zip([0, 5, 9], placements):
-			placement.position = position
-			store.save(placement)
+			store.update(placement, position=position)
 		first, archived, last = placements
 		Archival.create(store, archived, viewer)
 
