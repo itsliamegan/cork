@@ -37,8 +37,7 @@ class Board(Model):
 			raise NotPermitted(self)
 
 		Share.replace(store, self, users)
-		self.title = title
-		store.save(self)
+		store.update(self, title=title)
 
 	def is_editable_by(self, access: Access) -> bool:
 		return access.owns(self)

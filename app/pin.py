@@ -53,10 +53,7 @@ class Pin(Model):
 			raise NotPermitted(self)
 
 		Placement.replace(store, self, boards, access)
-		self.url = url
-		self.title = title
-		self.note = note
-		store.save(self)
+		store.update(self, url=url, title=title, note=note)
 
 	def is_editable_by(self, access: Access) -> bool:
 		return access.owns(self)

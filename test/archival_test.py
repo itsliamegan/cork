@@ -34,8 +34,7 @@ def test_archiving_and_unarchiving_keep_every_position():
 				creator_id=reader.id,
 			)
 			placement = Placement.create(store, pin, board, reader)
-			placement.position = index * 5
-			store.save(placement)
+			store.update(placement, position=index * 5)
 			placements.append(placement)
 
 		archival = Archival.create(store, placements[1], reader)

@@ -85,8 +85,7 @@ class Placement(Model):
 		placements_by_id = {placement.id: placement for placement in placements}
 		for position, id in enumerate(order):
 			placement = placements_by_id[id]
-			placement.position = position
-			store.save(placement)
+			store.update(placement, position=position)
 
 	def remove(self, store: Store, access: Access, pin: Pin, board: Board):
 		from app.access import NotPermitted

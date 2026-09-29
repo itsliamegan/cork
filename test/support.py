@@ -1,11 +1,12 @@
+from collections.abc import Iterable
 import json
 from pathlib import Path
 import re
 from tempfile import TemporaryDirectory
-from uuid import uuid4
+from uuid import UUID, uuid4
 
 from helios.auth.password import Digest
-from helios.database import Store
+from helios.database import Model, Store
 import helios.database.config
 from helios.database.sqlite import connect
 from helios.wsgi.test import TestClient
@@ -19,6 +20,10 @@ from lib.migrate import Migrations, Migrator
 Digest.method = "pbkdf2:sha256:1"
 
 MIGRATIONS_DIR = Path(ROOT_DIR, "database", "migrations")
+
+
+def ids(records: Iterable[Model]) -> list[UUID]:
+	return [record.id for record in records]
 
 
 class TestStore:

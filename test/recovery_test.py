@@ -34,7 +34,8 @@ def test_created_code_matches_only_its_plaintext():
 
 		found = Recovery.find_by_code(store, plaintext)
 
-		assert_that(found is recovery)
+		assert found is not None
+		assert_eq(found.id, recovery.id)
 		assert_that(Recovery.find_by_code(store, "X" * 16) is None)
 
 
@@ -48,7 +49,8 @@ def test_redeem_signs_in_user_and_rotates_code():
 
 		recoveries = store.find_by(Recovery, user_id=owner.id)
 		assert_eq(len(recoveries), 1)
-		assert_eq(result, (owner, recoveries[0]))
+		assert result is not None
+		assert_eq((result[0].id, result[1].id), (owner.id, recoveries[0].id))
 		assert_that(Recovery.find_by_code(store, plaintext) is None)
 
 

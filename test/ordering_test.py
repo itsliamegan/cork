@@ -3,7 +3,7 @@ from luna.test.assertion import assert_eq, assert_raises
 
 from app import Access, Board, Move, Ordering, Share, User
 from app.move import OutOfDate
-from test.support import TestStore
+from test.support import TestStore, ids
 
 
 def test_arrange_splits_boards_into_private_and_shared_sections():
@@ -19,8 +19,8 @@ def test_arrange_splits_boards_into_private_and_shared_sections():
 
 		private_boards, shared_boards = Ordering.arrange(store, Access(store, viewer))
 
-		assert_eq(private_boards, [private])
-		assert_eq(shared_boards, [received, owned])
+		assert_eq(ids(private_boards), ids([private]))
+		assert_eq(ids(shared_boards), ids([received, owned]))
 
 
 def test_owned_private_boards_enter_their_section_when_created():
@@ -31,7 +31,7 @@ def test_owned_private_boards_enter_their_section_when_created():
 
 		private_boards, _ = Ordering.arrange(store, Access(store, viewer))
 
-		assert_eq(private_boards, [newer, older])
+		assert_eq(ids(private_boards), ids([newer, older]))
 
 
 def test_owned_shared_boards_enter_their_section_when_first_shared():
@@ -47,7 +47,7 @@ def test_owned_shared_boards_enter_their_section_when_first_shared():
 
 		_, shared_boards = Ordering.arrange(store, Access(store, viewer))
 
-		assert_eq(shared_boards, [last_shared, first_shared])
+		assert_eq(ids(shared_boards), ids([last_shared, first_shared]))
 
 
 def test_received_boards_enter_their_section_when_shared_with_the_user():
@@ -63,7 +63,7 @@ def test_received_boards_enter_their_section_when_shared_with_the_user():
 
 		_, shared_boards = Ordering.arrange(store, Access(store, viewer))
 
-		assert_eq(shared_boards, [older, newer])
+		assert_eq(ids(shared_boards), ids([older, newer]))
 
 
 def test_boards_without_a_row_come_before_boards_with_one():
@@ -76,7 +76,7 @@ def test_boards_without_a_row_come_before_boards_with_one():
 
 		private_boards, _ = Ordering.arrange(store, Access(store, viewer))
 
-		assert_eq(private_boards, [newer, older, positioned])
+		assert_eq(ids(private_boards), ids([newer, older, positioned]))
 
 
 def test_boards_with_a_row_follow_their_positions():
@@ -92,7 +92,7 @@ def test_boards_with_a_row_follow_their_positions():
 
 		private_boards, _ = Ordering.arrange(store, Access(store, viewer))
 
-		assert_eq(private_boards, [philosophy, reading, essays])
+		assert_eq(ids(private_boards), ids([philosophy, reading, essays]))
 
 
 def test_a_user_orders_each_board_once():
@@ -118,7 +118,7 @@ def test_only_the_users_own_rows_apply():
 
 		private_boards, _ = Ordering.arrange(store, Access(store, viewer))
 
-		assert_eq(private_boards, [newer, older])
+		assert_eq(ids(private_boards), ids([newer, older]))
 
 
 def test_arrange_ignores_rows_for_inaccessible_boards():
@@ -134,8 +134,8 @@ def test_arrange_ignores_rows_for_inaccessible_boards():
 
 		private_boards, shared_boards = Ordering.arrange(store, Access(store, viewer))
 
-		assert_eq(private_boards, [reading])
-		assert_eq(shared_boards, [])
+		assert_eq(ids(private_boards), ids([reading]))
+		assert_eq(ids(shared_boards), ids([]))
 
 
 def test_move_writes_rows_for_the_whole_section():
@@ -150,7 +150,7 @@ def test_move_writes_rows_for_the_whole_section():
 		Ordering.move(store, access, Move(first.id, None, third.id))
 
 		private_boards, _ = Ordering.arrange(store, access)
-		assert_eq(private_boards, [first, third, second])
+		assert_eq(ids(private_boards), ids([first, third, second]))
 		positions = {
 			ordering.board_id: ordering.position
 			for ordering in store.find_by(Ordering, user_id=viewer.id)

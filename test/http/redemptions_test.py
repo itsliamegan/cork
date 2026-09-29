@@ -103,8 +103,7 @@ def test_invalid_tokens_render_error():
 	with TestApplication() as app:
 		creator = app.store.create(User, name="Creator")
 		expired = Invite.create(app.store, creator)
-		expired.expires_at = datetime.now(UTC)
-		app.store.save(expired)
+		app.store.update(expired, expires_at=datetime.now(UTC))
 		redeemed = Invite.create(app.store, creator)
 		redeemed_token = redeemed.token.value
 		app.store.delete(redeemed)
