@@ -94,5 +94,4 @@ class Ordering(Model):
 					position=position,
 				)
 			else:
-				ordering.position = position
-				store.save(ordering)
+				store.update(ordering, position=position)
