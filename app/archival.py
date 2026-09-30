@@ -16,7 +16,9 @@ class Archival(Model):
 	@classmethod
 	def create(cls, store: Store, placement: Placement, user: User) -> Archival:
 		existing = (
-			store.query(cls).where(placement_id=placement.id, user_id=user.id).first()
+			store.query(cls)
+			.where({"placement_id": placement.id, "user_id": user.id})
+			.first()
 		)
 		if existing is not None:
 			return existing
@@ -30,8 +32,8 @@ class Archival(Model):
 		]
 		archivals = (
 			store.query(Archival)
-			.where(user_id=user.id)
-			.where_in(placement_id=placement_ids)
+			.where({"user_id": user.id})
+			.where({"placement_id in": placement_ids})
 			.all()
 		)
 		archivals.sort(key=lambda archival: archival.id)

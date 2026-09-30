@@ -28,7 +28,9 @@ class Ordering(Model):
 		boards = access.find_boards()
 		shares_by_board_id: dict[UUID, list[Share]] = {}
 		for share in (
-			store.query(Share).where_in(board_id=[board.id for board in boards]).all()
+			store.query(Share)
+			.where({"board_id in": [board.id for board in boards]})
+			.all()
 		):
 			shares_by_board_id.setdefault(share.board_id, []).append(share)
 		positions = {

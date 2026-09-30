@@ -121,7 +121,9 @@ def show(req: Request, ctx: Context, id: UUID) -> Response:
 	}
 	placements_by_id = {placement.id: placement for placement in placements}
 	pin_ids = [placement.pin_id for placement in placements]
-	pins_by_id = {pin.id: pin for pin in store.query(Pin).where_in(id=pin_ids).all()}
+	pins_by_id = {
+		pin.id: pin for pin in store.query(Pin).where({"id in": pin_ids}).all()
+	}
 
 	placement_rows = [
 		{"placement": placement, "pin": pins_by_id[placement.pin_id]}

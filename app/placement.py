@@ -28,8 +28,7 @@ class Placement(Model):
 		board: Board,
 		adder: User,
 	) -> Placement:
-		duplicate = store.query(cls).where(pin_id=pin.id, board_id=board.id).first()
-		if duplicate is not None:
+		if store.query(cls).where({"pin_id": pin.id, "board_id": board.id}).exists():
 			raise ValueError(f"Pin {pin.id} is already placed on Board {board.id}")
 		return store.create(
 			cls,

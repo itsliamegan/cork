@@ -67,7 +67,7 @@ def build_placement_options(ctx: Context) -> list[PlacementOption]:
 	boards = access.find_boards()
 	board_ids = {board.id for board in boards}
 	shares_by_board_id: dict[UUID, list[Share]] = {board.id: [] for board in boards}
-	for share in store.query(Share).where_in(board_id=board_ids).all():
+	for share in store.query(Share).where({"board_id in": board_ids}).all():
 		shares_by_board_id[share.board_id].append(share)
 
 	viewer_ids = {board.creator_id for board in boards}
@@ -75,7 +75,8 @@ def build_placement_options(ctx: Context) -> list[PlacementOption]:
 		share.user_id for shares in shares_by_board_id.values() for share in shares
 	)
 	users_by_id = {
-		viewer.id: viewer for viewer in store.query(User).where_in(id=viewer_ids).all()
+		viewer.id: viewer
+		for viewer in store.query(User).where({"id in": viewer_ids}).all()
 	}
 	placement_options = []
 	for board in boards:
@@ -97,7 +98,7 @@ def index(req: Request, ctx: Context) -> Response:
 	board_counts = Counter(
 		placement.pin_id
 		for placement in store.query(Placement)
-		.where_in(pin_id=[pin.id for pin in pins])
+		.where({"pin_id in": [pin.id for pin in pins]})
 		.all()
 	)
 	pin_rows = [{"pin": pin, "board_count": board_counts[pin.id]} for pin in pins]
@@ -200,7 +201,7 @@ def show(req: Request, ctx: Context, id: UUID) -> Response:
 	placements = pin.find_accessible_placements(store, access)
 	boards = (
 		store.query(Board)
-		.where_in(id=[placement.board_id for placement in placements])
+		.where({"id in": [placement.board_id for placement in placements]})
 		.all()
 	)
 	adder = Placement.find_adder(
