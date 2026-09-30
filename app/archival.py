@@ -30,12 +30,11 @@ class Archival(Model):
 		placement_ids = [
 			placement.id for placement in store.find_by(Placement, board_id=board.id)
 		]
-		archivals = (
+		return (
 			store.query(Archival)
 			.where({"user_id": user.id})
 			.where({"placement_id in": placement_ids})
+			.order_by("created_at", "desc")
+			.order_by("id")
 			.all()
 		)
-		archivals.sort(key=lambda archival: archival.id)
-		archivals.sort(key=lambda archival: archival.created_at, reverse=True)
-		return archivals
