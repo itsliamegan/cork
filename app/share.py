@@ -14,8 +14,9 @@ class Share(Model):
 
 	@classmethod
 	def exists(cls, store: Store, board: Board, user: User) -> bool:
-		share = store.query(cls).where(board_id=board.id, user_id=user.id).first()
-		return share is not None
+		return (
+			store.query(cls).where({"board_id": board.id, "user_id": user.id}).exists()
+		)
 
 	@classmethod
 	def find_board_ids(cls, store: Store, user: User) -> list[UUID]:
@@ -24,7 +25,7 @@ class Share(Model):
 	@classmethod
 	def find_boards(cls, store: Store, user: User) -> list[Board]:
 		board_ids = cls.find_board_ids(store, user)
-		return store.query(Board).where_in(id=board_ids).all()
+		return store.query(Board).where({"id in": board_ids}).all()
 
 	@classmethod
 	def replace(cls, store: Store, board: Board, users: list[User]) -> None:

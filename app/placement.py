@@ -28,8 +28,7 @@ class Placement(Model):
 		board: Board,
 		adder: User,
 	) -> Placement:
-		duplicate = store.query(cls).where(pin_id=pin.id, board_id=board.id).first()
-		if duplicate is not None:
+		if store.query(cls).where({"pin_id": pin.id, "board_id": board.id}).exists():
 			raise ValueError(f"Pin {pin.id} is already placed on Board {board.id}")
 		return store.create(
 			cls,
@@ -64,11 +63,14 @@ class Placement(Model):
 
 	@classmethod
 	def arrange(cls, store: Store, board: Board) -> list[Placement]:
-		placements = store.find_by(Placement, board_id=board.id)
-		placements.sort(key=lambda placement: placement.id)
-		placements.sort(key=lambda placement: placement.created_at, reverse=True)
-		placements.sort(key=lambda placement: placement.position)
-		return placements
+		return (
+			store.query(Placement)
+			.where({"board_id": board.id})
+			.order_by("position")
+			.order_by("created_at", "desc")
+			.order_by("id")
+			.all()
+		)
 
 	@classmethod
 	def move(cls, store: Store, board: Board, user: User, move: Move):

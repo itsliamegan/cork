@@ -44,7 +44,7 @@ def create(req: Request, ctx: Context) -> Response:
 		errors.add("name", "Name must be provided.")
 	# The column's NOCASE collation makes this match names that differ only in
 	# ASCII case, which is also what its unique constraint rejects.
-	elif store.query(User).where(name=form.name).first() is not None:
+	elif store.query(User).where({"name": form.name}).exists():
 		errors.add("name", "Name is already in use.")
 	else:
 		user = invite.redeem(store, form.name)

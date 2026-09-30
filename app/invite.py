@@ -58,7 +58,7 @@ class Invite(Model):
 
 	@classmethod
 	def find_valid(cls, store: Store, token: str) -> Invite | None:
-		invite = store.query(cls).where(token=cls.Token(token)).first()
+		invite = store.query(cls).where({"token": cls.Token(token)}).first()
 		if invite is None or invite.expires_at <= datetime.now(UTC):
 			return None
 		return invite
