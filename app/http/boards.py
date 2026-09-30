@@ -43,7 +43,7 @@ def _board_return_url(ctx: Context, raw_url: str | None, id: UUID) -> URL:
 def _sharable_users(ctx: Context, owner_id: UUID) -> list[User]:
 	store = ctx.get(Store)
 
-	users = [user for user in store.find_all(User) if user.id != owner_id]
+	users = store.query(User).where_not({"id": owner_id}).all()
 	users.sort(key=lambda user: user.name.casefold())
 	return users
 
