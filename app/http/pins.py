@@ -1,4 +1,3 @@
-from collections import Counter
 from uuid import UUID
 
 from helios import http
@@ -95,13 +94,14 @@ def index(req: Request, ctx: Context) -> Response:
 
 	pins = Ownership(store, auth.user).find_pins()
 	pins.sort(key=lambda pin: pin.created_at, reverse=True)
-	board_counts = Counter(
-		placement.pin_id
-		for placement in store.query(Placement)
+	board_counts = (
+		store.query(Placement)
 		.where({"pin_id in": [pin.id for pin in pins]})
-		.all()
+		.count_by("pin_id")
 	)
-	pin_rows = [{"pin": pin, "board_count": board_counts[pin.id]} for pin in pins]
+	pin_rows = [
+		{"pin": pin, "board_count": board_counts.get(pin.id, 0)} for pin in pins
+	]
 
 	return views.render(
 		"pins.index",
