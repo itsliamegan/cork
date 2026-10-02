@@ -17,7 +17,7 @@ class Config(Config):
 	def __init__(self, values: dict[str, str]):
 		super().__init__(values)
 
-		self.base_url = self.url("APP_BASE_URL", URL("http://localhost:4000"))
+		self.base_url = self.url("APP_BASE_URL", URL.parse("http://localhost:4000"))
 		self.rate_limit = helios.limit.config.Config(
 			header=self.text("APP_RATE_LIMIT_HEADER", "X-Forwarded-For"),
 			limit=int(self.text("APP_RATE_LIMIT_REQUESTS", "30")),

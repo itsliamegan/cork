@@ -1,5 +1,6 @@
 from uuid import uuid4
 
+from helios.http import URL
 from helios.view import Attributes, Engine
 from luna.test.assertion import assert_not, assert_raises, assert_that
 
@@ -19,7 +20,7 @@ from test.support import TestApplication
 def test_external_link_in_new_tab_withholds_the_opener():
 	with TestApplication() as app:
 		engine = app.container.get(Engine)
-		link = ExternalLink(url="https://example.com", new_tab=True)
+		link = ExternalLink(url=URL.parse("https://example.com"), new_tab=True)
 
 		html = engine.render(link)
 
@@ -30,7 +31,7 @@ def test_external_link_in_new_tab_withholds_the_opener():
 def test_external_link_in_same_tab_sets_no_target():
 	with TestApplication() as app:
 		engine = app.container.get(Engine)
-		link = ExternalLink(url="https://example.com")
+		link = ExternalLink(url=URL.parse("https://example.com"))
 
 		html = engine.render(link)
 
@@ -41,7 +42,7 @@ def test_external_link_in_same_tab_sets_no_target():
 def test_external_link_refuses_a_caller_target():
 	with assert_raises(TypeError):
 		ExternalLink(
-			url="https://example.com",
+			url=URL.parse("https://example.com"),
 			new_tab=True,
 			attributes=Attributes(target="_self"),
 		)
@@ -50,7 +51,7 @@ def test_external_link_refuses_a_caller_target():
 def test_external_link_without_content_shows_its_url():
 	with TestApplication() as app:
 		engine = app.container.get(Engine)
-		link = ExternalLink(url="https://example.com/sartre")
+		link = ExternalLink(url=URL.parse("https://example.com/sartre"))
 
 		html = engine.render(link)
 
@@ -60,7 +61,9 @@ def test_external_link_without_content_shows_its_url():
 def test_pin_link_with_url_opens_the_url():
 	with TestApplication() as app:
 		engine = app.container.get(Engine)
-		pin = Pin(title="Sartre", url="https://sartre.example", creator_id=uuid4())
+		pin = Pin(
+			title="Sartre", url=URL.parse("https://sartre.example"), creator_id=uuid4()
+		)
 		link = PinLink(pin=pin, new_tab=True)
 
 		html = engine.render(link)
@@ -173,7 +176,10 @@ def test_placement_menu_offers_edit_only_to_the_pins_creator():
 		reader = app.store.create(User, name="Reader")
 		board = app.store.create(Board, title="Reading", creator_id=creator.id)
 		pin = app.store.create(
-			Pin, title="Sartre", url="https://sartre.example", creator_id=creator.id
+			Pin,
+			title="Sartre",
+			url=URL.parse("https://sartre.example"),
+			creator_id=creator.id,
 		)
 		placement = Placement.create(app.store, pin, board, creator)
 		app.store.load(placement, "pin", "board")
@@ -205,7 +211,10 @@ def test_placement_menu_offers_remove_only_when_allowed():
 		reader = app.store.create(User, name="Reader")
 		board = app.store.create(Board, title="Reading", creator_id=creator.id)
 		pin = app.store.create(
-			Pin, title="Sartre", url="https://sartre.example", creator_id=creator.id
+			Pin,
+			title="Sartre",
+			url=URL.parse("https://sartre.example"),
+			creator_id=creator.id,
 		)
 		placement = Placement.create(app.store, pin, board, adder)
 		app.store.load(placement, "pin", "board")
@@ -233,7 +242,10 @@ def test_placement_item_archives_its_placement():
 		reader = app.store.create(User, name="Reader")
 		board = app.store.create(Board, title="Reading", creator_id=reader.id)
 		pin = app.store.create(
-			Pin, title="Sartre", url="https://sartre.example", creator_id=reader.id
+			Pin,
+			title="Sartre",
+			url=URL.parse("https://sartre.example"),
+			creator_id=reader.id,
 		)
 		placement = Placement.create(app.store, pin, board, reader)
 		app.store.load(placement, "pin", "board")
@@ -255,7 +267,10 @@ def test_archival_item_unarchives_its_archival():
 		reader = app.store.create(User, name="Reader")
 		board = app.store.create(Board, title="Reading", creator_id=reader.id)
 		pin = app.store.create(
-			Pin, title="Sartre", url="https://sartre.example", creator_id=reader.id
+			Pin,
+			title="Sartre",
+			url=URL.parse("https://sartre.example"),
+			creator_id=reader.id,
 		)
 		placement = Placement.create(app.store, pin, board, reader)
 		archival = Archival.create(app.store, placement, reader)
@@ -278,7 +293,10 @@ def test_placement_item_opens_its_pin_in_a_new_tab_when_set():
 		reader = app.store.create(User, name="Reader")
 		board = app.store.create(Board, title="Reading", creator_id=reader.id)
 		pin = app.store.create(
-			Pin, title="Sartre", url="https://sartre.example", creator_id=reader.id
+			Pin,
+			title="Sartre",
+			url=URL.parse("https://sartre.example"),
+			creator_id=reader.id,
 		)
 		placement = Placement.create(app.store, pin, board, reader)
 		app.store.load(placement, "pin", "board")

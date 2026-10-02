@@ -1,4 +1,5 @@
 from helios.database import NotFoundError
+from helios.http import URL
 from luna.test.assertion import assert_eq, assert_raises
 
 from app import Access, Archival, Board, Pin, Placement, Share, User
@@ -45,7 +46,7 @@ def test_pin_is_accessible_through_any_board_it_is_placed_on():
 		pin = store.create(
 			Pin,
 			title="Sartre",
-			url="https://plato.stanford.edu/entries/sartre/",
+			url=URL.parse("https://plato.stanford.edu/entries/sartre/"),
 			creator_id=creator.id,
 		)
 		for board in [private, shared]:
@@ -65,7 +66,7 @@ def test_pin_is_accessible_to_the_creator_of_a_board_it_is_placed_on():
 		pin = store.create(
 			Pin,
 			title="Sartre",
-			url="https://plato.stanford.edu/entries/sartre/",
+			url=URL.parse("https://plato.stanford.edu/entries/sartre/"),
 			creator_id=pin_creator.id,
 		)
 		Placement.create(store, pin, board, pin_creator)
@@ -83,13 +84,13 @@ def test_pin_is_inaccessible_to_users_without_a_placed_board():
 		filed = store.create(
 			Pin,
 			title="Sartre",
-			url="https://plato.stanford.edu/entries/sartre/",
+			url=URL.parse("https://plato.stanford.edu/entries/sartre/"),
 			creator_id=creator.id,
 		)
 		unfiled = store.create(
 			Pin,
 			title="Beauvoir",
-			url="https://plato.stanford.edu/entries/beauvoir/",
+			url=URL.parse("https://plato.stanford.edu/entries/beauvoir/"),
 			creator_id=creator.id,
 		)
 		Placement.create(store, filed, board, creator)
@@ -107,7 +108,7 @@ def test_unfiled_pin_is_accessible_to_its_creator():
 		pin = store.create(
 			Pin,
 			title="Sartre",
-			url="https://plato.stanford.edu/entries/sartre/",
+			url=URL.parse("https://plato.stanford.edu/entries/sartre/"),
 			creator_id=creator.id,
 		)
 
@@ -154,7 +155,7 @@ def test_find_placement_returns_placements_on_owned_and_shared_boards():
 		pin = store.create(
 			Pin,
 			title="Sartre",
-			url="https://plato.stanford.edu/entries/sartre/",
+			url=URL.parse("https://plato.stanford.edu/entries/sartre/"),
 			creator_id=other_creator.id,
 		)
 		on_owned = Placement.create(store, pin, owned, viewer)
@@ -178,7 +179,7 @@ def test_find_placement_hides_placements_on_unseen_boards():
 		pin = store.create(
 			Pin,
 			title="Sartre",
-			url="https://plato.stanford.edu/entries/sartre/",
+			url=URL.parse("https://plato.stanford.edu/entries/sartre/"),
 			creator_id=board_creator.id,
 		)
 		placement = Placement.create(store, pin, board, former_adder)
@@ -199,7 +200,7 @@ def test_find_archival_returns_the_users_own_archival():
 		pin = store.create(
 			Pin,
 			title="Sartre",
-			url="https://plato.stanford.edu/entries/sartre/",
+			url=URL.parse("https://plato.stanford.edu/entries/sartre/"),
 			creator_id=owner.id,
 		)
 		placement = Placement.create(store, pin, board, owner)
@@ -219,7 +220,7 @@ def test_find_archival_hides_another_users_archival():
 		pin = store.create(
 			Pin,
 			title="Sartre",
-			url="https://plato.stanford.edu/entries/sartre/",
+			url=URL.parse("https://plato.stanford.edu/entries/sartre/"),
 			creator_id=owner.id,
 		)
 		placement = Placement.create(store, pin, board, owner)
@@ -238,7 +239,7 @@ def test_find_archival_hides_own_archival_on_a_board_no_longer_shared():
 		pin = store.create(
 			Pin,
 			title="Sartre",
-			url="https://plato.stanford.edu/entries/sartre/",
+			url=URL.parse("https://plato.stanford.edu/entries/sartre/"),
 			creator_id=owner.id,
 		)
 		placement = Placement.create(store, pin, board, owner)

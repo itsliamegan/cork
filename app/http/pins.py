@@ -1,4 +1,3 @@
-from urllib.parse import urlsplit
 from uuid import UUID
 
 from helios import http
@@ -15,32 +14,24 @@ from app import Access, Board, Ownership, Pin, Placement, User
 from app.access import NotPermitted
 
 
-class WebURL(Rule[str]):
+class WebURL(Rule[URL]):
 	name = "web_url"
 	schemes = {"http", "https"}
 
-	def check(self, value: str):
-		try:
-			parts = urlsplit(value)
-			hostname = parts.hostname
-			_port = parts.port
-		except ValueError:
-			raise RuleError("must be an http:// or https:// URL")
-
-		if (
-			len(value.split()) != 1
-			or hostname is None
-			or parts.scheme not in self.schemes
-		):
+	def check(self, value: URL):
+		if value.scheme not in self.schemes:
 			raise RuleError("must be an http:// or https:// URL")
 
 
 class PinForm(Form):
 	rules = Rules({"url": [WebURL()], "board_ids": [Distinct()]})
-	messages = {"url.web_url": "URL must be an http:// or https:// address."}
+	messages = {
+		"url.invalid": "URL must be an http:// or https:// address.",
+		"url.web_url": "URL must be an http:// or https:// address.",
+	}
 
 	title: str
-	url: str | None = None
+	url: URL | None = None
 	note: str = ""
 	board_ids: list[UUID] = []
 	return_to: str | None = None

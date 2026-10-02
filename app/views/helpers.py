@@ -2,12 +2,11 @@ from helios.http import URL
 from helios.view import Helpers
 
 
-def site(url: str) -> str:
-	try:
-		host = URL(url).host
-	except ValueError:
-		return url
-	return host.removeprefix("www.") if host else url
+def site(url: URL) -> str:
+	if url.host is None:
+		return str(url)
+	else:
+		return url.host.removeprefix("www.")
 
 
 helpers = Helpers(filters={"site": site})

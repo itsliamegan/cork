@@ -1,3 +1,4 @@
+from helios.http import URL
 from luna.test.assertion import assert_eq, assert_not, assert_that
 
 from app import Board, Ownership, Pin, Placement, Share, User
@@ -25,19 +26,19 @@ def test_find_pins_returns_only_created_pins():
 		older = store.create(
 			Pin,
 			title="Sartre",
-			url="https://plato.stanford.edu/entries/sartre/",
+			url=URL.parse("https://plato.stanford.edu/entries/sartre/"),
 			creator_id=viewer.id,
 		)
 		newer = store.create(
 			Pin,
 			title="Beauvoir",
-			url="https://plato.stanford.edu/entries/beauvoir/",
+			url=URL.parse("https://plato.stanford.edu/entries/beauvoir/"),
 			creator_id=viewer.id,
 		)
 		placed = store.create(
 			Pin,
 			title="Camus",
-			url="https://plato.stanford.edu/entries/camus/",
+			url=URL.parse("https://plato.stanford.edu/entries/camus/"),
 			creator_id=other_creator.id,
 		)
 		Placement.create(store, placed, board, other_creator)
@@ -56,7 +57,7 @@ def test_only_the_adder_added_a_placement():
 		pin = store.create(
 			Pin,
 			title="Sartre",
-			url="https://plato.stanford.edu/entries/sartre/",
+			url=URL.parse("https://plato.stanford.edu/entries/sartre/"),
 			creator_id=pin_creator.id,
 		)
 		placement = Placement.create(store, pin, board, adder)

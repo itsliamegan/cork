@@ -2,6 +2,7 @@ from typing import TYPE_CHECKING
 from uuid import UUID
 
 from helios.database import Model, Store, belongs_to, has_many
+from helios.http import URL
 
 from app.placement import Placement
 from app.user import User
@@ -14,7 +15,7 @@ if TYPE_CHECKING:
 class Pin(Model):
 	table = "pins"
 
-	url: str | None = None
+	url: URL | None = None
 	title: str
 	note: str = ""
 	creator_id: UUID
@@ -27,7 +28,7 @@ class Pin(Model):
 		store: Store,
 		access: Access,
 		title: str,
-		url: str | None,
+		url: URL | None,
 		note: str,
 		boards: list[Board],
 	) -> Pin:
@@ -46,7 +47,7 @@ class Pin(Model):
 		store: Store,
 		access: Access,
 		title: str,
-		url: str | None,
+		url: URL | None,
 		note: str,
 		boards: list[Board],
 	):

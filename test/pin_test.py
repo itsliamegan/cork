@@ -1,3 +1,4 @@
+from helios.http import URL
 from luna.test.assertion import assert_eq, assert_raises, assert_that
 
 from app import Access, Board, Pin, Placement, Share, User
@@ -13,7 +14,7 @@ def test_deleting_pin_removes_its_placements():
 		pin = store.create(
 			Pin,
 			title="Sartre",
-			url="https://plato.stanford.edu/entries/sartre/",
+			url=URL.parse("https://plato.stanford.edu/entries/sartre/"),
 			creator_id=creator.id,
 		)
 		for board in [reading, essays]:
@@ -36,7 +37,7 @@ def test_find_accessible_placements_skips_inaccessible_boards():
 		pin = store.create(
 			Pin,
 			title="Sartre",
-			url="https://plato.stanford.edu/entries/sartre/",
+			url=URL.parse("https://plato.stanford.edu/entries/sartre/"),
 			creator_id=viewer.id,
 		)
 		for board in [owned, shared, hidden]:
@@ -58,7 +59,7 @@ def test_only_the_creator_may_edit_or_delete_a_pin():
 		pin = store.create(
 			Pin,
 			title="Sartre",
-			url="https://plato.stanford.edu/entries/sartre/",
+			url=URL.parse("https://plato.stanford.edu/entries/sartre/"),
 			creator_id=creator.id,
 		)
 		Placement.create(store, pin, board, creator)
@@ -77,7 +78,7 @@ def test_creator_edits_a_pin_and_its_placements():
 		pin = store.create(
 			Pin,
 			title="Sartre",
-			url="https://plato.stanford.edu/entries/sartre/",
+			url=URL.parse("https://plato.stanford.edu/entries/sartre/"),
 			creator_id=creator.id,
 		)
 		Placement.create(store, pin, reading, creator)
@@ -86,7 +87,7 @@ def test_creator_edits_a_pin_and_its_placements():
 			store,
 			Access(store, creator),
 			title="Beauvoir",
-			url="https://plato.stanford.edu/entries/beauvoir/",
+			url=URL.parse("https://plato.stanford.edu/entries/beauvoir/"),
 			note="Read next",
 			boards=[essays],
 		)
@@ -94,7 +95,7 @@ def test_creator_edits_a_pin_and_its_placements():
 		store.load(edited, "placements")
 
 		assert_eq(edited.title, "Beauvoir")
-		assert_eq(edited.url, "https://plato.stanford.edu/entries/beauvoir/")
+		assert_eq(str(edited.url), "https://plato.stanford.edu/entries/beauvoir/")
 		assert_eq(edited.note, "Read next")
 		assert_eq(
 			[placement.board_id for placement in edited.placements],
@@ -111,7 +112,7 @@ def test_participant_may_not_edit_a_pin():
 		pin = store.create(
 			Pin,
 			title="Sartre",
-			url="https://plato.stanford.edu/entries/sartre/",
+			url=URL.parse("https://plato.stanford.edu/entries/sartre/"),
 			creator_id=creator.id,
 		)
 		Placement.create(store, pin, board, creator)
@@ -121,7 +122,7 @@ def test_participant_may_not_edit_a_pin():
 				store,
 				Access(store, participant),
 				title="Beauvoir",
-				url="https://plato.stanford.edu/entries/beauvoir/",
+				url=URL.parse("https://plato.stanford.edu/entries/beauvoir/"),
 				note="Read next",
 				boards=[],
 			)
@@ -129,7 +130,7 @@ def test_participant_may_not_edit_a_pin():
 		store.load(stored, "placements")
 
 		assert_eq(stored.title, "Sartre")
-		assert_eq(stored.url, "https://plato.stanford.edu/entries/sartre/")
+		assert_eq(str(stored.url), "https://plato.stanford.edu/entries/sartre/")
 		assert_eq(stored.note, "")
 		assert_eq(
 			[placement.board_id for placement in stored.placements],
@@ -146,7 +147,7 @@ def test_participant_may_not_delete_a_pin():
 		pin = store.create(
 			Pin,
 			title="Sartre",
-			url="https://plato.stanford.edu/entries/sartre/",
+			url=URL.parse("https://plato.stanford.edu/entries/sartre/"),
 			creator_id=creator.id,
 		)
 		Placement.create(store, pin, board, creator)
@@ -167,7 +168,7 @@ def test_create_places_a_new_pin_on_each_chosen_board():
 			store,
 			Access(store, creator),
 			title="Sartre",
-			url="https://plato.stanford.edu/entries/sartre/",
+			url=URL.parse("https://plato.stanford.edu/entries/sartre/"),
 			note="",
 			boards=[reading, essays],
 		)

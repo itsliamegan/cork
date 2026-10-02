@@ -1,3 +1,4 @@
+from helios.http import URL
 from luna.test.assertion import assert_eq
 
 from app import Archival, Board, Pin, Placement, Share, User
@@ -13,13 +14,13 @@ def test_participant_moves_a_placement():
 		first_pin = app.store.create(
 			Pin,
 			title="First pin",
-			url="https://first.example",
+			url=URL.parse("https://first.example"),
 			creator_id=owner.id,
 		)
 		second_pin = app.store.create(
 			Pin,
 			title="Second pin",
-			url="https://second.example",
+			url=URL.parse("https://second.example"),
 			creator_id=owner.id,
 		)
 		first = Placement.create(app.store, first_pin, board, owner)
@@ -45,13 +46,13 @@ def test_rejects_malformed_moves():
 		first_pin = app.store.create(
 			Pin,
 			title="First pin",
-			url="https://first.example",
+			url=URL.parse("https://first.example"),
 			creator_id=owner.id,
 		)
 		second_pin = app.store.create(
 			Pin,
 			title="Second pin",
-			url="https://second.example",
+			url=URL.parse("https://second.example"),
 			creator_id=owner.id,
 		)
 		first = Placement.create(app.store, first_pin, board, owner)
@@ -83,13 +84,13 @@ def test_move_next_to_a_deleted_placement_conflicts():
 		first_pin = app.store.create(
 			Pin,
 			title="First pin",
-			url="https://first.example",
+			url=URL.parse("https://first.example"),
 			creator_id=owner.id,
 		)
 		second_pin = app.store.create(
 			Pin,
 			title="Second pin",
-			url="https://second.example",
+			url=URL.parse("https://second.example"),
 			creator_id=owner.id,
 		)
 		first = Placement.create(app.store, first_pin, board, owner)
@@ -114,13 +115,13 @@ def test_moving_a_deleted_placement_is_not_found():
 		first_pin = app.store.create(
 			Pin,
 			title="First pin",
-			url="https://first.example",
+			url=URL.parse("https://first.example"),
 			creator_id=owner.id,
 		)
 		second_pin = app.store.create(
 			Pin,
 			title="Second pin",
-			url="https://second.example",
+			url=URL.parse("https://second.example"),
 			creator_id=owner.id,
 		)
 		first = Placement.create(app.store, first_pin, board, owner)
@@ -146,13 +147,13 @@ def test_outsider_cannot_move_placements():
 		first_pin = app.store.create(
 			Pin,
 			title="First pin",
-			url="https://first.example",
+			url=URL.parse("https://first.example"),
 			creator_id=owner.id,
 		)
 		second_pin = app.store.create(
 			Pin,
 			title="Second pin",
-			url="https://second.example",
+			url=URL.parse("https://second.example"),
 			creator_id=owner.id,
 		)
 		first = Placement.create(app.store, first_pin, board, owner)
@@ -181,13 +182,13 @@ def test_moving_an_archived_placement_conflicts():
 		first_pin = app.store.create(
 			Pin,
 			title="First pin",
-			url="https://first.example",
+			url=URL.parse("https://first.example"),
 			creator_id=owner.id,
 		)
 		second_pin = app.store.create(
 			Pin,
 			title="Second pin",
-			url="https://second.example",
+			url=URL.parse("https://second.example"),
 			creator_id=owner.id,
 		)
 		first = Placement.create(app.store, first_pin, board, owner)
