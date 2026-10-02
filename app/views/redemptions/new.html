@@ -15,14 +15,14 @@
 		<h3 class="frame-title">Account</h3>
 	</header>
 	<div class="frame-item">
-		<strong>{{ target.name }}</strong>
+		<strong>{{ invite.target.name }}</strong>
 	</div>
 	<footer class="frame-item form-actions">
 		<button class="button button--action" type="submit">Sign in</button>
 	</footer>
 	{% else %}
 	<header class="frame-header">
-		<h3 class="frame-title">Invited by {{ creator.name }}</h3>
+		<h3 class="frame-title">Invited by {{ invite.creator.name }}</h3>
 	</header>
 	<section class="form-items">
 		<label class="frame-item form-item">

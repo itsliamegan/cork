@@ -8,7 +8,7 @@ from helios.form import Form
 from helios.http import Request, Response, Status
 from helios.routing import URLs
 
-from app import Access, Archival, Pin, Placement, User
+from app import Access, Archival, User
 
 
 class ArchivalForm(Form):
@@ -26,12 +26,11 @@ def create(req: Request, ctx: Context) -> Response:
 		return Response.text("400 Bad Request", status=Status.BAD_REQUEST)
 	access = Access(store, auth.user)
 	placement = access.find_placement(form.placement_id)
-	board = access.find_board(placement.board_id)
-	pin = store.find_one(Pin, placement.pin_id)
+	store.load(placement, "pin")
 
 	archival = Archival.create(store, placement, auth.user)
-	flash["archived"] = {"archival_id": str(archival.id), "title": pin.title}
-	return Response.redirect(urls.route("boards.show", {"id": board.id}))
+	flash["archived"] = {"archival_id": str(archival.id), "title": placement.pin.title}
+	return Response.redirect(urls.route("boards.show", {"id": placement.board_id}))
 
 
 def delete(req: Request, ctx: Context, id: UUID) -> Response:
@@ -41,8 +40,8 @@ def delete(req: Request, ctx: Context, id: UUID) -> Response:
 
 	access = Access(store, auth.user)
 	archival = access.find_archival(id)
-	placement = store.find_one(Placement, archival.placement_id)
-	board = access.find_board(placement.board_id)
+	store.load(archival, "placement")
+	placement = archival.placement
 	store.delete(archival)
 
-	return Response.redirect(urls.route("boards.show", {"id": board.id}))
+	return Response.redirect(urls.route("boards.show", {"id": placement.board_id}))

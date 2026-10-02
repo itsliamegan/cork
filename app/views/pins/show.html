@@ -25,7 +25,7 @@
 		<span class="pin-detail-empty">No URL.</span>
 		{% endif %}
 		<p class="pin-detail-meta">
-			<span>Saved by {{ creator.name }}</span>
+			<span>Saved by {{ pin.creator.name }}</span>
 			<time datetime="{{ pin.created_at }}">{{ pin.created_at | date }}</time>
 		</p>
 	</section>
@@ -42,7 +42,7 @@
 	<header class="frame-header">
 		<h3 class="frame-title">Boards</h3>
 	</header>
-	{{ BoardChips(boards=accessible_boards, is_unfiled=is_unfiled, class="frame-item") }}
+	{{ BoardChips(boards=accessible_boards, is_unfiled=pin.is_unfiled(), class="frame-item") }}
 </section>
 
 <turbo-frame id="pin-{{ pin.id }}-details" hidden>
@@ -50,7 +50,6 @@
 		pin=pin,
 		boards=accessible_boards,
 		adder=adder,
-		is_unfiled=is_unfiled,
 		preferences=auth.user.preferences,
 	) }}
 </turbo-frame>

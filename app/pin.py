@@ -1,9 +1,10 @@
 from typing import TYPE_CHECKING
 from uuid import UUID
 
-from helios.database import Model, Store
+from helios.database import Model, Store, belongs_to, has_many
 
 from app.placement import Placement
+from app.user import User
 
 if TYPE_CHECKING:
 	from app.access import Access
@@ -17,6 +18,8 @@ class Pin(Model):
 	title: str
 	note: str = ""
 	creator_id: UUID
+	creator: User = belongs_to("creator_id")
+	placements: list[Placement] = has_many("pin_id")
 
 	@classmethod
 	def create(
@@ -69,17 +72,17 @@ class Pin(Model):
 	def is_deletable_by(self, access: Access) -> bool:
 		return access.owns(self)
 
-	def find_placements(self, store: Store) -> list[Placement]:
-		return store.find_by(Placement, pin_id=self.id)
+	def is_unfiled(self) -> bool:
+		return not self.placements
 
 	def find_accessible_placements(
 		self,
 		store: Store,
 		access: Access,
 	) -> list[Placement]:
-		board_ids = access.find_board_ids()
-		return [
-			placement
-			for placement in self.find_placements(store)
-			if placement.board_id in board_ids
-		]
+		return (
+			store.query(Placement)
+			.where({"pin_id": self.id})
+			.where_any(*access.board_conditions("board"))
+			.all()
+		)

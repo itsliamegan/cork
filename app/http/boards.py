@@ -14,9 +14,7 @@ from app import (
 	Archival,
 	Board,
 	Ordering,
-	Pin,
 	Placement,
-	Share,
 	User,
 )
 from app.access import NotPermitted
@@ -114,40 +112,23 @@ def show(req: Request, ctx: Context, id: UUID) -> Response:
 
 	access = Access(store, auth.user)
 	board = access.find_board(id)
-	placements = Placement.arrange(store, board)
 	archivals = Archival.arrange(store, board, auth.user)
-	archivals_by_placement_id = {
-		archival.placement_id: archival for archival in archivals
-	}
-	placements_by_id = {placement.id: placement for placement in placements}
-	pin_ids = [placement.pin_id for placement in placements]
-	pins_by_id = {
-		pin.id: pin for pin in store.query(Pin).where({"id in": pin_ids}).all()
-	}
-
-	placement_rows = [
-		{"placement": placement, "pin": pins_by_id[placement.pin_id]}
-		for placement in placements
-		if placement.id not in archivals_by_placement_id
+	store.load(archivals, "placement.pin", "placement.board")
+	archived_placement_ids = {archival.placement_id for archival in archivals}
+	placements = [
+		placement
+		for placement in Placement.arrange(store, board)
+		if placement.id not in archived_placement_ids
 	]
-	archived_rows = []
-	for archival in archivals:
-		placement = placements_by_id[archival.placement_id]
-		archived_rows.append(
-			{
-				"archival": archival,
-				"placement": placement,
-				"pin": pins_by_id[placement.pin_id],
-			}
-		)
+	store.load(placements, "pin", "board")
 
 	return views.render(
 		"boards.show",
 		{
 			"access": access,
 			"board": board,
-			"placement_rows": placement_rows,
-			"archived_rows": archived_rows,
+			"placements": placements,
+			"archivals": archivals,
 		},
 	)
 
@@ -162,9 +143,8 @@ def edit(req: Request, ctx: Context, id: UUID) -> Response:
 	board = access.find_board(id)
 	if not board.is_editable_by(access):
 		raise NotPermitted(board)
-	shared_user_ids = [
-		share.user_id for share in store.find_by(Share, board_id=board.id)
-	]
+	store.load(board, "shares")
+	shared_user_ids = [share.user_id for share in board.shares]
 
 	return views.render(
 		"boards.edit",

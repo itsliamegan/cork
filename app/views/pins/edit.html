@@ -47,7 +47,7 @@
 		</label>
 	</section>
 
-	{{ PinPlacements(options=placement_options, selected_board_ids=selected_board_ids) }}
+	{{ PinPlacements(boards=placeable_boards, viewer=auth.user, selected_board_ids=selected_board_ids) }}
 
 	<footer class="frame-item form-actions">
 		<a class="button" href="{{ return_to }}">Cancel</a>

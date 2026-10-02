@@ -21,7 +21,8 @@ def create(req: Request, ctx: Context, id: UUID) -> Response:
 
 	access = Access(store, auth.user)
 	placement = access.find_placement(id)
-	board = access.find_board(placement.board_id)
+	store.load(placement, "board")
+	board = placement.board
 
 	form, errors = PlacementMoveForm.validate(req.input)
 	if errors:

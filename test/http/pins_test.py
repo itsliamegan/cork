@@ -577,6 +577,7 @@ def test_update_is_refused_to_participants_and_hidden_from_strangers():
 		app.sign_in(stranger)
 		stranger_res = app.client.post(f"/pins/{pin.id}", form=form)
 		stored = app.store.find_one(Pin, pin.id)
+		app.store.load(stored, "placements")
 
 		assert_eq(participant_res.status_code, 403)
 		assert_eq(stranger_res.status_code, 404)
@@ -584,7 +585,7 @@ def test_update_is_refused_to_participants_and_hidden_from_strangers():
 		assert_eq(stored.url, "https://sartre.example")
 		assert_eq(stored.note, "")
 		assert_eq(
-			[placement.board_id for placement in stored.find_placements(app.store)],
+			[placement.board_id for placement in stored.placements],
 			[board.id],
 		)
 

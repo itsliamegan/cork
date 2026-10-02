@@ -5,49 +5,6 @@ from app.access import NotPermitted
 from test.support import TestStore
 
 
-def test_pin_without_placements_is_unfiled():
-	with TestStore() as store:
-		creator = store.create(User, name="Creator")
-		pin = store.create(
-			Pin,
-			title="Sartre",
-			url="https://plato.stanford.edu/entries/sartre/",
-			creator_id=creator.id,
-		)
-
-		placements = pin.find_placements(store)
-
-		assert_eq(placements, [])
-
-
-def test_find_placements_returns_only_this_pins_placements():
-	with TestStore() as store:
-		creator = store.create(User, name="Creator")
-		reading = store.create(Board, title="Reading", creator_id=creator.id)
-		essays = store.create(Board, title="Essays", creator_id=creator.id)
-		pin = store.create(
-			Pin,
-			title="Sartre",
-			url="https://plato.stanford.edu/entries/sartre/",
-			creator_id=creator.id,
-		)
-		other_pin = store.create(
-			Pin,
-			title="Beauvoir",
-			url="https://plato.stanford.edu/entries/beauvoir/",
-			creator_id=creator.id,
-		)
-		for board in [reading, essays]:
-			Placement.create(store, pin, board, creator)
-		Placement.create(store, other_pin, reading, creator)
-
-		placements = pin.find_placements(store)
-
-		assert_eq(
-			{placement.board_id for placement in placements}, {reading.id, essays.id}
-		)
-
-
 def test_deleting_pin_removes_its_placements():
 	with TestStore() as store:
 		creator = store.create(User, name="Creator")
@@ -134,12 +91,13 @@ def test_creator_edits_a_pin_and_its_placements():
 			boards=[essays],
 		)
 		edited = store.find_one(Pin, pin.id)
+		store.load(edited, "placements")
 
 		assert_eq(edited.title, "Beauvoir")
 		assert_eq(edited.url, "https://plato.stanford.edu/entries/beauvoir/")
 		assert_eq(edited.note, "Read next")
 		assert_eq(
-			[placement.board_id for placement in edited.find_placements(store)],
+			[placement.board_id for placement in edited.placements],
 			[essays.id],
 		)
 
@@ -168,12 +126,13 @@ def test_participant_may_not_edit_a_pin():
 				boards=[],
 			)
 		stored = store.find_one(Pin, pin.id)
+		store.load(stored, "placements")
 
 		assert_eq(stored.title, "Sartre")
 		assert_eq(stored.url, "https://plato.stanford.edu/entries/sartre/")
 		assert_eq(stored.note, "")
 		assert_eq(
-			[placement.board_id for placement in stored.find_placements(store)],
+			[placement.board_id for placement in stored.placements],
 			[board.id],
 		)
 
@@ -212,9 +171,25 @@ def test_create_places_a_new_pin_on_each_chosen_board():
 			note="",
 			boards=[reading, essays],
 		)
+		store.load(pin, "placements")
 
 		assert_eq(pin.creator_id, creator.id)
 		assert_eq(
-			{placement.board_id for placement in pin.find_placements(store)},
+			{placement.board_id for placement in pin.placements},
 			{reading.id, essays.id},
 		)
+
+
+def test_pin_without_placements_is_unfiled():
+	with TestStore() as store:
+		creator = store.create(User, name="Creator")
+		board = store.create(Board, title="Reading", creator_id=creator.id)
+		unfiled = store.create(Pin, title="Sartre", creator_id=creator.id)
+		filed = store.create(Pin, title="Beauvoir", creator_id=creator.id)
+		Placement.create(store, filed, board, creator)
+
+		store.load(unfiled, "placements")
+		store.load(filed, "placements")
+
+		assert_that(unfiled.is_unfiled())
+		assert_that(not filed.is_unfiled())

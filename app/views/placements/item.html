@@ -1,3 +1,4 @@
+{% set pin = placement.pin -%}
 <li
 	class="frame-item frame-item--reorderable pin-row"
 	data-controller="pin-details"
@@ -41,7 +42,7 @@
 					{{ Icon(name="archive") }}
 				</button>
 			</form>
-			{{ PlacementMenu(pin=pin, placement=placement, board=board, access=access) }}
+			{{ PlacementMenu(placement=placement, access=access) }}
 		</section>
 	</article>
 	<turbo-frame id="pin-{{ pin.id }}-details" data-pin-details-target="frame"></turbo-frame>

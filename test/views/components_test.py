@@ -3,14 +3,14 @@ from uuid import uuid4
 from helios.view import Attributes, Engine
 from luna.test.assertion import assert_not, assert_raises, assert_that
 
-from app import Access, Archival, Board, Pin, Placement, Preferences, User
+from app import Access, Archival, Board, Pin, Placement, Preferences, Share, User
 from app.views.archivals.item import ArchivalItem
 from app.views.boards.chips import BoardChips
 from app.views.boards.item import BoardItem
 from app.views.components.confirm_button import ConfirmButton
 from app.views.components.external_link import ExternalLink
 from app.views.pins.link import PinLink
-from app.views.pins.placements import PinPlacements, PlacementOption
+from app.views.pins.placements import PinPlacements
 from app.views.placements.item import PlacementItem
 from app.views.placements.menu import PlacementMenu
 from test.support import TestApplication
@@ -106,20 +106,18 @@ def test_confirm_button_opens_the_dialog_it_renders():
 def test_pin_placements_label_private_and_shared_boards():
 	with TestApplication() as app:
 		engine = app.container.get(Engine)
-		viewer_id = uuid4()
-		capitalized_participant = User(name="Carmen")
-		lowercase_participant = User(name="bob")
+		viewer = app.store.create(User, name="Viewer")
+		capitalized_participant = app.store.create(User, name="Carmen")
+		lowercase_participant = app.store.create(User, name="bob")
+		notes = app.store.create(Board, title="Notes", creator_id=viewer.id)
+		reading = app.store.create(Board, title="Reading", creator_id=viewer.id)
+		for participant in [capitalized_participant, lowercase_participant]:
+			app.store.create(Share, board_id=reading.id, user_id=participant.id)
+		boards = [notes, reading]
+		app.store.load(boards, "creator", "shares.user")
 		placements = PinPlacements(
-			options=[
-				PlacementOption(
-					board=Board(title="Notes", creator_id=viewer_id),
-					others=[],
-				),
-				PlacementOption(
-					board=Board(title="Reading", creator_id=viewer_id),
-					others=[capitalized_participant, lowercase_participant],
-				),
-			],
+			boards=boards,
+			viewer=viewer,
 			selected_board_ids=set(),
 		)
 
@@ -171,25 +169,24 @@ def test_board_item_offers_its_menu_only_to_the_boards_creator():
 def test_placement_menu_offers_edit_only_to_the_pins_creator():
 	with TestApplication() as app:
 		engine = app.container.get(Engine)
-		creator = User(name="Creator")
-		reader = User(name="Reader")
-		board = Board(title="Reading", creator_id=creator.id)
-		pin = Pin(title="Sartre", url="https://sartre.example", creator_id=creator.id)
-		placement = Placement(pin_id=pin.id, board_id=board.id, adder_id=creator.id)
+		creator = app.store.create(User, name="Creator")
+		reader = app.store.create(User, name="Reader")
+		board = app.store.create(Board, title="Reading", creator_id=creator.id)
+		pin = app.store.create(
+			Pin, title="Sartre", url="https://sartre.example", creator_id=creator.id
+		)
+		placement = Placement.create(app.store, pin, board, creator)
+		app.store.load(placement, "pin", "board")
 
 		creator_html = engine.render(
 			PlacementMenu(
-				pin=pin,
 				placement=placement,
-				board=board,
 				access=Access(app.store, creator),
 			)
 		)
 		reader_html = engine.render(
 			PlacementMenu(
-				pin=pin,
 				placement=placement,
-				board=board,
 				access=Access(app.store, reader),
 			)
 		)
@@ -203,26 +200,25 @@ def test_placement_menu_offers_edit_only_to_the_pins_creator():
 def test_placement_menu_offers_remove_only_when_allowed():
 	with TestApplication() as app:
 		engine = app.container.get(Engine)
-		creator = User(name="Creator")
-		adder = User(name="Adder")
-		reader = User(name="Reader")
-		board = Board(title="Reading", creator_id=creator.id)
-		pin = Pin(title="Sartre", url="https://sartre.example", creator_id=creator.id)
-		placement = Placement(pin_id=pin.id, board_id=board.id, adder_id=adder.id)
+		creator = app.store.create(User, name="Creator")
+		adder = app.store.create(User, name="Adder")
+		reader = app.store.create(User, name="Reader")
+		board = app.store.create(Board, title="Reading", creator_id=creator.id)
+		pin = app.store.create(
+			Pin, title="Sartre", url="https://sartre.example", creator_id=creator.id
+		)
+		placement = Placement.create(app.store, pin, board, adder)
+		app.store.load(placement, "pin", "board")
 
 		removable_html = engine.render(
 			PlacementMenu(
-				pin=pin,
 				placement=placement,
-				board=board,
 				access=Access(app.store, adder),
 			)
 		)
 		fixed_html = engine.render(
 			PlacementMenu(
-				pin=pin,
 				placement=placement,
-				board=board,
 				access=Access(app.store, reader),
 			)
 		)
@@ -240,10 +236,9 @@ def test_placement_item_archives_its_placement():
 			Pin, title="Sartre", url="https://sartre.example", creator_id=reader.id
 		)
 		placement = Placement.create(app.store, pin, board, reader)
+		app.store.load(placement, "pin", "board")
 		item = PlacementItem(
-			pin=pin,
 			placement=placement,
-			board=board,
 			access=Access(app.store, reader),
 			preferences=Preferences(),
 		)
@@ -264,11 +259,9 @@ def test_archival_item_unarchives_its_archival():
 		)
 		placement = Placement.create(app.store, pin, board, reader)
 		archival = Archival.create(app.store, placement, reader)
+		app.store.load(archival, "placement.pin", "placement.board")
 		item = ArchivalItem(
 			archival=archival,
-			placement=placement,
-			pin=pin,
-			board=board,
 			access=Access(app.store, reader),
 			preferences=Preferences(),
 		)
@@ -288,10 +281,9 @@ def test_placement_item_opens_its_pin_in_a_new_tab_when_set():
 			Pin, title="Sartre", url="https://sartre.example", creator_id=reader.id
 		)
 		placement = Placement.create(app.store, pin, board, reader)
+		app.store.load(placement, "pin", "board")
 		item = PlacementItem(
-			pin=pin,
 			placement=placement,
-			board=board,
 			access=Access(app.store, reader),
 			preferences=Preferences(open_in_new_tab=True),
 		)

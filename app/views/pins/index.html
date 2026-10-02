@@ -27,8 +27,7 @@
 		>
 	</div>
 	<ol class="frame-items">
-		{% for row in pin_rows %}
-		{% set pin = row.pin %}
+		{% for pin in pins %}
 		<li
 			class="frame-item pin-row"
 			data-filter-target="item"
@@ -43,7 +42,8 @@
 						{% endif %}
 						<time class="pin-date" datetime="{{ pin.created_at }}">{{ pin.created_at | date }}</time>
 						<span class="pin-board-count">
-							{% if row.board_count %}{{ row.board_count }} board{% if row.board_count != 1 %}s{% endif %}{% else %}No boards{% endif %}
+							{% set board_count = pin.placements | length %}
+							{% if board_count %}{{ board_count }} board{% if board_count != 1 %}s{% endif %}{% else %}No boards{% endif %}
 						</span>
 					</section>
 				</section>

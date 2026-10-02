@@ -73,20 +73,13 @@ def new(req: Request, ctx: Context) -> Response:
 	else:
 		invite = None
 
-	creator = None
-	target = None
 	if invite is not None:
-		if invite.target_id is None:
-			creator = store.find_one(User, invite.creator_id)
-		else:
-			target = invite.find_target(store)
+		store.load(invite, "creator", "target")
 
 	return views.render(
 		"redemptions.new",
 		{
 			"token": token,
 			"invite": invite,
-			"creator": creator,
-			"target": target,
 		},
 	)

@@ -6,7 +6,7 @@ from helios.database import Store
 from helios.http import Request, Response
 from helios.routing import URLs
 
-from app import Access, Pin, User
+from app import Access, User
 
 
 def delete(req: Request, ctx: Context, id: UUID) -> Response:
@@ -16,8 +16,7 @@ def delete(req: Request, ctx: Context, id: UUID) -> Response:
 
 	access = Access(store, auth.user)
 	placement = access.find_placement(id)
-	pin = store.find_one(Pin, placement.pin_id)
-	board = access.find_board(placement.board_id)
-	placement.remove(store, access, pin, board)
+	store.load(placement, "pin", "board")
+	placement.remove(store, access)
 
-	return Response.redirect(urls.route("boards.show", {"id": board.id}))
+	return Response.redirect(urls.route("boards.show", {"id": placement.board_id}))

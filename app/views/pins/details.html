@@ -23,6 +23,6 @@
 	{% endif %}
 	<div class="pin-detail-row">
 		<span class="pin-detail-label">Boards</span>
-		{{ BoardChips(boards=boards, is_unfiled=is_unfiled, class="pin-detail-value") }}
+		{{ BoardChips(boards=boards, is_unfiled=pin.is_unfiled(), class="pin-detail-value") }}
 	</div>
 </section>

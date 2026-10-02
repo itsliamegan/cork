@@ -1,9 +1,10 @@
+{% set pin = placement.pin -%}
 {% render ActionMenu(name="placement-" ~ placement.id) %}
 <li><a class="menu-item" href="{{ urls.route("pins.show", {"id": pin.id}) }}">View</a></li>
 {% if pin.is_editable_by(access) %}
 <li><a class="menu-item" href="{{ urls.route("pins.edit", {"id": pin.id}) }}">Edit</a></li>
 {% endif %}
-{% if placement.is_removable_by(access, pin, board) %}
+{% if placement.is_removable_by(access) %}
 <li>
 	{% render ConfirmButton(
 		name="placement-" ~ placement.id ~ "-remove",

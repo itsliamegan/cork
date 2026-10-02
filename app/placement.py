@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING
 from uuid import UUID
 
-from helios.database import Model, Store
+from helios.database import Model, Store, belongs_to
 
 from app.move import Move
 from app.user import User
@@ -16,8 +16,11 @@ class Placement(Model):
 	table = "placements"
 
 	pin_id: UUID
+	pin: Pin = belongs_to("pin_id")
 	board_id: UUID
+	board: Board = belongs_to("board_id")
 	adder_id: UUID
+	adder: User = belongs_to("adder_id")
 	position: int = 0
 
 	@classmethod
@@ -53,9 +56,8 @@ class Placement(Model):
 		for placement in pin.find_accessible_placements(store, access):
 			if placement.board_id not in chosen_board_ids:
 				store.delete(placement)
-		placed_board_ids = {
-			placement.board_id for placement in pin.find_placements(store)
-		}
+		store.load(pin, "placements")
+		placed_board_ids = {placement.board_id for placement in pin.placements}
 		for board in boards:
 			if board.id not in placed_board_ids:
 				cls.create(store, pin, board, access.user)
@@ -89,21 +91,20 @@ class Placement(Model):
 			placement = placements_by_id[id]
 			store.update(placement, position=position)
 
-	def remove(self, store: Store, access: Access, pin: Pin, board: Board):
+	def remove(self, store: Store, access: Access):
 		from app.access import NotPermitted
 
-		if not self.is_removable_by(access, pin, board):
+		if not self.is_removable_by(access):
 			raise NotPermitted(self)
 
 		store.delete(self)
 
-	def is_removable_by(self, access: Access, pin: Pin, board: Board) -> bool:
-		return access.owns(pin) or access.owns(board) or access.added(self)
+	def is_removable_by(self, access: Access) -> bool:
+		return access.owns(self.pin) or access.owns(self.board) or access.added(self)
 
 	@classmethod
 	def find_adder(
 		cls,
-		store: Store,
 		placements: list[Placement],
 		board_id: UUID | None = None,
 	) -> User | None:
@@ -113,4 +114,4 @@ class Placement(Model):
 			(placement for placement in placements if placement.board_id == board_id),
 			min(placements, key=lambda placement: str(placement.id)),
 		)
-		return store.find_one(User, placement.adder_id)
+		return placement.adder

@@ -9,5 +9,4 @@ class PinDetails(Component):
 	pin: Pin
 	boards: list[Board]
 	adder: User | None
-	is_unfiled: bool
 	preferences: Preferences

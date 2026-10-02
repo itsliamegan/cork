@@ -10,9 +10,8 @@ from helios.http import Request, Response, Status, URL
 from helios.routing import URLs
 from helios.view import Views
 
-from app import Access, Board, Ownership, Pin, Placement, Share, User
+from app import Access, Board, Ownership, Pin, Placement, User
 from app.access import NotPermitted
-from app.views.pins.placements import PlacementOption
 
 
 class PinForm(Form):
@@ -58,33 +57,13 @@ def _pin_return_url(
 	return urls.route("boards.show", {"id": board_id})
 
 
-def build_placement_options(ctx: Context) -> list[PlacementOption]:
+def find_placeable_boards(ctx: Context) -> list[Board]:
 	store = ctx.get(Store)
 	auth = ctx.get(Authenticator[User])
 
-	access = Access(store, auth.user)
-	boards = access.find_boards()
-	board_ids = {board.id for board in boards}
-	shares_by_board_id: dict[UUID, list[Share]] = {board.id: [] for board in boards}
-	for share in store.query(Share).where({"board_id in": board_ids}).all():
-		shares_by_board_id[share.board_id].append(share)
-
-	viewer_ids = {board.creator_id for board in boards}
-	viewer_ids.update(
-		share.user_id for shares in shares_by_board_id.values() for share in shares
-	)
-	users_by_id = {
-		viewer.id: viewer
-		for viewer in store.query(User).where({"id in": viewer_ids}).all()
-	}
-	placement_options = []
-	for board in boards:
-		visible_user_ids = {share.user_id for share in shares_by_board_id[board.id]}
-		visible_user_ids.add(board.creator_id)
-		visible_user_ids.discard(auth.user.id)
-		others = [users_by_id[user_id] for user_id in visible_user_ids]
-		placement_options.append(PlacementOption(board=board, others=others))
-	return placement_options
+	boards = Access(store, auth.user).find_boards()
+	store.load(boards, "creator", "shares.user")
+	return boards
 
 
 def index(req: Request, ctx: Context) -> Response:
@@ -94,19 +73,12 @@ def index(req: Request, ctx: Context) -> Response:
 
 	pins = Ownership(store, auth.user).find_pins()
 	pins.sort(key=lambda pin: pin.created_at, reverse=True)
-	board_counts = (
-		store.query(Placement)
-		.where({"pin_id in": [pin.id for pin in pins]})
-		.count_by("pin_id")
-	)
-	pin_rows = [
-		{"pin": pin, "board_count": board_counts.get(pin.id, 0)} for pin in pins
-	]
+	store.load(pins, "placements")
 
 	return views.render(
 		"pins.index",
 		{
-			"pin_rows": pin_rows,
+			"pins": pins,
 		},
 	)
 
@@ -182,7 +154,7 @@ def new(req: Request, ctx: Context) -> Response:
 		"pins.new",
 		{
 			"originating_board": board,
-			"placement_options": build_placement_options(ctx),
+			"placeable_boards": find_placeable_boards(ctx),
 			"selected_board_ids": set(
 				submission.value("board_ids", selected_board_ids)
 			),
@@ -198,14 +170,10 @@ def show(req: Request, ctx: Context, id: UUID) -> Response:
 
 	access = Access(store, auth.user)
 	pin = access.find_pin(id)
+	store.load(pin, "creator", "placements")
 	placements = pin.find_accessible_placements(store, access)
-	boards = (
-		store.query(Board)
-		.where({"id in": [placement.board_id for placement in placements]})
-		.all()
-	)
+	store.load(placements, "board", "adder")
 	adder = Placement.find_adder(
-		store,
 		placements,
 		_referring_board_id(ctx, req.referrer, placements),
 	)
@@ -214,10 +182,8 @@ def show(req: Request, ctx: Context, id: UUID) -> Response:
 		{
 			"access": access,
 			"pin": pin,
-			"accessible_boards": boards,
-			"creator": store.find_one(User, pin.creator_id),
+			"accessible_boards": [placement.board for placement in placements],
 			"adder": adder,
-			"is_unfiled": not pin.find_placements(store),
 		},
 	)
 
@@ -239,7 +205,7 @@ def edit(req: Request, ctx: Context, id: UUID) -> Response:
 		"pins.edit",
 		{
 			"pin": pin,
-			"placement_options": build_placement_options(ctx),
+			"placeable_boards": find_placeable_boards(ctx),
 			"selected_board_ids": set(
 				submission.value("board_ids", selected_board_ids)
 			),
