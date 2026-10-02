@@ -1,6 +1,7 @@
 import json
 from uuid import uuid4
 
+from helios.http import URL
 from luna.test.assertion import assert_eq
 
 from app import Archival, Board, Pin, Placement, Share, User
@@ -14,7 +15,10 @@ def test_archive_redirects_to_the_board_with_a_flash():
 		board = app.store.create(Board, title="Reading", creator_id=owner.id)
 		Share.replace(app.store, board, [recipient])
 		pin = app.store.create(
-			Pin, title="Sartre", url="https://sartre.example", creator_id=owner.id
+			Pin,
+			title="Sartre",
+			url=URL.parse("https://sartre.example"),
+			creator_id=owner.id,
 		)
 		placement = Placement.create(app.store, pin, board, owner)
 		app.sign_in(recipient)
@@ -41,7 +45,10 @@ def test_archiving_an_archived_pin_keeps_it_archived():
 		owner = app.store.create(User, name="Owner")
 		board = app.store.create(Board, title="Reading", creator_id=owner.id)
 		pin = app.store.create(
-			Pin, title="Sartre", url="https://sartre.example", creator_id=owner.id
+			Pin,
+			title="Sartre",
+			url=URL.parse("https://sartre.example"),
+			creator_id=owner.id,
 		)
 		placement = Placement.create(app.store, pin, board, owner)
 		archival = Archival.create(app.store, placement, owner)
@@ -73,7 +80,10 @@ def test_outsider_cannot_archive():
 		outsider = app.store.create(User, name="Outsider")
 		board = app.store.create(Board, title="Reading", creator_id=owner.id)
 		pin = app.store.create(
-			Pin, title="Sartre", url="https://sartre.example", creator_id=owner.id
+			Pin,
+			title="Sartre",
+			url=URL.parse("https://sartre.example"),
+			creator_id=owner.id,
 		)
 		placement = Placement.create(app.store, pin, board, owner)
 		app.sign_in(outsider)
@@ -89,7 +99,10 @@ def test_unarchive_redirects_to_the_board():
 		owner = app.store.create(User, name="Owner")
 		board = app.store.create(Board, title="Reading", creator_id=owner.id)
 		pin = app.store.create(
-			Pin, title="Sartre", url="https://sartre.example", creator_id=owner.id
+			Pin,
+			title="Sartre",
+			url=URL.parse("https://sartre.example"),
+			creator_id=owner.id,
 		)
 		placement = Placement.create(app.store, pin, board, owner)
 		archival = Archival.create(app.store, placement, owner)
@@ -107,7 +120,10 @@ def test_unarchiving_twice_is_not_found():
 		owner = app.store.create(User, name="Owner")
 		board = app.store.create(Board, title="Reading", creator_id=owner.id)
 		pin = app.store.create(
-			Pin, title="Sartre", url="https://sartre.example", creator_id=owner.id
+			Pin,
+			title="Sartre",
+			url=URL.parse("https://sartre.example"),
+			creator_id=owner.id,
 		)
 		placement = Placement.create(app.store, pin, board, owner)
 		archival = Archival.create(app.store, placement, owner)
@@ -129,7 +145,10 @@ def test_cannot_unarchive_another_users_archival():
 		board = app.store.create(Board, title="Reading", creator_id=owner.id)
 		Share.replace(app.store, board, [recipient])
 		pin = app.store.create(
-			Pin, title="Sartre", url="https://sartre.example", creator_id=owner.id
+			Pin,
+			title="Sartre",
+			url=URL.parse("https://sartre.example"),
+			creator_id=owner.id,
 		)
 		placement = Placement.create(app.store, pin, board, owner)
 		archival = Archival.create(app.store, placement, recipient)
@@ -151,7 +170,10 @@ def test_cannot_unarchive_on_a_board_no_longer_shared():
 		board = app.store.create(Board, title="Reading", creator_id=owner.id)
 		Share.replace(app.store, board, [recipient])
 		pin = app.store.create(
-			Pin, title="Sartre", url="https://sartre.example", creator_id=owner.id
+			Pin,
+			title="Sartre",
+			url=URL.parse("https://sartre.example"),
+			creator_id=owner.id,
 		)
 		placement = Placement.create(app.store, pin, board, owner)
 		archival = Archival.create(app.store, placement, recipient)

@@ -1,3 +1,4 @@
+from helios.http import URL
 from luna.test.assertion import assert_eq
 
 from app import Access, Archival, Board, Pin, Placement, Share, User
@@ -9,7 +10,10 @@ def test_archiving_twice_keeps_the_first_archival():
 		reader = store.create(User, name="Reader")
 		board = store.create(Board, title="Reading", creator_id=reader.id)
 		pin = store.create(
-			Pin, title="Sartre", url="https://sartre.example", creator_id=reader.id
+			Pin,
+			title="Sartre",
+			url=URL.parse("https://sartre.example"),
+			creator_id=reader.id,
 		)
 		placement = Placement.create(store, pin, board, reader)
 		first = Archival.create(store, placement, reader)
@@ -30,7 +34,7 @@ def test_archiving_and_unarchiving_keep_every_position():
 			pin = store.create(
 				Pin,
 				title=f"Pin {index}",
-				url=f"https://example.com/{index}",
+				url=URL.parse(f"https://example.com/{index}"),
 				creator_id=reader.id,
 			)
 			placement = Placement.create(store, pin, board, reader)
@@ -55,7 +59,10 @@ def test_removing_a_pin_from_the_board_deletes_its_archival():
 		reader = store.create(User, name="Reader")
 		board = store.create(Board, title="Reading", creator_id=reader.id)
 		pin = store.create(
-			Pin, title="Sartre", url="https://sartre.example", creator_id=reader.id
+			Pin,
+			title="Sartre",
+			url=URL.parse("https://sartre.example"),
+			creator_id=reader.id,
 		)
 		placement = Placement.create(store, pin, board, reader)
 		Archival.create(store, placement, reader)
@@ -70,7 +77,10 @@ def test_deleting_the_pin_deletes_its_archival():
 		reader = store.create(User, name="Reader")
 		board = store.create(Board, title="Reading", creator_id=reader.id)
 		pin = store.create(
-			Pin, title="Sartre", url="https://sartre.example", creator_id=reader.id
+			Pin,
+			title="Sartre",
+			url=URL.parse("https://sartre.example"),
+			creator_id=reader.id,
 		)
 		placement = Placement.create(store, pin, board, reader)
 		Archival.create(store, placement, reader)
@@ -85,7 +95,10 @@ def test_deleting_the_board_deletes_its_archivals():
 		reader = store.create(User, name="Reader")
 		board = store.create(Board, title="Reading", creator_id=reader.id)
 		pin = store.create(
-			Pin, title="Sartre", url="https://sartre.example", creator_id=reader.id
+			Pin,
+			title="Sartre",
+			url=URL.parse("https://sartre.example"),
+			creator_id=reader.id,
 		)
 		placement = Placement.create(store, pin, board, reader)
 		Archival.create(store, placement, reader)
@@ -100,7 +113,10 @@ def test_a_pin_added_back_to_the_board_has_no_archival():
 		reader = store.create(User, name="Reader")
 		board = store.create(Board, title="Reading", creator_id=reader.id)
 		pin = store.create(
-			Pin, title="Sartre", url="https://sartre.example", creator_id=reader.id
+			Pin,
+			title="Sartre",
+			url=URL.parse("https://sartre.example"),
+			creator_id=reader.id,
 		)
 		placement = Placement.create(store, pin, board, reader)
 		Archival.create(store, placement, reader)
@@ -121,7 +137,10 @@ def test_unsharing_the_board_keeps_the_recipients_archival():
 		board = store.create(Board, title="Reading", creator_id=owner.id)
 		Share.replace(store, board, [recipient])
 		pin = store.create(
-			Pin, title="Sartre", url="https://sartre.example", creator_id=owner.id
+			Pin,
+			title="Sartre",
+			url=URL.parse("https://sartre.example"),
+			creator_id=owner.id,
 		)
 		placement = Placement.create(store, pin, board, owner)
 		archival = Archival.create(store, placement, recipient)
@@ -143,7 +162,7 @@ def test_arrange_lists_the_newest_archival_first():
 			pin = store.create(
 				Pin,
 				title=f"Pin {index}",
-				url=f"https://example.com/{index}",
+				url=URL.parse(f"https://example.com/{index}"),
 				creator_id=reader.id,
 			)
 			placements.append(Placement.create(store, pin, board, reader))
@@ -167,7 +186,10 @@ def test_arrange_lists_only_the_users_archivals_on_the_board():
 		other_board = store.create(Board, title="Essays", creator_id=reader.id)
 		Share.replace(store, board, [other_reader])
 		pin = store.create(
-			Pin, title="Sartre", url="https://sartre.example", creator_id=reader.id
+			Pin,
+			title="Sartre",
+			url=URL.parse("https://sartre.example"),
+			creator_id=reader.id,
 		)
 		placement = Placement.create(store, pin, board, reader)
 		elsewhere = Placement.create(store, pin, other_board, reader)

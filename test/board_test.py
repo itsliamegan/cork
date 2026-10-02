@@ -1,3 +1,4 @@
+from helios.http import URL
 from luna.test.assertion import assert_eq, assert_raises, assert_that
 
 from app import Access, Board, Ordering, Pin, Placement, Share, User
@@ -13,7 +14,7 @@ def test_deleting_board_removes_placements_shares_and_orderings():
 		pin = store.create(
 			Pin,
 			title="Sartre",
-			url="https://plato.stanford.edu/entries/sartre/",
+			url=URL.parse("https://plato.stanford.edu/entries/sartre/"),
 			creator_id=creator.id,
 		)
 		Placement.create(store, pin, board, creator)
@@ -36,7 +37,7 @@ def test_deleting_board_keeps_placements_on_other_boards():
 		pin = store.create(
 			Pin,
 			title="Sartre",
-			url="https://plato.stanford.edu/entries/sartre/",
+			url=URL.parse("https://plato.stanford.edu/entries/sartre/"),
 			creator_id=creator.id,
 		)
 		Placement.create(store, pin, reading, creator)

@@ -1,5 +1,6 @@
 from html.parser import HTMLParser
 
+from helios.http import URL
 from luna.test.assertion import assert_eq
 
 from app import Archival, Board, Pin, Placement, Recovery, Share, User
@@ -45,11 +46,14 @@ def test_every_page_reference_names_an_element_on_the_page():
 		own_pin = app.store.create(
 			Pin,
 			title="Sartre",
-			url="https://plato.stanford.edu/entries/sartre/",
+			url=URL.parse("https://plato.stanford.edu/entries/sartre/"),
 			creator_id=viewer.id,
 		)
 		other_pin = app.store.create(
-			Pin, title="Soup", url="https://example.com/soup", creator_id=participant.id
+			Pin,
+			title="Soup",
+			url=URL.parse("https://example.com/soup"),
+			creator_id=participant.id,
 		)
 		own_placement = Placement.create(app.store, own_pin, owned, viewer)
 		Placement.create(app.store, other_pin, owned, participant)

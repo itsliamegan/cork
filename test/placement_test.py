@@ -1,4 +1,5 @@
 from helios.database import Store
+from helios.http import URL
 from luna.test.assertion import assert_eq, assert_raises, assert_that
 
 from app import Access, Archival, Board, Move, Pin, Placement, Share, User
@@ -13,7 +14,7 @@ def place_pins(store: Store, board: Board, adder: User, count: int) -> list[Plac
 		pin = store.create(
 			Pin,
 			title=f"Pin {index}",
-			url=f"https://example.com/{index}",
+			url=URL.parse(f"https://example.com/{index}"),
 			creator_id=adder.id,
 		)
 		placements.append(Placement.create(store, pin, board, adder))
@@ -26,10 +27,16 @@ def test_placement_is_unique_for_each_pin_and_board_pair():
 		reading = store.create(Board, title="Reading", creator_id=adder.id)
 		essays = store.create(Board, title="Essays", creator_id=adder.id)
 		first_pin = store.create(
-			Pin, title="First pin", url="https://first.example", creator_id=adder.id
+			Pin,
+			title="First pin",
+			url=URL.parse("https://first.example"),
+			creator_id=adder.id,
 		)
 		second_pin = store.create(
-			Pin, title="Second pin", url="https://second.example", creator_id=adder.id
+			Pin,
+			title="Second pin",
+			url=URL.parse("https://second.example"),
+			creator_id=adder.id,
 		)
 		Placement.create(store, first_pin, reading, adder)
 
@@ -49,7 +56,7 @@ def test_create_records_adder_at_default_position():
 		pin = store.create(
 			Pin,
 			title="Sartre",
-			url="https://plato.stanford.edu/entries/sartre/",
+			url=URL.parse("https://plato.stanford.edu/entries/sartre/"),
 			creator_id=board_creator.id,
 		)
 
@@ -74,7 +81,7 @@ def test_find_adder_prefers_the_given_board():
 		pin = store.create(
 			Pin,
 			title="Sartre",
-			url="https://plato.stanford.edu/entries/sartre/",
+			url=URL.parse("https://plato.stanford.edu/entries/sartre/"),
 			creator_id=board_creator.id,
 		)
 		placements = [
@@ -101,7 +108,7 @@ def test_find_adder_without_a_board_is_stable_across_orderings():
 		pin = store.create(
 			Pin,
 			title="Sartre",
-			url="https://plato.stanford.edu/entries/sartre/",
+			url=URL.parse("https://plato.stanford.edu/entries/sartre/"),
 			creator_id=board_creator.id,
 		)
 		placements = [
@@ -128,7 +135,7 @@ def test_replace_adds_and_removes_placements_and_keeps_retained_ones():
 		pin = store.create(
 			Pin,
 			title="Sartre",
-			url="https://plato.stanford.edu/entries/sartre/",
+			url=URL.parse("https://plato.stanford.edu/entries/sartre/"),
 			creator_id=viewer.id,
 		)
 		retained = Placement.create(store, pin, reading, other_creator)
@@ -157,7 +164,7 @@ def test_replace_keeps_placements_on_inaccessible_boards():
 		pin = store.create(
 			Pin,
 			title="Sartre",
-			url="https://plato.stanford.edu/entries/sartre/",
+			url=URL.parse("https://plato.stanford.edu/entries/sartre/"),
 			creator_id=viewer.id,
 		)
 		Placement.create(store, pin, visible, viewer)
@@ -179,7 +186,7 @@ def test_replace_places_a_new_pin_once_per_board():
 		pin = store.create(
 			Pin,
 			title="Sartre",
-			url="https://plato.stanford.edu/entries/sartre/",
+			url=URL.parse("https://plato.stanford.edu/entries/sartre/"),
 			creator_id=viewer.id,
 		)
 
@@ -207,7 +214,7 @@ def test_replace_refuses_inaccessible_boards_without_changes():
 		pin = store.create(
 			Pin,
 			title="Sartre",
-			url="https://plato.stanford.edu/entries/sartre/",
+			url=URL.parse("https://plato.stanford.edu/entries/sartre/"),
 			creator_id=viewer.id,
 		)
 		placement = Placement.create(store, pin, reading, viewer)
@@ -385,7 +392,7 @@ def test_pin_creator_board_creator_and_adder_may_remove_a_placement():
 		pin = store.create(
 			Pin,
 			title="Sartre",
-			url="https://plato.stanford.edu/entries/sartre/",
+			url=URL.parse("https://plato.stanford.edu/entries/sartre/"),
 			creator_id=pin_creator.id,
 		)
 		placement = Placement.create(store, pin, board, adder)
@@ -406,7 +413,7 @@ def test_adder_removes_a_placement():
 		pin = store.create(
 			Pin,
 			title="Sartre",
-			url="https://plato.stanford.edu/entries/sartre/",
+			url=URL.parse("https://plato.stanford.edu/entries/sartre/"),
 			creator_id=board_creator.id,
 		)
 		placement = Placement.create(store, pin, board, adder)
@@ -426,7 +433,7 @@ def test_participant_may_not_remove_another_users_placement():
 		pin = store.create(
 			Pin,
 			title="Sartre",
-			url="https://plato.stanford.edu/entries/sartre/",
+			url=URL.parse("https://plato.stanford.edu/entries/sartre/"),
 			creator_id=board_creator.id,
 		)
 		placement = Placement.create(store, pin, board, board_creator)

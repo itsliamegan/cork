@@ -1,3 +1,4 @@
+from helios.http import URL
 from luna.test.assertion import assert_eq
 
 from app import Board, Pin, Placement, Share, User
@@ -11,7 +12,7 @@ def test_authorized_user_removes_placement_but_keeps_pin():
 		board = app.store.create(Board, title="Reading", creator_id=owner.id)
 		app.store.create(Share, board_id=board.id, user_id=adder.id)
 		pin = app.store.create(
-			Pin, title="Pin", url="https://example.com", creator_id=owner.id
+			Pin, title="Pin", url=URL.parse("https://example.com"), creator_id=owner.id
 		)
 		placement = app.store.create(
 			Placement, pin_id=pin.id, board_id=board.id, adder_id=adder.id
@@ -35,7 +36,10 @@ def test_unrelated_participant_cannot_remove_another_users_placement():
 		board = app.store.create(Board, title="Reading", creator_id=owner.id)
 		app.store.create(Share, board_id=board.id, user_id=participant.id)
 		pin = app.store.create(
-			Pin, title="Pin", url="https://example.com", creator_id=creator.id
+			Pin,
+			title="Pin",
+			url=URL.parse("https://example.com"),
+			creator_id=creator.id,
 		)
 		placement = app.store.create(
 			Placement, pin_id=pin.id, board_id=board.id, adder_id=adder.id

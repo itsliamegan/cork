@@ -1,5 +1,6 @@
 from uuid import uuid4
 
+from helios.http import URL
 from luna.test.assertion import assert_eq, assert_that
 
 from app import Board, Pin, Placement, Share, User
@@ -98,7 +99,7 @@ def test_shares_board():
 		pin = app.store.create(
 			Pin,
 			title="Stanford Entry on Sartre",
-			url="https://plato.stanford.edu/entries/sartre/",
+			url=URL.parse("https://plato.stanford.edu/entries/sartre/"),
 			note="Read the Negation section.",
 			creator_id=creator.id,
 		)

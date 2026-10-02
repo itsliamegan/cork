@@ -1,8 +1,10 @@
 from uuid import uuid4
 
+from helios.http import Input, URL
 from luna.test.assertion import assert_eq, assert_that
 
 from app import Board, Pin, Placement, Share, User
+from app.http.pins import PinForm
 from test.support import TestApplication, checked_values
 
 
@@ -83,7 +85,7 @@ def test_edit_form_checks_accessible_placements():
 		pin = app.store.create(
 			Pin,
 			title="Sartre",
-			url="https://plato.stanford.edu/entries/sartre/",
+			url=URL.parse("https://plato.stanford.edu/entries/sartre/"),
 			note="Original note",
 			creator_id=creator.id,
 		)
@@ -137,7 +139,7 @@ def test_edit_form_lists_every_board():
 		pin = app.store.create(
 			Pin,
 			title="Sartre",
-			url="https://plato.stanford.edu/entries/sartre/",
+			url=URL.parse("https://plato.stanford.edu/entries/sartre/"),
 			creator_id=creator.id,
 		)
 		for board in [reading, essays]:
@@ -193,7 +195,7 @@ def test_update_changes_pin_and_its_boards():
 		pin = app.store.create(
 			Pin,
 			title="Sartre",
-			url="https://plato.stanford.edu/entries/sartre/",
+			url=URL.parse("https://plato.stanford.edu/entries/sartre/"),
 			creator_id=creator.id,
 		)
 		app.store.create(
@@ -216,7 +218,7 @@ def test_update_changes_pin_and_its_boards():
 
 		assert_eq(res.status_code, 302)
 		assert_eq(
-			(stored.title, stored.url, stored.note),
+			(stored.title, str(stored.url), stored.note),
 			("Updated Sartre", "https://example.com/updated", "Updated note"),
 		)
 		assert_eq([placement.board_id for placement in placements], [essays.id])
@@ -231,7 +233,7 @@ def test_invalid_board_selections_do_not_partially_mutate_pins():
 		pin = app.store.create(
 			Pin,
 			title="Sartre",
-			url="https://plato.stanford.edu/entries/sartre/",
+			url=URL.parse("https://plato.stanford.edu/entries/sartre/"),
 			creator_id=creator.id,
 		)
 		placement = app.store.create(
@@ -275,7 +277,7 @@ def test_unrelated_user_cannot_open_pin_details():
 		pin = app.store.create(
 			Pin,
 			title="Sartre",
-			url="https://plato.stanford.edu/entries/sartre/",
+			url=URL.parse("https://plato.stanford.edu/entries/sartre/"),
 			creator_id=creator.id,
 		)
 		app.store.create(
@@ -296,7 +298,7 @@ def test_pin_details_embed_frame_with_accessible_boards_and_actions():
 		pin = app.store.create(
 			Pin,
 			title="Sartre",
-			url="https://plato.stanford.edu/entries/sartre/",
+			url=URL.parse("https://plato.stanford.edu/entries/sartre/"),
 			note="Read this closely.",
 			creator_id=creator.id,
 		)
@@ -322,7 +324,7 @@ def test_pin_details_use_referring_board_placement():
 		pin = app.store.create(
 			Pin,
 			title="Sartre",
-			url="https://plato.stanford.edu/entries/sartre/",
+			url=URL.parse("https://plato.stanford.edu/entries/sartre/"),
 			creator_id=creator.id,
 		)
 		app.store.create(
@@ -352,13 +354,13 @@ def test_owned_pins_index_includes_unfiled_pins_and_hides_other_creators():
 		owned = app.store.create(
 			Pin,
 			title="Owned unfiled",
-			url="https://owned.example",
+			url=URL.parse("https://owned.example"),
 			creator_id=viewer.id,
 		)
 		visible = app.store.create(
 			Pin,
 			title="Someone else's pin",
-			url="https://other.example",
+			url=URL.parse("https://other.example"),
 			creator_id=other_creator.id,
 		)
 		app.store.create(
@@ -382,13 +384,13 @@ def test_pins_index_lists_every_pin_without_board_titles():
 		first = app.store.create(
 			Pin,
 			title="First pin",
-			url="https://example.com/complete/path",
+			url=URL.parse("https://example.com/complete/path"),
 			creator_id=creator.id,
 		)
 		second = app.store.create(
 			Pin,
 			title="Second pin",
-			url="https://second.example/resource",
+			url=URL.parse("https://second.example/resource"),
 			creator_id=creator.id,
 		)
 		app.store.create(
@@ -422,6 +424,71 @@ def test_new_form_and_creation_allow_no_board():
 		assert_eq(app.store.find_by(Placement, pin_id=pin.id), [])
 
 
+def test_pin_form_accepts_http_and_https_urls():
+	for url in [
+		"http://example.com",
+		"https://example.com/a/b?c=d#e",
+		"HTTPS://Example.com:8080/",
+		"http://[::1]/",
+	]:
+		_, errors = PinForm.validate(Input({"title": "Sartre", "url": url}))
+
+		assert_that(not errors)
+
+
+def test_pin_form_rejects_urls_that_are_malformed_or_not_http():
+	for url in [
+		"example.com",
+		"/entries/sartre",
+		"https://",
+		"http://exa mple.com",
+		"http://example.com:port",
+		"http://[::1",
+		"ftp://example.com",
+		"javascript:alert(1)",
+		"mailto:someone@example.com",
+		"file:///etc/passwd",
+	]:
+		_, errors = PinForm.validate(Input({"title": "Sartre", "url": url}))
+
+		assert_that("url" in errors)
+
+
+def test_create_keeps_the_fragment_of_a_url():
+	with TestApplication() as app:
+		creator = app.store.create(User, name="Creator")
+		app.sign_in(creator)
+
+		app.client.post(
+			"/pins/",
+			form={
+				"title": "Sartre",
+				"url": "https://plato.stanford.edu/entries/sartre/?a=b#negation",
+			},
+		)
+		pin = app.store.find_all(Pin)[0]
+
+		assert_eq(
+			str(pin.url),
+			"https://plato.stanford.edu/entries/sartre/?a=b#negation",
+		)
+
+
+def test_create_rejects_invalid_url():
+	with TestApplication() as app:
+		creator = app.store.create(User, name="Creator")
+		app.sign_in(creator)
+
+		res = app.client.post(
+			"/pins/",
+			form={"title": "Sartre", "url": "javascript:alert(1)"},
+		)
+
+		assert_eq(res.status_code, 302)
+		assert_eq(res.headers["Location"], "/pins/new")
+		assert_eq(app.store.find_all(Pin), [])
+
+
 def test_creates_pin_without_url_from_blank_field():
 	with TestApplication() as app:
 		creator = app.store.create(User, name="Creator")
@@ -438,7 +505,10 @@ def test_update_clears_url_from_blank_field():
 	with TestApplication() as app:
 		creator = app.store.create(User, name="Creator")
 		pin = app.store.create(
-			Pin, title="Sartre", url="https://sartre.example", creator_id=creator.id
+			Pin,
+			title="Sartre",
+			url=URL.parse("https://sartre.example"),
+			creator_id=creator.id,
 		)
 		app.sign_in(creator)
 
@@ -478,7 +548,10 @@ def test_owned_unfiled_pin_is_accessible_only_to_creator():
 		creator = app.store.create(User, name="Creator")
 		stranger = app.store.create(User, name="Stranger")
 		pin = app.store.create(
-			Pin, title="Unfiled", url="https://example.com", creator_id=creator.id
+			Pin,
+			title="Unfiled",
+			url=URL.parse("https://example.com"),
+			creator_id=creator.id,
 		)
 
 		app.sign_in(creator)
@@ -496,7 +569,10 @@ def test_owned_pin_hides_inaccessible_board_names():
 			Board, title="Secret plans", creator_id=hidden_creator.id
 		)
 		pin = app.store.create(
-			Pin, title="Owned pin", url="https://example.com", creator_id=creator.id
+			Pin,
+			title="Owned pin",
+			url=URL.parse("https://example.com"),
+			creator_id=creator.id,
 		)
 		app.store.create(
 			Placement, pin_id=pin.id, board_id=hidden.id, adder_id=hidden_creator.id
@@ -518,7 +594,10 @@ def test_deletes_pin():
 	with TestApplication() as app:
 		creator = app.store.create(User, name="Creator")
 		pin = app.store.create(
-			Pin, title="Unfiled", url="https://example.com", creator_id=creator.id
+			Pin,
+			title="Unfiled",
+			url=URL.parse("https://example.com"),
+			creator_id=creator.id,
 		)
 		app.sign_in(creator)
 
@@ -540,7 +619,10 @@ def test_edit_form_is_refused_to_participants_and_hidden_from_strangers():
 		board = app.store.create(Board, title="Reading", creator_id=creator.id)
 		app.store.create(Share, board_id=board.id, user_id=participant.id)
 		pin = app.store.create(
-			Pin, title="Sartre", url="https://sartre.example", creator_id=creator.id
+			Pin,
+			title="Sartre",
+			url=URL.parse("https://sartre.example"),
+			creator_id=creator.id,
 		)
 		Placement.create(app.store, pin, board, creator)
 
@@ -561,7 +643,10 @@ def test_update_is_refused_to_participants_and_hidden_from_strangers():
 		board = app.store.create(Board, title="Reading", creator_id=creator.id)
 		app.store.create(Share, board_id=board.id, user_id=participant.id)
 		pin = app.store.create(
-			Pin, title="Sartre", url="https://sartre.example", creator_id=creator.id
+			Pin,
+			title="Sartre",
+			url=URL.parse("https://sartre.example"),
+			creator_id=creator.id,
 		)
 		Placement.create(app.store, pin, board, creator)
 		form = {
@@ -582,7 +667,7 @@ def test_update_is_refused_to_participants_and_hidden_from_strangers():
 		assert_eq(participant_res.status_code, 403)
 		assert_eq(stranger_res.status_code, 404)
 		assert_eq(stored.title, "Sartre")
-		assert_eq(stored.url, "https://sartre.example")
+		assert_eq(str(stored.url), "https://sartre.example")
 		assert_eq(stored.note, "")
 		assert_eq(
 			[placement.board_id for placement in stored.placements],
@@ -598,7 +683,10 @@ def test_delete_is_refused_to_participants_and_hidden_from_strangers():
 		board = app.store.create(Board, title="Reading", creator_id=creator.id)
 		app.store.create(Share, board_id=board.id, user_id=participant.id)
 		pin = app.store.create(
-			Pin, title="Sartre", url="https://sartre.example", creator_id=creator.id
+			Pin,
+			title="Sartre",
+			url=URL.parse("https://sartre.example"),
+			creator_id=creator.id,
 		)
 		Placement.create(app.store, pin, board, creator)
 		form = {"_method": "DELETE"}
