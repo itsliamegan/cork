@@ -8,7 +8,7 @@ It is built on the [Helios](https://tangled.org/liamegan.com/helios) framework.
 
 - `app/wsgi.py`: wires the `Application`: components run views → session →
   database → flash → auth → guards, then the router.
-- `app/main.py`: sets up the devserver.
+- `app/main.py`: builds the `app` that gunicorn serves.
 - `app/http/__init__.py`: the `routes` and `guards` lists.
 - `app/http/*.py`: handlebrs, one module per resource.
 - `app/__init__.py`: re-exports every model and the `models` list.
