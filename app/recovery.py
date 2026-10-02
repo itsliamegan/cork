@@ -63,10 +63,8 @@ class Recovery(Model):
 		recovery = cls.find_by_code(store, code)
 		if recovery is None:
 			return None
-		try:
-			user = store.find_one(User, recovery.user_id)
-		except NotFoundError:
-			return None
+		store.load(recovery, "user")
+		user = recovery.user
 		new_recovery = cls.create(store, user)
 		return user, new_recovery
 

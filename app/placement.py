@@ -56,9 +56,8 @@ class Placement(Model):
 		for placement in pin.find_accessible_placements(store, access):
 			if placement.board_id not in chosen_board_ids:
 				store.delete(placement)
-		placed_board_ids = {
-			placement.board_id for placement in pin.find_placements(store)
-		}
+		store.load(pin, "placements")
+		placed_board_ids = {placement.board_id for placement in pin.placements}
 		for board in boards:
 			if board.id not in placed_board_ids:
 				cls.create(store, pin, board, access.user)
@@ -116,4 +115,5 @@ class Placement(Model):
 			(placement for placement in placements if placement.board_id == board_id),
 			min(placements, key=lambda placement: str(placement.id)),
 		)
-		return store.find_one(User, placement.adder_id)
+		store.load(placement, "adder")
+		return placement.adder

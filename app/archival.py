@@ -28,13 +28,9 @@ class Archival(Model):
 
 	@classmethod
 	def arrange(cls, store: Store, board: Board, user: User) -> list[Archival]:
-		placement_ids = [
-			placement.id for placement in store.find_by(Placement, board_id=board.id)
-		]
 		return (
 			store.query(Archival)
-			.where({"user_id": user.id})
-			.where({"placement_id in": placement_ids})
+			.where({"user_id": user.id, "placement.board_id": board.id})
 			.order_by("created_at", "desc")
 			.order_by("id")
 			.all()

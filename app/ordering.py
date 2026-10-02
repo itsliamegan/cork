@@ -6,7 +6,6 @@ from helios.database import Model, Store
 
 from app.board import Board
 from app.move import Move
-from app.share import Share
 
 if TYPE_CHECKING:
 	from app.access import Access
@@ -26,13 +25,7 @@ class Ordering(Model):
 		access: Access,
 	) -> tuple[list[Board], list[Board]]:
 		boards = access.find_boards()
-		shares_by_board_id: dict[UUID, list[Share]] = {}
-		for share in (
-			store.query(Share)
-			.where({"board_id in": [board.id for board in boards]})
-			.all()
-		):
-			shares_by_board_id.setdefault(share.board_id, []).append(share)
+		store.load(boards, "shares")
 		positions = {
 			ordering.board_id: ordering.position
 			for ordering in store.find_by(cls, user_id=access.user.id)
@@ -42,7 +35,7 @@ class Ordering(Model):
 		shared: list[Board] = []
 		entered_at: dict[UUID, datetime] = {}
 		for board in boards:
-			shares = shares_by_board_id.get(board.id, [])
+			shares = board.shares
 			if not shares:
 				private.append(board)
 				entered_at[board.id] = board.created_at

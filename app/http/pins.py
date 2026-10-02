@@ -10,7 +10,7 @@ from helios.http import Request, Response, Status, URL
 from helios.routing import URLs
 from helios.view import Views
 
-from app import Access, Board, Ownership, Pin, Placement, Share, User
+from app import Access, Ownership, Pin, Placement, User
 from app.access import NotPermitted
 from app.views.pins.placements import PlacementOption
 
@@ -64,25 +64,11 @@ def build_placement_options(ctx: Context) -> list[PlacementOption]:
 
 	access = Access(store, auth.user)
 	boards = access.find_boards()
-	board_ids = {board.id for board in boards}
-	shares_by_board_id: dict[UUID, list[Share]] = {board.id: [] for board in boards}
-	for share in store.query(Share).where({"board_id in": board_ids}).all():
-		shares_by_board_id[share.board_id].append(share)
-
-	viewer_ids = {board.creator_id for board in boards}
-	viewer_ids.update(
-		share.user_id for shares in shares_by_board_id.values() for share in shares
-	)
-	users_by_id = {
-		viewer.id: viewer
-		for viewer in store.query(User).where({"id in": viewer_ids}).all()
-	}
+	store.load(boards, "creator", "shares.user")
 	placement_options = []
 	for board in boards:
-		visible_user_ids = {share.user_id for share in shares_by_board_id[board.id]}
-		visible_user_ids.add(board.creator_id)
-		visible_user_ids.discard(auth.user.id)
-		others = [users_by_id[user_id] for user_id in visible_user_ids]
+		viewers = [board.creator, *(share.user for share in board.shares)]
+		others = [viewer for viewer in viewers if viewer.id != auth.user.id]
 		placement_options.append(PlacementOption(board=board, others=others))
 	return placement_options
 
@@ -96,7 +82,7 @@ def index(req: Request, ctx: Context) -> Response:
 	pins.sort(key=lambda pin: pin.created_at, reverse=True)
 	board_counts = (
 		store.query(Placement)
-		.where({"pin_id in": [pin.id for pin in pins]})
+		.where({"pin.creator_id": auth.user.id})
 		.count_by("pin_id")
 	)
 	pin_rows = [
@@ -198,12 +184,9 @@ def show(req: Request, ctx: Context, id: UUID) -> Response:
 
 	access = Access(store, auth.user)
 	pin = access.find_pin(id)
+	store.load(pin, "creator", "placements")
 	placements = pin.find_accessible_placements(store, access)
-	boards = (
-		store.query(Board)
-		.where({"id in": [placement.board_id for placement in placements]})
-		.all()
-	)
+	store.load(placements, "board")
 	adder = Placement.find_adder(
 		store,
 		placements,
@@ -214,10 +197,10 @@ def show(req: Request, ctx: Context, id: UUID) -> Response:
 		{
 			"access": access,
 			"pin": pin,
-			"accessible_boards": boards,
-			"creator": store.find_one(User, pin.creator_id),
+			"accessible_boards": [placement.board for placement in placements],
+			"creator": pin.creator,
 			"adder": adder,
-			"is_unfiled": not pin.find_placements(store),
+			"is_unfiled": not pin.placements,
 		},
 	)
 

@@ -108,8 +108,9 @@ def test_a_pin_added_back_to_the_board_has_no_archival():
 
 		Placement.replace(store, pin, [], access)
 		Placement.replace(store, pin, [board], access)
+		store.load(pin, "placements")
 
-		assert_eq(len(pin.find_placements(store)), 1)
+		assert_eq(len(pin.placements), 1)
 		assert_eq(store.find_all(Archival), [])
 
 

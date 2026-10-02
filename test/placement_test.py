@@ -136,9 +136,8 @@ def test_replace_adds_and_removes_placements_and_keeps_retained_ones():
 
 		Placement.replace(store, pin, [reading, unread], access)
 
-		placements = {
-			placement.board_id: placement for placement in pin.find_placements(store)
-		}
+		store.load(pin, "placements")
+		placements = {placement.board_id: placement for placement in pin.placements}
 		assert_eq(set(placements), {reading.id, unread.id})
 		kept = placements[reading.id]
 		assert_eq(
@@ -165,7 +164,8 @@ def test_replace_keeps_placements_on_inaccessible_boards():
 
 		Placement.replace(store, pin, [], Access(store, viewer))
 
-		placements = pin.find_placements(store)
+		store.load(pin, "placements")
+		placements = pin.placements
 		assert_eq([placement.id for placement in placements], [hidden_placement.id])
 		assert_eq(placements[0].created_at, hidden_placement.created_at)
 
@@ -189,7 +189,8 @@ def test_replace_places_a_new_pin_once_per_board():
 			Access(store, viewer),
 		)
 
-		placements = pin.find_placements(store)
+		store.load(pin, "placements")
+		placements = pin.placements
 		assert_eq(len(placements), 2)
 		assert_eq(
 			{placement.board_id for placement in placements}, {reading.id, essays.id}
@@ -213,7 +214,8 @@ def test_replace_refuses_inaccessible_boards_without_changes():
 		with assert_raises(ValueError):
 			Placement.replace(store, pin, [private], Access(store, viewer))
 
-		placements = pin.find_placements(store)
+		store.load(pin, "placements")
+		placements = pin.placements
 		assert_eq([stored.id for stored in placements], [placement.id])
 
 

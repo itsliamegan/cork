@@ -72,12 +72,6 @@ class Invite(Model):
 			raise NotFoundError(cls, id)
 		return invite
 
-	def find_target(self, store: Store) -> User | None:
-		if self.target_id is None:
-			return None
-		else:
-			return store.find_one(User, self.target_id)
-
 	def redeem(self, store: Store, name: str) -> User:
 		if self.target_id is not None:
 			raise ValueError(f"Invite {self.id} is for an existing user")
@@ -86,8 +80,9 @@ class Invite(Model):
 		return user
 
 	def redeem_for_target(self, store: Store) -> User:
-		if self.target_id is None:
+		store.load(self, "target")
+		target = self.target
+		if target is None:
 			raise ValueError(f"Invite {self.id} has no target")
-		user = store.find_one(User, self.target_id)
 		store.delete(self)
-		return user
+		return target

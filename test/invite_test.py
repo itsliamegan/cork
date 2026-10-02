@@ -119,20 +119,6 @@ def test_redeeming_one_invite_leaves_others_valid():
 		assert_that(found is not None and found.id == second.id)
 
 
-def test_find_target_returns_target_user():
-	with TestStore() as store:
-		creator = store.create(User, name="Creator")
-		untargeted_invite = Invite.create(store, creator)
-		targeted_invite = Invite.create(store, creator, target=creator)
-
-		untargeted_target = untargeted_invite.find_target(store)
-		targeted_target = targeted_invite.find_target(store)
-
-		assert_that(untargeted_target is None)
-		assert targeted_target is not None
-		assert_eq(targeted_target.id, creator.id)
-
-
 def test_find_created_by_hides_other_creators_invites():
 	with TestStore() as store:
 		creator = store.create(User, name="Creator")

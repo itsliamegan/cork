@@ -72,17 +72,14 @@ class Pin(Model):
 	def is_deletable_by(self, access: Access) -> bool:
 		return access.owns(self)
 
-	def find_placements(self, store: Store) -> list[Placement]:
-		return store.find_by(Placement, pin_id=self.id)
-
 	def find_accessible_placements(
 		self,
 		store: Store,
 		access: Access,
 	) -> list[Placement]:
-		board_ids = access.find_board_ids()
-		return [
-			placement
-			for placement in self.find_placements(store)
-			if placement.board_id in board_ids
-		]
+		return (
+			store.query(Placement)
+			.where({"pin_id": self.id})
+			.where_any(*access.board_conditions("board"))
+			.all()
+		)
