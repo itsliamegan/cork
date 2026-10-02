@@ -1,3 +1,4 @@
+from urllib.parse import urlsplit
 from uuid import UUID
 
 from helios import http
@@ -5,7 +6,7 @@ from helios.app import Context
 from helios.auth import Authenticator
 from helios.database import NotFoundError, Store
 from helios.form import Form, Rules, Submission, Submissions
-from helios.form.rule import Distinct
+from helios.form.rule import Distinct, Rule, RuleError
 from helios.http import Request, Response, Status, URL
 from helios.routing import URLs
 from helios.view import Views
@@ -14,8 +15,29 @@ from app import Access, Board, Ownership, Pin, Placement, User
 from app.access import NotPermitted
 
 
+class WebURL(Rule[str]):
+	name = "web_url"
+	schemes = {"http", "https"}
+
+	def check(self, value: str):
+		try:
+			parts = urlsplit(value)
+			hostname = parts.hostname
+			_port = parts.port
+		except ValueError:
+			raise RuleError("must be an http:// or https:// URL")
+
+		if (
+			len(value.split()) != 1
+			or hostname is None
+			or parts.scheme not in self.schemes
+		):
+			raise RuleError("must be an http:// or https:// URL")
+
+
 class PinForm(Form):
-	rules = Rules({"board_ids": [Distinct()]})
+	rules = Rules({"url": [WebURL()], "board_ids": [Distinct()]})
+	messages = {"url.web_url": "URL must be an http:// or https:// address."}
 
 	title: str
 	url: str | None = None

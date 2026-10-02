@@ -1,8 +1,10 @@
 from uuid import uuid4
 
+from helios.http import Input
 from luna.test.assertion import assert_eq, assert_that
 
 from app import Board, Pin, Placement, Share, User
+from app.http.pins import PinForm
 from test.support import TestApplication, checked_values
 
 
@@ -420,6 +422,51 @@ def test_new_form_and_creation_allow_no_board():
 		assert_eq(form_res.status_code, 200)
 		assert_eq(create_res.headers["Location"], "/pins/")
 		assert_eq(app.store.find_by(Placement, pin_id=pin.id), [])
+
+
+def test_pin_form_accepts_http_and_https_urls():
+	for url in [
+		"http://example.com",
+		"https://example.com/a/b?c=d#e",
+		"HTTPS://Example.com:8080/",
+		"http://[::1]/",
+	]:
+		_, errors = PinForm.validate(Input({"title": "Sartre", "url": url}))
+
+		assert_that(not errors)
+
+
+def test_pin_form_rejects_urls_that_are_malformed_or_not_http():
+	for url in [
+		"example.com",
+		"/entries/sartre",
+		"https://",
+		"http://exa mple.com",
+		"http://example.com:port",
+		"http://[::1",
+		"ftp://example.com",
+		"javascript:alert(1)",
+		"mailto:someone@example.com",
+		"file:///etc/passwd",
+	]:
+		_, errors = PinForm.validate(Input({"title": "Sartre", "url": url}))
+
+		assert_that("url" in errors)
+
+
+def test_create_rejects_invalid_url():
+	with TestApplication() as app:
+		creator = app.store.create(User, name="Creator")
+		app.sign_in(creator)
+
+		res = app.client.post(
+			"/pins/",
+			form={"title": "Sartre", "url": "javascript:alert(1)"},
+		)
+
+		assert_eq(res.status_code, 302)
+		assert_eq(res.headers["Location"], "/pins/new")
+		assert_eq(app.store.find_all(Pin), [])
 
 
 def test_creates_pin_without_url_from_blank_field():
