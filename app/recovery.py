@@ -3,7 +3,7 @@ from typing import cast
 from uuid import UUID
 
 from helios.auth.password import Digest
-from helios.database import Codec, Model, NotFoundError, Scalar, Store
+from helios.database import Codec, Model, NotFoundError, Scalar, Store, belongs_to
 
 from app.user import User
 
@@ -42,6 +42,7 @@ class Recovery(Model):
 				return Recovery.Code(Digest.decode(value))
 
 	user_id: UUID
+	user: User = belongs_to("user_id")
 	code: Code
 
 	@classmethod

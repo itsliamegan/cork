@@ -1,6 +1,6 @@
 from uuid import UUID
 
-from helios.database import Model, Store
+from helios.database import Model, Store, belongs_to
 
 from app.board import Board
 from app.placement import Placement
@@ -11,6 +11,7 @@ class Archival(Model):
 	table = "archivals"
 
 	placement_id: UUID
+	placement: Placement = belongs_to("placement_id")
 	user_id: UUID
 
 	@classmethod

@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING
 from uuid import UUID
 
-from helios.database import Model, Store
+from helios.database import Model, Store, belongs_to
 
 from app.move import Move
 from app.user import User
@@ -16,8 +16,11 @@ class Placement(Model):
 	table = "placements"
 
 	pin_id: UUID
+	pin: Pin = belongs_to("pin_id")
 	board_id: UUID
+	board: Board = belongs_to("board_id")
 	adder_id: UUID
+	adder: User = belongs_to("adder_id")
 	position: int = 0
 
 	@classmethod

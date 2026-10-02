@@ -2,7 +2,7 @@ from datetime import UTC, datetime, timedelta
 import secrets
 from uuid import UUID
 
-from helios.database import Codec, Model, NotFoundError, Scalar, Store
+from helios.database import Codec, Model, NotFoundError, Scalar, Store, belongs_to
 
 from app.user import User
 
@@ -34,7 +34,9 @@ class Invite(Model):
 
 	token: Token
 	creator_id: UUID
+	creator: User = belongs_to("creator_id")
 	target_id: UUID | None
+	target: User | None = belongs_to("target_id")
 	expires_at: datetime
 
 	@classmethod

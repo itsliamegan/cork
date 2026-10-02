@@ -9,7 +9,6 @@ from app.board import Board
 from app.ownership import Ownership
 from app.pin import Pin
 from app.placement import Placement
-from app.share import Share
 from app.user import User
 
 
@@ -33,45 +32,65 @@ class Access:
 	def added(self, placement: Placement) -> bool:
 		return self.ownership.added(placement)
 
+	def board_conditions(self, path: str = "") -> list[dict[str, UUID]]:
+		prefix = f"{path}." if path else ""
+		return [
+			{f"{prefix}creator_id": self.user.id},
+			{f"{prefix}shares.user_id": self.user.id},
+		]
+
 	def find_archival(self, id: UUID) -> Archival:
-		archival = self.store.find_one(Archival, id)
-		placement = self.store.find_one(Placement, archival.placement_id)
-		if (
-			archival.user_id != self.user.id
-			or placement.board_id not in self.find_board_ids()
-		):
+		archival = (
+			self.store.query(Archival)
+			.where({"id": id, "user_id": self.user.id})
+			.where_any(*self.board_conditions("placement.board"))
+			.first()
+		)
+		if archival is None:
 			raise NotFoundError(Archival, id)
 		return archival
 
 	def find_board(self, id: UUID) -> Board:
-		board = self.store.find_one(Board, id)
-		if not (self.owns(board) or Share.exists(self.store, board, self.user)):
+		board = (
+			self.store.query(Board)
+			.where({"id": id})
+			.where_any(*self.board_conditions())
+			.first()
+		)
+		if board is None:
 			raise NotFoundError(Board, id)
 		return board
 
 	def find_board_ids(self) -> list[UUID]:
-		owned_board_ids = [board.id for board in self.ownership.find_boards()]
-		shared_board_ids = Share.find_board_ids(self.store, self.user)
-		return [*owned_board_ids, *shared_board_ids]
+		return [board.id for board in self.find_boards()]
 
 	def find_boards(self) -> list[Board]:
-		shared_boards = Share.find_boards(self.store, self.user)
+		shared_boards = (
+			self.store.query(Board).where({"shares.user_id": self.user.id}).all()
+		)
 		return [*self.ownership.find_boards(), *shared_boards]
 
 	def find_pin(self, id: UUID) -> Pin:
-		pin = self.store.find_one(Pin, id)
-		if self.owns(pin):
-			return pin
-		board_ids = self.find_board_ids()
-		if not any(
-			placement.board_id in board_ids
-			for placement in pin.find_placements(self.store)
-		):
+		pin = (
+			self.store.query(Pin)
+			.where({"id": id})
+			.where_any(
+				{"creator_id": self.user.id},
+				*self.board_conditions("placements.board"),
+			)
+			.first()
+		)
+		if pin is None:
 			raise NotFoundError(Pin, id)
 		return pin
 
 	def find_placement(self, id: UUID) -> Placement:
-		placement = self.store.find_one(Placement, id)
-		if placement.board_id not in self.find_board_ids():
+		placement = (
+			self.store.query(Placement)
+			.where({"id": id})
+			.where_any(*self.board_conditions("board"))
+			.first()
+		)
+		if placement is None:
 			raise NotFoundError(Placement, id)
 		return placement
