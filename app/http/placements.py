@@ -17,6 +17,6 @@ def delete(req: Request, ctx: Context, id: UUID) -> Response:
 	access = Access(store, auth.user)
 	placement = access.find_placement(id)
 	store.load(placement, "pin", "board")
-	placement.remove(store, access, placement.pin, placement.board)
+	placement.remove(store, access)
 
 	return Response.redirect(urls.route("boards.show", {"id": placement.board_id}))

@@ -42,6 +42,9 @@ class Board(Model):
 		Share.replace(store, self, users)
 		store.update(self, title=title)
 
+	def members(self) -> list[User]:
+		return [self.creator, *(share.user for share in self.shares)]
+
 	def is_editable_by(self, access: Access) -> bool:
 		return access.owns(self)
 

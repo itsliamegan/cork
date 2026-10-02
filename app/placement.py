@@ -91,21 +91,20 @@ class Placement(Model):
 			placement = placements_by_id[id]
 			store.update(placement, position=position)
 
-	def remove(self, store: Store, access: Access, pin: Pin, board: Board):
+	def remove(self, store: Store, access: Access):
 		from app.access import NotPermitted
 
-		if not self.is_removable_by(access, pin, board):
+		if not self.is_removable_by(access):
 			raise NotPermitted(self)
 
 		store.delete(self)
 
-	def is_removable_by(self, access: Access, pin: Pin, board: Board) -> bool:
-		return access.owns(pin) or access.owns(board) or access.added(self)
+	def is_removable_by(self, access: Access) -> bool:
+		return access.owns(self.pin) or access.owns(self.board) or access.added(self)
 
 	@classmethod
 	def find_adder(
 		cls,
-		store: Store,
 		placements: list[Placement],
 		board_id: UUID | None = None,
 	) -> User | None:
@@ -115,5 +114,4 @@ class Placement(Model):
 			(placement for placement in placements if placement.board_id == board_id),
 			min(placements, key=lambda placement: str(placement.id)),
 		)
-		store.load(placement, "adder")
 		return placement.adder

@@ -113,14 +113,14 @@ def show(req: Request, ctx: Context, id: UUID) -> Response:
 	access = Access(store, auth.user)
 	board = access.find_board(id)
 	archivals = Archival.arrange(store, board, auth.user)
-	store.load(archivals, "placement.pin")
+	store.load(archivals, "placement.pin", "placement.board")
 	archived_placement_ids = {archival.placement_id for archival in archivals}
 	placements = [
 		placement
 		for placement in Placement.arrange(store, board)
 		if placement.id not in archived_placement_ids
 	]
-	store.load(placements, "pin")
+	store.load(placements, "pin", "board")
 
 	return views.render(
 		"boards.show",

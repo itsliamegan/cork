@@ -60,10 +60,9 @@ def test_create_records_adder_at_default_position():
 
 
 def test_find_adder_without_placements_is_none():
-	with TestStore() as store:
-		adder = Placement.find_adder(store, [])
+	adder = Placement.find_adder([])
 
-		assert_that(adder is None)
+	assert_that(adder is None)
 
 
 def test_find_adder_prefers_the_given_board():
@@ -82,9 +81,10 @@ def test_find_adder_prefers_the_given_board():
 			Placement.create(store, pin, reading, board_creator),
 			Placement.create(store, pin, essays, participant),
 		]
+		store.load(placements, "adder")
 
-		reading_adder = Placement.find_adder(store, placements, reading.id)
-		essays_adder = Placement.find_adder(store, placements, essays.id)
+		reading_adder = Placement.find_adder(placements, reading.id)
+		essays_adder = Placement.find_adder(placements, essays.id)
 
 		assert reading_adder is not None
 		assert essays_adder is not None
@@ -108,9 +108,10 @@ def test_find_adder_without_a_board_is_stable_across_orderings():
 			Placement.create(store, pin, reading, board_creator),
 			Placement.create(store, pin, essays, participant),
 		]
+		store.load(placements, "adder")
 
-		forward = Placement.find_adder(store, placements)
-		backward = Placement.find_adder(store, list(reversed(placements)))
+		forward = Placement.find_adder(placements)
+		backward = Placement.find_adder(list(reversed(placements)))
 
 		assert forward is not None
 		assert backward is not None
@@ -388,13 +389,12 @@ def test_pin_creator_board_creator_and_adder_may_remove_a_placement():
 			creator_id=pin_creator.id,
 		)
 		placement = Placement.create(store, pin, board, adder)
+		store.load(placement, "pin", "board")
 
-		assert_that(placement.is_removable_by(Access(store, pin_creator), pin, board))
-		assert_that(placement.is_removable_by(Access(store, board_creator), pin, board))
-		assert_that(placement.is_removable_by(Access(store, adder), pin, board))
-		assert_that(
-			not placement.is_removable_by(Access(store, participant), pin, board)
-		)
+		assert_that(placement.is_removable_by(Access(store, pin_creator)))
+		assert_that(placement.is_removable_by(Access(store, board_creator)))
+		assert_that(placement.is_removable_by(Access(store, adder)))
+		assert_that(not placement.is_removable_by(Access(store, participant)))
 
 
 def test_adder_removes_a_placement():
@@ -410,8 +410,9 @@ def test_adder_removes_a_placement():
 			creator_id=board_creator.id,
 		)
 		placement = Placement.create(store, pin, board, adder)
+		store.load(placement, "pin", "board")
 
-		placement.remove(store, Access(store, adder), pin, board)
+		placement.remove(store, Access(store, adder))
 
 		assert_eq(store.find_all(Placement), [])
 
@@ -429,9 +430,10 @@ def test_participant_may_not_remove_another_users_placement():
 			creator_id=board_creator.id,
 		)
 		placement = Placement.create(store, pin, board, board_creator)
+		store.load(placement, "pin", "board")
 
 		with assert_raises(NotPermitted):
-			placement.remove(store, Access(store, participant), pin, board)
+			placement.remove(store, Access(store, participant))
 
 		assert_eq(
 			[stored.id for stored in store.find_all(Placement)],
