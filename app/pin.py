@@ -72,6 +72,9 @@ class Pin(Model):
 	def is_deletable_by(self, access: Access) -> bool:
 		return access.owns(self)
 
+	def is_unfiled(self) -> bool:
+		return not self.placements
+
 	def find_accessible_placements(
 		self,
 		store: Store,

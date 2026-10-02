@@ -41,8 +41,7 @@ def delete(req: Request, ctx: Context, id: UUID) -> Response:
 	access = Access(store, auth.user)
 	archival = access.find_archival(id)
 	store.load(archival, "placement")
+	placement = archival.placement
 	store.delete(archival)
 
-	return Response.redirect(
-		urls.route("boards.show", {"id": archival.placement.board_id})
-	)
+	return Response.redirect(urls.route("boards.show", {"id": placement.board_id}))

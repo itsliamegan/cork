@@ -178,3 +178,18 @@ def test_create_places_a_new_pin_on_each_chosen_board():
 			{placement.board_id for placement in pin.placements},
 			{reading.id, essays.id},
 		)
+
+
+def test_pin_without_placements_is_unfiled():
+	with TestStore() as store:
+		creator = store.create(User, name="Creator")
+		board = store.create(Board, title="Reading", creator_id=creator.id)
+		unfiled = store.create(Pin, title="Sartre", creator_id=creator.id)
+		filed = store.create(Pin, title="Beauvoir", creator_id=creator.id)
+		Placement.create(store, filed, board, creator)
+
+		store.load(unfiled, "placements")
+		store.load(filed, "placements")
+
+		assert_that(unfiled.is_unfiled())
+		assert_that(not filed.is_unfiled())

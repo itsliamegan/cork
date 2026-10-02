@@ -112,37 +112,23 @@ def show(req: Request, ctx: Context, id: UUID) -> Response:
 
 	access = Access(store, auth.user)
 	board = access.find_board(id)
-	placements = Placement.arrange(store, board)
-	store.load(placements, "pin")
 	archivals = Archival.arrange(store, board, auth.user)
-	archivals_by_placement_id = {
-		archival.placement_id: archival for archival in archivals
-	}
-	placements_by_id = {placement.id: placement for placement in placements}
-
-	placement_rows = [
-		{"placement": placement, "pin": placement.pin}
-		for placement in placements
-		if placement.id not in archivals_by_placement_id
+	store.load(archivals, "placement.pin")
+	archived_placement_ids = {archival.placement_id for archival in archivals}
+	placements = [
+		placement
+		for placement in Placement.arrange(store, board)
+		if placement.id not in archived_placement_ids
 	]
-	archived_rows = []
-	for archival in archivals:
-		placement = placements_by_id[archival.placement_id]
-		archived_rows.append(
-			{
-				"archival": archival,
-				"placement": placement,
-				"pin": placement.pin,
-			}
-		)
+	store.load(placements, "pin")
 
 	return views.render(
 		"boards.show",
 		{
 			"access": access,
 			"board": board,
-			"placement_rows": placement_rows,
-			"archived_rows": archived_rows,
+			"placements": placements,
+			"archivals": archivals,
 		},
 	)
 

@@ -198,9 +198,7 @@ def show(req: Request, ctx: Context, id: UUID) -> Response:
 			"access": access,
 			"pin": pin,
 			"accessible_boards": [placement.board for placement in placements],
-			"creator": pin.creator,
 			"adder": adder,
-			"is_unfiled": not pin.placements,
 		},
 	)
 
