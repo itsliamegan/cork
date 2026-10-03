@@ -44,7 +44,7 @@ class Scratch:
 		self.migrations.joinpath(name).write_text(sql)
 
 	def query(self, sql: str) -> list[tuple]:
-		connection = sqlite3.connect(self.config.database_file)
+		connection = sqlite3.connect(self.config.path)
 		try:
 			return connection.execute(sql).fetchall()
 		finally:
@@ -218,7 +218,7 @@ def assert_refused(scratch: Scratch, expected: str):
 
 	message = str(raised.exception)
 	assert_that(expected in message, message)
-	assert_not(scratch.config.database_file.exists())
+	assert_not(scratch.config.path.exists())
 
 
 def test_refuses_a_gap_in_numbering():
@@ -268,7 +268,7 @@ def test_refuses_transaction_control_statements():
 def test_refuses_a_database_newer_than_the_latest_migration():
 	with Scratch() as scratch:
 		scratch.write("0001_users.sql", "CREATE TABLE users (id INTEGER);\n")
-		connection = sqlite3.connect(scratch.config.database_file)
+		connection = sqlite3.connect(scratch.config.path)
 		connection.execute("PRAGMA user_version = 5")
 		connection.close()
 
@@ -316,7 +316,7 @@ def test_status_and_dry_apply_refuse_a_missing_database():
 		with assert_raises(MigrationError):
 			scratch.migrator().pending()
 
-		assert_not(scratch.config.database_file.exists())
+		assert_not(scratch.config.path.exists())
 
 
 def test_apply_refuses_a_missing_database_directory():
@@ -329,7 +329,7 @@ def test_apply_refuses_a_missing_database_directory():
 
 		message = str(raised.exception)
 		assert_that("missing" in message, message)
-		assert_not(config.database_file.parent.exists())
+		assert_not(config.path.parent.exists())
 
 
 def test_ignores_hidden_files():

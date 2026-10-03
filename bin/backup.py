@@ -118,7 +118,7 @@ def prune(s3, archive: Archive, keep: int, dry: bool):
 def snapshot(config: Config) -> bytes:
 	"""Copy the live database with VACUUM INTO, and read the copy."""
 
-	source_uri = f"{config.database.database_file.resolve().as_uri()}?mode=ro"
+	source_uri = f"{config.database.path.resolve().as_uri()}?mode=ro"
 	with TemporaryDirectory() as directory:
 		destination_file = Path(directory, "snapshot.sqlite")
 		source = sqlite3.connect(source_uri, uri=True)

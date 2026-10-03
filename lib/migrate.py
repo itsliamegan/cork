@@ -231,8 +231,8 @@ class Migrator:
 
 		# Connecting would create an empty file, leaving a stray database behind
 		# when the path is mistyped.
-		if not self.config.database_file.is_file():
-			raise MigrationError(f"database {self.config.database_file} does not exist")
+		if not self.config.path.is_file():
+			raise MigrationError(f"database {self.config.path} does not exist")
 
 		with self.connect() as connection:
 			return read_version(connection)
@@ -260,9 +260,9 @@ class Migrator:
 		committed, leaving the database at the last fully applied version.
 		"""
 
-		if not self.config.database_file.parent.is_dir():
+		if not self.config.path.parent.is_dir():
 			raise MigrationError(
-				f"database directory {self.config.database_file.parent} does not exist"
+				f"database directory {self.config.path.parent} does not exist"
 			)
 
 		applied = []
@@ -306,7 +306,7 @@ class Migrator:
 			connection = connect(self.config)
 		except DatabaseError as error:
 			raise MigrationError(
-				f"could not open database {self.config.database_file}"
+				f"could not open database {self.config.path}"
 			) from error
 
 		try:

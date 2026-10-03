@@ -48,7 +48,7 @@ def _referring_board_id(
 	if match is None or match.route.name != "boards.show":
 		return None
 	for placement in placements:
-		if placement.board_id == match.params["id"]:
+		if placement.board_id == match.parameters["id"]:
 			return placement.board_id
 	return None
 
@@ -116,7 +116,7 @@ def create(req: Request, ctx: Context) -> Response:
 		submissions.flash(errors, req.input)
 		match = urls.match(form.return_to) if "return_to" not in errors else None
 		if match is not None and match.route.name == "boards.show":
-			query = {"board_id": str(match.params["id"])}
+			query = {"board_id": str(match.parameters["id"])}
 			return Response.redirect(urls.route("pins.new", query=query))
 		else:
 			return Response.redirect(urls.route("pins.new"))
@@ -134,9 +134,9 @@ def create(req: Request, ctx: Context) -> Response:
 	if (
 		match is not None
 		and match.route.name == "boards.show"
-		and match.params["id"] in {board.id for board in boards}
+		and match.parameters["id"] in {board.id for board in boards}
 	):
-		return Response.redirect(urls.route("boards.show", match.params))
+		return Response.redirect(urls.route("boards.show", match.parameters))
 	else:
 		return Response.redirect(urls.route("pins.index"))
 
