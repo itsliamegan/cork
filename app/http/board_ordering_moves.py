@@ -15,14 +15,14 @@ class BoardOrderingMoveForm(Form):
 	below_id: UUID | None = None
 
 
-def create(req: Request, ctx: Context, id: UUID) -> Response:
-	store = ctx.get(Store)
-	auth = ctx.get(Authenticator[User])
+def create(request: Request, context: Context, id: UUID) -> Response:
+	store = context.get(Store)
+	auth = context.get(Authenticator[User])
 
 	access = Access(store, auth.user)
 	board = access.find_board(id)
 
-	form, errors = BoardOrderingMoveForm.validate(req.input)
+	form, errors = BoardOrderingMoveForm.validate(request.input)
 	if errors:
 		return Response.text("400 Bad Request", status=Status.BAD_REQUEST)
 	is_own_neighbour = board.id in (form.above_id, form.below_id)

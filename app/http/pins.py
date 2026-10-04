@@ -38,11 +38,11 @@ class PinForm(Form):
 
 
 def _referring_board_id(
-	ctx: Context,
+	context: Context,
 	raw_url: str | None,
 	placements: list[Placement],
 ) -> UUID | None:
-	urls = ctx.get(URLs)
+	urls = context.get(URLs)
 
 	match = urls.match(raw_url)
 	if match is None or match.route.name != "boards.show":
@@ -54,35 +54,35 @@ def _referring_board_id(
 
 
 def _pin_return_url(
-	ctx: Context,
+	context: Context,
 	raw_url: str | None,
 	pin: Pin,
 	placements: list[Placement],
 ) -> URL:
-	urls = ctx.get(URLs)
+	urls = context.get(URLs)
 
 	match = urls.match(raw_url)
 	if match is not None and match.route.name == "pins.index":
 		return urls.route("pins.index")
-	board_id = _referring_board_id(ctx, raw_url, placements)
+	board_id = _referring_board_id(context, raw_url, placements)
 	if board_id is None:
 		return urls.route("pins.show", {"id": pin.id})
 	return urls.route("boards.show", {"id": board_id})
 
 
-def find_placeable_boards(ctx: Context) -> list[Board]:
-	store = ctx.get(Store)
-	auth = ctx.get(Authenticator[User])
+def find_placeable_boards(context: Context) -> list[Board]:
+	store = context.get(Store)
+	auth = context.get(Authenticator[User])
 
 	boards = Access(store, auth.user).find_boards()
 	store.load(boards, "creator", "shares.user")
 	return boards
 
 
-def index(req: Request, ctx: Context) -> Response:
-	store = ctx.get(Store)
-	auth = ctx.get(Authenticator[User])
-	views = ctx.get(Views)
+def index(request: Request, context: Context) -> Response:
+	store = context.get(Store)
+	auth = context.get(Authenticator[User])
+	views = context.get(Views)
 
 	pins = Ownership(store, auth.user).find_pins()
 	pins.sort(key=lambda pin: pin.created_at, reverse=True)
@@ -96,13 +96,13 @@ def index(req: Request, ctx: Context) -> Response:
 	)
 
 
-def create(req: Request, ctx: Context) -> Response:
-	store = ctx.get(Store)
-	auth = ctx.get(Authenticator[User])
-	submissions = ctx.get(Submissions)
-	urls = ctx.get(URLs)
+def create(request: Request, context: Context) -> Response:
+	store = context.get(Store)
+	auth = context.get(Authenticator[User])
+	submissions = context.get(Submissions)
+	urls = context.get(URLs)
 
-	form, errors = PinForm.validate(req.input)
+	form, errors = PinForm.validate(request.input)
 	if "board_ids" in errors:
 		return Response.text("400 Bad Request", status=Status.BAD_REQUEST)
 
@@ -113,7 +113,7 @@ def create(req: Request, ctx: Context) -> Response:
 		return Response.text("400 Bad Request", status=Status.BAD_REQUEST)
 
 	if errors:
-		submissions.flash(errors, req.input)
+		submissions.flash(errors, request.input)
 		match = urls.match(form.return_to) if "return_to" not in errors else None
 		if match is not None and match.route.name == "boards.show":
 			query = {"board_id": str(match.parameters["id"])}
@@ -141,15 +141,15 @@ def create(req: Request, ctx: Context) -> Response:
 		return Response.redirect(urls.route("pins.index"))
 
 
-def new(req: Request, ctx: Context) -> Response:
-	store = ctx.get(Store)
-	auth = ctx.get(Authenticator[User])
-	views = ctx.get(Views)
-	submission = ctx.get(Submission)
-	urls = ctx.get(URLs)
+def new(request: Request, context: Context) -> Response:
+	store = context.get(Store)
+	auth = context.get(Authenticator[User])
+	views = context.get(Views)
+	submission = context.get(Submission)
+	urls = context.get(URLs)
 
 	access = Access(store, auth.user)
-	board_id = req.url.query.first("board_id")
+	board_id = request.url.query.first("board_id")
 	if board_id is not None:
 		try:
 			id = UUID(board_id)
@@ -167,7 +167,7 @@ def new(req: Request, ctx: Context) -> Response:
 		"pins.new",
 		{
 			"originating_board": board,
-			"placeable_boards": find_placeable_boards(ctx),
+			"placeable_boards": find_placeable_boards(context),
 			"selected_board_ids": set(
 				submission.value("board_ids", selected_board_ids)
 			),
@@ -176,10 +176,10 @@ def new(req: Request, ctx: Context) -> Response:
 	)
 
 
-def show(req: Request, ctx: Context, id: UUID) -> Response:
-	store = ctx.get(Store)
-	auth = ctx.get(Authenticator[User])
-	views = ctx.get(Views)
+def show(request: Request, context: Context, id: UUID) -> Response:
+	store = context.get(Store)
+	auth = context.get(Authenticator[User])
+	views = context.get(Views)
 
 	access = Access(store, auth.user)
 	pin = access.find_pin(id)
@@ -188,7 +188,7 @@ def show(req: Request, ctx: Context, id: UUID) -> Response:
 	store.load(placements, "board", "adder")
 	adder = Placement.find_adder(
 		placements,
-		_referring_board_id(ctx, req.referrer, placements),
+		_referring_board_id(context, request.referrer, placements),
 	)
 	return views.render(
 		"pins.show",
@@ -201,11 +201,11 @@ def show(req: Request, ctx: Context, id: UUID) -> Response:
 	)
 
 
-def edit(req: Request, ctx: Context, id: UUID) -> Response:
-	store = ctx.get(Store)
-	auth = ctx.get(Authenticator[User])
-	views = ctx.get(Views)
-	submission = ctx.get(Submission)
+def edit(request: Request, context: Context, id: UUID) -> Response:
+	store = context.get(Store)
+	auth = context.get(Authenticator[User])
+	views = context.get(Views)
+	submission = context.get(Submission)
 
 	access = Access(store, auth.user)
 	pin = access.find_pin(id)
@@ -218,13 +218,13 @@ def edit(req: Request, ctx: Context, id: UUID) -> Response:
 		"pins.edit",
 		{
 			"pin": pin,
-			"placeable_boards": find_placeable_boards(ctx),
+			"placeable_boards": find_placeable_boards(context),
 			"selected_board_ids": set(
 				submission.value("board_ids", selected_board_ids)
 			),
 			"return_to": _pin_return_url(
-				ctx,
-				req.referrer,
+				context,
+				request.referrer,
 				pin,
 				placements,
 			),
@@ -232,16 +232,16 @@ def edit(req: Request, ctx: Context, id: UUID) -> Response:
 	)
 
 
-def update(req: Request, ctx: Context, id: UUID) -> Response:
-	store = ctx.get(Store)
-	auth = ctx.get(Authenticator[User])
-	submissions = ctx.get(Submissions)
-	urls = ctx.get(URLs)
+def update(request: Request, context: Context, id: UUID) -> Response:
+	store = context.get(Store)
+	auth = context.get(Authenticator[User])
+	submissions = context.get(Submissions)
+	urls = context.get(URLs)
 
 	access = Access(store, auth.user)
 	pin = access.find_pin(id)
 
-	form, errors = PinForm.validate(req.input)
+	form, errors = PinForm.validate(request.input)
 	if "board_ids" in errors:
 		return Response.text("400 Bad Request", status=Status.BAD_REQUEST)
 
@@ -251,11 +251,11 @@ def update(req: Request, ctx: Context, id: UUID) -> Response:
 		return Response.text("400 Bad Request", status=Status.BAD_REQUEST)
 
 	if errors:
-		submissions.flash(errors, req.input)
+		submissions.flash(errors, request.input)
 		return Response.redirect(urls.route("pins.edit", {"id": pin.id}))
 
 	return_to = _pin_return_url(
-		ctx,
+		context,
 		form.return_to,
 		pin,
 		pin.find_accessible_placements(store, access),
@@ -272,10 +272,10 @@ def update(req: Request, ctx: Context, id: UUID) -> Response:
 	return Response.redirect(return_to)
 
 
-def delete(req: Request, ctx: Context, id: UUID) -> Response:
-	store = ctx.get(Store)
-	auth = ctx.get(Authenticator[User])
-	urls = ctx.get(URLs)
+def delete(request: Request, context: Context, id: UUID) -> Response:
+	store = context.get(Store)
+	auth = context.get(Authenticator[User])
+	urls = context.get(URLs)
 
 	access = Access(store, auth.user)
 	pin = access.find_pin(id)

@@ -9,10 +9,10 @@ from helios.routing import URLs
 from app import Access, User
 
 
-def delete(req: Request, ctx: Context, id: UUID) -> Response:
-	store = ctx.get(Store)
-	auth = ctx.get(Authenticator[User])
-	urls = ctx.get(URLs)
+def delete(request: Request, context: Context, id: UUID) -> Response:
+	store = context.get(Store)
+	auth = context.get(Authenticator[User])
+	urls = context.get(URLs)
 
 	access = Access(store, auth.user)
 	placement = access.find_placement(id)

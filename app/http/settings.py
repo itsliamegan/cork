@@ -22,8 +22,8 @@ class SettingsForm(Form):
 	return_to: str | None = None
 
 
-def _settings_return_url(ctx: Context, raw_url: str | None) -> URL:
-	urls = ctx.get(URLs)
+def _settings_return_url(context: Context, raw_url: str | None) -> URL:
+	urls = context.get(URLs)
 
 	match = urls.match(raw_url)
 	if match is not None and match.route.name in RETURNABLE_ROUTES:
@@ -32,26 +32,26 @@ def _settings_return_url(ctx: Context, raw_url: str | None) -> URL:
 		return urls.route("boards.index")
 
 
-def show(req: Request, ctx: Context) -> Response:
-	views = ctx.get(Views)
+def show(request: Request, context: Context) -> Response:
+	views = context.get(Views)
 
 	return views.render(
 		"settings.show",
 		{
-			"return_to": _settings_return_url(ctx, req.referrer),
+			"return_to": _settings_return_url(context, request.referrer),
 		},
 	)
 
 
-def update(req: Request, ctx: Context) -> Response:
-	store = ctx.get(Store)
-	auth = ctx.get(Authenticator[User])
+def update(request: Request, context: Context) -> Response:
+	store = context.get(Store)
+	auth = context.get(Authenticator[User])
 
-	form, errors = SettingsForm.validate(req.input)
+	form, errors = SettingsForm.validate(request.input)
 	if errors:
 		return Response.text("400 Bad Request", status=Status.BAD_REQUEST)
 
 	user = auth.user
 	store.update(user, open_in_new_tab=form.open_in_new_tab)
 
-	return Response.redirect(_settings_return_url(ctx, form.return_to))
+	return Response.redirect(_settings_return_url(context, form.return_to))

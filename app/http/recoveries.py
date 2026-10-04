@@ -11,11 +11,11 @@ from helios.view import Views
 from app import Recovery, User
 
 
-def create(req: Request, ctx: Context) -> Response:
-	store = ctx.get(Store)
-	auth = ctx.get(Authenticator[User])
-	flash = ctx.get(Flashes)
-	urls = ctx.get(URLs)
+def create(request: Request, context: Context) -> Response:
+	store = context.get(Store)
+	auth = context.get(Authenticator[User])
+	flash = context.get(Flashes)
+	urls = context.get(URLs)
 
 	recovery = Recovery.create(store, auth.user)
 	flash["recovery_id"] = str(recovery.id)
@@ -23,12 +23,12 @@ def create(req: Request, ctx: Context) -> Response:
 	return Response.redirect(urls.route("recoveries.show", {"id": recovery.id}))
 
 
-def show(req: Request, ctx: Context, id: UUID) -> Response:
-	store = ctx.get(Store)
-	auth = ctx.get(Authenticator[User])
-	flash = ctx.get(Flashes)
-	views = ctx.get(Views)
-	urls = ctx.get(URLs)
+def show(request: Request, context: Context, id: UUID) -> Response:
+	store = context.get(Store)
+	auth = context.get(Authenticator[User])
+	flash = context.get(Flashes)
+	views = context.get(Views)
+	urls = context.get(URLs)
 
 	recovery = Recovery.find_owned(store, id, auth.user)
 	if (

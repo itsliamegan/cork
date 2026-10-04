@@ -15,13 +15,13 @@ class ArchivalForm(Form):
 	placement_id: UUID
 
 
-def create(req: Request, ctx: Context) -> Response:
-	store = ctx.get(Store)
-	auth = ctx.get(Authenticator[User])
-	flash = ctx.get(Flashes)
-	urls = ctx.get(URLs)
+def create(request: Request, context: Context) -> Response:
+	store = context.get(Store)
+	auth = context.get(Authenticator[User])
+	flash = context.get(Flashes)
+	urls = context.get(URLs)
 
-	form, errors = ArchivalForm.validate(req.input)
+	form, errors = ArchivalForm.validate(request.input)
 	if errors:
 		return Response.text("400 Bad Request", status=Status.BAD_REQUEST)
 	access = Access(store, auth.user)
@@ -33,10 +33,10 @@ def create(req: Request, ctx: Context) -> Response:
 	return Response.redirect(urls.route("boards.show", {"id": placement.board_id}))
 
 
-def delete(req: Request, ctx: Context, id: UUID) -> Response:
-	store = ctx.get(Store)
-	auth = ctx.get(Authenticator[User])
-	urls = ctx.get(URLs)
+def delete(request: Request, context: Context, id: UUID) -> Response:
+	store = context.get(Store)
+	auth = context.get(Authenticator[User])
+	urls = context.get(URLs)
 
 	access = Access(store, auth.user)
 	archival = access.find_archival(id)

@@ -15,17 +15,17 @@ class RedemptionForm(Form):
 	name: str | None = None
 
 
-def create(req: Request, ctx: Context) -> Response:
-	store = ctx.get(Store)
-	auth = ctx.get(Authenticator[User])
-	flash = ctx.get(Flashes)
-	submissions = ctx.get(Submissions)
-	urls = ctx.get(URLs)
+def create(request: Request, context: Context) -> Response:
+	store = context.get(Store)
+	auth = context.get(Authenticator[User])
+	flash = context.get(Flashes)
+	submissions = context.get(Submissions)
+	urls = context.get(URLs)
 
 	if auth.is_signed_in():
 		return Response.redirect(urls.route("home.show"))
 
-	form, errors = RedemptionForm.validate(req.input)
+	form, errors = RedemptionForm.validate(request.input)
 	if errors:
 		return Response.redirect(urls.route("redemptions.new"))
 
@@ -54,20 +54,20 @@ def create(req: Request, ctx: Context) -> Response:
 		flash["recovery_code"] = recovery.code.plaintext
 		return Response.redirect(urls.route("recoveries.show", {"id": recovery.id}))
 
-	submissions.flash(errors, req.input)
+	submissions.flash(errors, request.input)
 	return Response.redirect(urls.route("redemptions.new", query={"token": form.token}))
 
 
-def new(req: Request, ctx: Context) -> Response:
-	store = ctx.get(Store)
-	auth = ctx.get(Authenticator[User])
-	views = ctx.get(Views)
-	urls = ctx.get(URLs)
+def new(request: Request, context: Context) -> Response:
+	store = context.get(Store)
+	auth = context.get(Authenticator[User])
+	views = context.get(Views)
+	urls = context.get(URLs)
 
 	if auth.is_signed_in():
 		return Response.redirect(urls.route("home.show"))
 
-	token = req.url.query.first("token")
+	token = request.url.query.first("token")
 	if token is not None:
 		invite = Invite.find_valid(store, token)
 	else:

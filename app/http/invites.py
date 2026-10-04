@@ -18,14 +18,14 @@ class InviteForm(Form):
 	targeted: bool = False
 
 
-def create(req: Request, ctx: Context) -> Response:
-	store = ctx.get(Store)
-	auth = ctx.get(Authenticator[User])
-	flash = ctx.get(Flashes)
-	submissions = ctx.get(Submissions)
-	urls = ctx.get(URLs)
+def create(request: Request, context: Context) -> Response:
+	store = context.get(Store)
+	auth = context.get(Authenticator[User])
+	flash = context.get(Flashes)
+	submissions = context.get(Submissions)
+	urls = context.get(URLs)
 
-	form, errors = InviteForm.validate(req.input)
+	form, errors = InviteForm.validate(request.input)
 	if errors:
 		submissions.flash(errors)
 		return Response.redirect(urls.route("settings.show"))
@@ -40,12 +40,12 @@ def create(req: Request, ctx: Context) -> Response:
 	return Response.redirect(urls.route("invites.show", {"id": invite.id}))
 
 
-def show(req: Request, ctx: Context, id: UUID) -> Response:
-	store = ctx.get(Store)
-	auth = ctx.get(Authenticator[User])
-	flash = ctx.get(Flashes)
-	views = ctx.get(Views)
-	urls = ctx.get(URLs)
+def show(request: Request, context: Context, id: UUID) -> Response:
+	store = context.get(Store)
+	auth = context.get(Authenticator[User])
+	flash = context.get(Flashes)
+	views = context.get(Views)
+	urls = context.get(URLs)
 
 	invite = Invite.find_created_by(store, id, auth.user)
 	if (

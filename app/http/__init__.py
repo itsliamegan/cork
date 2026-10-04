@@ -19,9 +19,9 @@ from app.http import (
 )
 
 
-def ensure_signed_in(req, ctx, **params):
-	auth = ctx.get(Authenticator[User])
-	urls = ctx.get(URLs)
+def ensure_signed_in(request, context, **parameters):
+	auth = context.get(Authenticator[User])
+	urls = context.get(URLs)
 
 	if not auth.is_signed_in():
 		return Response.redirect(urls.route("sessions.new"))

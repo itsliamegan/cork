@@ -28,8 +28,8 @@ class BoardForm(Form):
 	return_to: str | None = None
 
 
-def _board_return_url(ctx: Context, raw_url: str | None, id: UUID) -> URL:
-	urls = ctx.get(URLs)
+def _board_return_url(context: Context, raw_url: str | None, id: UUID) -> URL:
+	urls = context.get(URLs)
 
 	match = urls.match(raw_url)
 	if match is not None and match.route.name == "boards.index":
@@ -38,18 +38,18 @@ def _board_return_url(ctx: Context, raw_url: str | None, id: UUID) -> URL:
 		return urls.route("boards.show", {"id": id})
 
 
-def _sharable_users(ctx: Context, owner_id: UUID) -> list[User]:
-	store = ctx.get(Store)
+def _sharable_users(context: Context, owner_id: UUID) -> list[User]:
+	store = context.get(Store)
 
 	users = store.query(User).where_not({"id": owner_id}).all()
 	users.sort(key=lambda user: user.name.casefold())
 	return users
 
 
-def index(req: Request, ctx: Context) -> Response:
-	store = ctx.get(Store)
-	auth = ctx.get(Authenticator[User])
-	views = ctx.get(Views)
+def index(request: Request, context: Context) -> Response:
+	store = context.get(Store)
+	auth = context.get(Authenticator[User])
+	views = context.get(Views)
 
 	access = Access(store, auth.user)
 	private, shared = Ordering.arrange(store, access)
@@ -64,20 +64,20 @@ def index(req: Request, ctx: Context) -> Response:
 	)
 
 
-def create(req: Request, ctx: Context) -> Response:
-	store = ctx.get(Store)
-	auth = ctx.get(Authenticator[User])
-	submissions = ctx.get(Submissions)
-	urls = ctx.get(URLs)
+def create(request: Request, context: Context) -> Response:
+	store = context.get(Store)
+	auth = context.get(Authenticator[User])
+	submissions = context.get(Submissions)
+	urls = context.get(URLs)
 
-	form, errors = BoardForm.validate(req.input)
+	form, errors = BoardForm.validate(request.input)
 	if "user_ids" in errors:
 		return Response.text("400 Bad Request", status=Status.BAD_REQUEST)
-	sharable_users = _sharable_users(ctx, auth.user.id)
+	sharable_users = _sharable_users(context, auth.user.id)
 	if not set(form.user_ids) <= {user.id for user in sharable_users}:
 		return Response.text("400 Bad Request", status=Status.BAD_REQUEST)
 	if errors:
-		submissions.flash(errors, req.input)
+		submissions.flash(errors, request.input)
 		return Response.redirect(urls.route("boards.new"))
 
 	board = Board.create(
@@ -90,25 +90,25 @@ def create(req: Request, ctx: Context) -> Response:
 	return Response.redirect(urls.route("boards.show", {"id": board.id}))
 
 
-def new(req: Request, ctx: Context) -> Response:
-	auth = ctx.get(Authenticator[User])
-	views = ctx.get(Views)
-	submission = ctx.get(Submission)
+def new(request: Request, context: Context) -> Response:
+	auth = context.get(Authenticator[User])
+	views = context.get(Views)
+	submission = context.get(Submission)
 
 	return views.render(
 		"boards.new",
 		{
 			"owner": auth.user,
-			"users": _sharable_users(ctx, auth.user.id),
+			"users": _sharable_users(context, auth.user.id),
 			"shared_user_ids": set(submission.value("user_ids", [])),
 		},
 	)
 
 
-def show(req: Request, ctx: Context, id: UUID) -> Response:
-	store = ctx.get(Store)
-	auth = ctx.get(Authenticator[User])
-	views = ctx.get(Views)
+def show(request: Request, context: Context, id: UUID) -> Response:
+	store = context.get(Store)
+	auth = context.get(Authenticator[User])
+	views = context.get(Views)
 
 	access = Access(store, auth.user)
 	board = access.find_board(id)
@@ -133,11 +133,11 @@ def show(req: Request, ctx: Context, id: UUID) -> Response:
 	)
 
 
-def edit(req: Request, ctx: Context, id: UUID) -> Response:
-	store = ctx.get(Store)
-	auth = ctx.get(Authenticator[User])
-	views = ctx.get(Views)
-	submission = ctx.get(Submission)
+def edit(request: Request, context: Context, id: UUID) -> Response:
+	store = context.get(Store)
+	auth = context.get(Authenticator[User])
+	views = context.get(Views)
+	submission = context.get(Submission)
 
 	access = Access(store, auth.user)
 	board = access.find_board(id)
@@ -151,29 +151,29 @@ def edit(req: Request, ctx: Context, id: UUID) -> Response:
 		{
 			"board": board,
 			"owner": auth.user,
-			"users": _sharable_users(ctx, board.creator_id),
+			"users": _sharable_users(context, board.creator_id),
 			"shared_user_ids": set(submission.value("user_ids", shared_user_ids)),
-			"return_to": _board_return_url(ctx, req.referrer, board.id),
+			"return_to": _board_return_url(context, request.referrer, board.id),
 		},
 	)
 
 
-def update(req: Request, ctx: Context, id: UUID) -> Response:
-	store = ctx.get(Store)
-	auth = ctx.get(Authenticator[User])
-	submissions = ctx.get(Submissions)
-	urls = ctx.get(URLs)
+def update(request: Request, context: Context, id: UUID) -> Response:
+	store = context.get(Store)
+	auth = context.get(Authenticator[User])
+	submissions = context.get(Submissions)
+	urls = context.get(URLs)
 
 	access = Access(store, auth.user)
 	board = access.find_board(id)
-	form, errors = BoardForm.validate(req.input)
+	form, errors = BoardForm.validate(request.input)
 	if "user_ids" in errors:
 		return Response.text("400 Bad Request", status=Status.BAD_REQUEST)
-	sharable_users = _sharable_users(ctx, board.creator_id)
+	sharable_users = _sharable_users(context, board.creator_id)
 	if not set(form.user_ids) <= {user.id for user in sharable_users}:
 		return Response.text("400 Bad Request", status=Status.BAD_REQUEST)
 	if errors:
-		submissions.flash(errors, req.input)
+		submissions.flash(errors, request.input)
 		return Response.redirect(urls.route("boards.edit", {"id": board.id}))
 
 	board.edit(
@@ -183,14 +183,14 @@ def update(req: Request, ctx: Context, id: UUID) -> Response:
 		users=[user for user in sharable_users if user.id in form.user_ids],
 	)
 
-	return_to = _board_return_url(ctx, form.return_to, board.id)
+	return_to = _board_return_url(context, form.return_to, board.id)
 	return Response.redirect(return_to)
 
 
-def delete(req: Request, ctx: Context, id: UUID) -> Response:
-	store = ctx.get(Store)
-	auth = ctx.get(Authenticator[User])
-	urls = ctx.get(URLs)
+def delete(request: Request, context: Context, id: UUID) -> Response:
+	store = context.get(Store)
+	auth = context.get(Authenticator[User])
+	urls = context.get(URLs)
 
 	access = Access(store, auth.user)
 	board = access.find_board(id)

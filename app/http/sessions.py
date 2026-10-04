@@ -26,17 +26,17 @@ class SignInForm(Form):
 	recovery_code: str
 
 
-def create(req: Request, ctx: Context) -> Response:
-	store = ctx.get(Store)
-	auth = ctx.get(Authenticator[User])
-	flash = ctx.get(Flashes)
-	submissions = ctx.get(Submissions)
-	urls = ctx.get(URLs)
+def create(request: Request, context: Context) -> Response:
+	store = context.get(Store)
+	auth = context.get(Authenticator[User])
+	flash = context.get(Flashes)
+	submissions = context.get(Submissions)
+	urls = context.get(URLs)
 
 	if auth.is_signed_in():
 		return Response.redirect(urls.route("boards.index"))
 
-	form, errors = SignInForm.validate(req.input)
+	form, errors = SignInForm.validate(request.input)
 	if errors:
 		submissions.flash(errors)
 		return Response.redirect(urls.route("sessions.new"))
@@ -54,10 +54,10 @@ def create(req: Request, ctx: Context) -> Response:
 	return Response.redirect(urls.route("recoveries.show", {"id": recovery.id}))
 
 
-def new(req: Request, ctx: Context) -> Response:
-	auth = ctx.get(Authenticator[User])
-	views = ctx.get(Views)
-	urls = ctx.get(URLs)
+def new(request: Request, context: Context) -> Response:
+	auth = context.get(Authenticator[User])
+	views = context.get(Views)
+	urls = context.get(URLs)
 
 	if auth.is_signed_in():
 		return Response.redirect(urls.route("boards.index"))
@@ -65,9 +65,9 @@ def new(req: Request, ctx: Context) -> Response:
 	return views.render("sessions.new")
 
 
-def delete(req: Request, ctx: Context) -> Response:
-	auth = ctx.get(Authenticator[User])
-	urls = ctx.get(URLs)
+def delete(request: Request, context: Context) -> Response:
+	auth = context.get(Authenticator[User])
+	urls = context.get(URLs)
 
 	auth.sign_out()
 	return Response.redirect(urls.route("sessions.new"))
