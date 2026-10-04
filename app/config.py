@@ -38,7 +38,9 @@ class Config(Config):
 			),
 			reload=self.boolean("APP_VIEWS_RELOAD", False),
 		)
-		self.session = helios.session.config.Config()
+		self.session = helios.session.config.Config(
+			secure=self.base_url.scheme == "https",
+		)
 		self.session_file = self.path(
 			"APP_SESSION_STORE_FILE",
 			Path(DATA_DIR, "sessions.json"),
