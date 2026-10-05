@@ -1,7 +1,7 @@
 from uuid import uuid4
 
 from helios.http import Input, URL
-from luna.test.assertion import assert_eq, assert_that
+from luna.test.assertion import assert_eq, assert_in, assert_not_in, assert_that
 
 from app import Board, Pin, Placement, Share, User
 from app.http.pins import PinForm
@@ -97,8 +97,8 @@ def test_edit_form_checks_accessible_placements():
 		res = app.client.get(f"/pins/{pin.id}/edit")
 
 		assert_eq(res.status_code, 200)
-		assert_that('value="Sartre"' in res.text)
-		assert_that(">Original note</textarea>" in res.text)
+		assert_in('value="Sartre"', res.text)
+		assert_in(">Original note</textarea>", res.text)
 		assert_eq(checked_values(res.text, "board_ids"), {str(reading.id)})
 
 
@@ -112,8 +112,8 @@ def test_new_form_from_board_lists_every_board():
 		res = app.client.get(f"/pins/new?board_id={reading.id}")
 
 		assert_eq(res.status_code, 200)
-		assert_that(reading.title in res.text)
-		assert_that(essays.title in res.text)
+		assert_in(reading.title, res.text)
+		assert_in(essays.title, res.text)
 
 
 def test_new_form_rejects_inaccessible_boards():
@@ -152,7 +152,7 @@ def test_edit_form_lists_every_board():
 
 		assert_eq(res.status_code, 200)
 		for board in [reading, essays, unread]:
-			assert_that(board.title in res.text)
+			assert_in(board.title, res.text)
 
 
 def test_board_picker_includes_only_accessible_boards():
@@ -183,8 +183,8 @@ def test_board_picker_includes_only_accessible_boards():
 
 		assert_eq(res.status_code, 200)
 		for board in [private, shared, incoming]:
-			assert_that(board.title in res.text)
-		assert_that(hidden.title not in res.text)
+			assert_in(board.title, res.text)
+		assert_not_in(hidden.title, res.text)
 
 
 def test_update_changes_pin_and_its_boards():
@@ -312,7 +312,7 @@ def test_pin_details_embed_frame_with_accessible_boards_and_actions():
 
 		res = app.client.get(f"/pins/{pin.id}")
 
-		assert_that("https://plato.stanford.edu/entries/sartre/" in res.text)
+		assert_in("https://plato.stanford.edu/entries/sartre/", res.text)
 
 
 def test_pin_details_use_referring_board_placement():
@@ -340,7 +340,7 @@ def test_pin_details_use_referring_board_placement():
 		)
 
 		assert_eq(res.status_code, 200)
-		assert_that("Participant" in res.text)
+		assert_in("Participant", res.text)
 
 
 def test_owned_pins_index_includes_unfiled_pins_and_hides_other_creators():
@@ -371,8 +371,8 @@ def test_owned_pins_index_includes_unfiled_pins_and_hides_other_creators():
 		res = app.client.get("/pins/")
 
 		assert_eq(res.status_code, 200)
-		assert_that(owned.title in res.text)
-		assert_that(visible.title not in res.text)
+		assert_in(owned.title, res.text)
+		assert_not_in(visible.title, res.text)
 
 
 def test_pins_index_lists_every_pin_without_board_titles():
@@ -401,9 +401,9 @@ def test_pins_index_lists_every_pin_without_board_titles():
 		res = app.client.get("/pins/")
 
 		assert_eq(res.status_code, 200)
-		assert_that(first.title in res.text)
-		assert_that(second.title in res.text)
-		assert_that(board.title not in res.text)
+		assert_in(first.title, res.text)
+		assert_in(second.title, res.text)
+		assert_not_in(board.title, res.text)
 
 
 def test_new_form_and_creation_allow_no_board():
@@ -451,7 +451,7 @@ def test_pin_form_rejects_urls_that_are_malformed_or_not_http():
 	]:
 		_, errors = PinForm.validate(Input({"title": "Sartre", "url": url}))
 
-		assert_that("url" in errors)
+		assert_in("url", errors)
 
 
 def test_create_keeps_the_fragment_of_a_url():
@@ -584,10 +584,10 @@ def test_owned_pin_hides_inaccessible_board_names():
 		edit_res = app.client.get(f"/pins/{pin.id}/edit")
 
 		assert_eq(index_res.status_code, 200)
-		assert_that(hidden.title not in index_res.text)
+		assert_not_in(hidden.title, index_res.text)
 		for res in [show_res, edit_res]:
 			assert_eq(res.status_code, 200)
-			assert_that(hidden.title not in res.text)
+			assert_not_in(hidden.title, res.text)
 
 
 def test_deletes_pin():

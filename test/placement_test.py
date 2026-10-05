@@ -1,6 +1,6 @@
 from helios.database import Store
 from helios.http import URL
-from luna.test.assertion import assert_eq, assert_raises, assert_that
+from luna.test.assertion import assert_eq, assert_not_none, assert_raises, assert_that
 
 from app import Access, Archival, Board, Move, Pin, Placement, Share, User
 from app.access import NotPermitted
@@ -69,7 +69,7 @@ def test_create_records_adder_at_default_position():
 def test_find_adder_without_placements_is_none():
 	adder = Placement.find_adder([])
 
-	assert_that(adder is None)
+	assert_eq(adder, None)
 
 
 def test_find_adder_prefers_the_given_board():
@@ -93,10 +93,8 @@ def test_find_adder_prefers_the_given_board():
 		reading_adder = Placement.find_adder(placements, reading.id)
 		essays_adder = Placement.find_adder(placements, essays.id)
 
-		assert reading_adder is not None
-		assert essays_adder is not None
-		assert_eq(reading_adder.id, board_creator.id)
-		assert_eq(essays_adder.id, participant.id)
+		assert_eq(assert_not_none(reading_adder).id, board_creator.id)
+		assert_eq(assert_not_none(essays_adder).id, participant.id)
 
 
 def test_find_adder_without_a_board_is_stable_across_orderings():
@@ -120,9 +118,7 @@ def test_find_adder_without_a_board_is_stable_across_orderings():
 		forward = Placement.find_adder(placements)
 		backward = Placement.find_adder(list(reversed(placements)))
 
-		assert forward is not None
-		assert backward is not None
-		assert_eq(forward.id, backward.id)
+		assert_eq(assert_not_none(forward).id, assert_not_none(backward).id)
 
 
 def test_replace_adds_and_removes_placements_and_keeps_retained_ones():

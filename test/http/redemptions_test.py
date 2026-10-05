@@ -1,7 +1,7 @@
 from concurrent.futures import ThreadPoolExecutor
 from datetime import UTC, datetime
 
-from luna.test.assertion import assert_eq, assert_that
+from luna.test.assertion import assert_eq, assert_not_in
 
 from app import Invite, Recovery, User
 from test.support import TestApplication, TestClient
@@ -51,9 +51,7 @@ def test_untargeted_invite_creates_user_and_recovery():
 		users = app.store.find_all(User)
 		created = next(user for user in users if user.name == "Newcomer")
 		assert_eq(len(app.store.find_by(Recovery, user_id=created.id)), 1)
-		assert_that(
-			invite.id not in {stored.id for stored in app.store.find_all(Invite)}
-		)
+		assert_not_in(invite.id, {stored.id for stored in app.store.find_all(Invite)})
 
 
 def test_duplicate_name_does_not_redeem():
@@ -94,9 +92,7 @@ def test_targeted_invite_signs_in_without_recovery():
 		assert_eq(res.status_code, 302)
 		assert_eq(res.headers["Location"], "/boards/")
 		assert_eq(app.store.find_by(Recovery, user_id=target.id), [])
-		assert_that(
-			invite.id not in {stored.id for stored in app.store.find_all(Invite)}
-		)
+		assert_not_in(invite.id, {stored.id for stored in app.store.find_all(Invite)})
 
 
 def test_invalid_tokens_render_error():
@@ -137,6 +133,4 @@ def test_concurrent_redemptions_create_one_user():
 
 		assert_eq([r.status_code for r in responses], [302, 302])
 		assert_eq(len(app.store.find_all(User)), 2)
-		assert_that(
-			invite.id not in {stored.id for stored in app.store.find_all(Invite)}
-		)
+		assert_not_in(invite.id, {stored.id for stored in app.store.find_all(Invite)})

@@ -8,10 +8,10 @@ from tempfile import TemporaryDirectory
 from helios.database import Config
 from luna.test.assertion import (
 	assert_eq,
+	assert_in,
 	assert_not,
 	assert_not_eq,
 	assert_raises,
-	assert_that,
 )
 
 from app.config import ROOT_DIR
@@ -133,8 +133,8 @@ def test_failing_statement_rolls_back_its_whole_migration():
 			scratch.migrator().apply()
 
 		message = str(raised.exception)
-		assert_that("0002_broken.sql" in message, message)
-		assert_that("INSERT INTO missing" in message, message)
+		assert_in("0002_broken.sql", message)
+		assert_in("INSERT INTO missing", message)
 		assert_eq(scratch.version(), 1)
 		assert_eq(scratch.tables(), ["users"])
 
@@ -217,7 +217,7 @@ def assert_refused(scratch: Scratch, expected: str):
 		scratch.migrator().apply()
 
 	message = str(raised.exception)
-	assert_that(expected in message, message)
+	assert_in(expected, message)
 	assert_not(scratch.config.path.exists())
 
 
@@ -276,7 +276,7 @@ def test_refuses_a_database_newer_than_the_latest_migration():
 			scratch.migrator().apply()
 
 		message = str(raised.exception)
-		assert_that("version 5" in message, message)
+		assert_in("version 5", message)
 		assert_eq(scratch.version(), 5)
 		assert_eq(scratch.tables(), [])
 
@@ -328,7 +328,7 @@ def test_apply_refuses_a_missing_database_directory():
 			scratch.migrator(config).apply()
 
 		message = str(raised.exception)
-		assert_that("missing" in message, message)
+		assert_in("missing", message)
 		assert_not(config.path.parent.exists())
 
 

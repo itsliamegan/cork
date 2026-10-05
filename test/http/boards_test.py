@@ -1,7 +1,7 @@
 from uuid import uuid4
 
 from helios.http import URL
-from luna.test.assertion import assert_eq, assert_that
+from luna.test.assertion import assert_eq, assert_in
 
 from app import Board, Pin, Placement, Share, User
 from test.support import TestApplication, checked_values
@@ -68,7 +68,7 @@ def test_edit_form_checks_current_shares():
 		res = app.client.get(f"/boards/{board.id}/edit")
 
 		assert_eq(res.status_code, 200)
-		assert_that('value="Reading"' in res.text)
+		assert_in('value="Reading"', res.text)
 		assert_eq(checked_values(res.text, "user_ids"), {str(participant.id)})
 
 
@@ -111,7 +111,7 @@ def test_shares_board():
 		res = app.client.get(f"/boards/{board.id}")
 
 		assert_eq(res.status_code, 200)
-		assert_that("Stanford Entry on Sartre" in res.text)
+		assert_in("Stanford Entry on Sartre", res.text)
 
 		res = app.client.post(
 			"/pins/",

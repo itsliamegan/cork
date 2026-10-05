@@ -1,6 +1,6 @@
 from uuid import uuid4
 
-from luna.test.assertion import assert_eq, assert_raises, assert_that
+from luna.test.assertion import assert_eq, assert_raises
 
 from app import Move
 from app.move import OutOfDate
@@ -55,7 +55,7 @@ def test_a_record_already_between_its_neighbours_is_a_no_op():
 
 	order = Move(second, first, third).apply([first, second, third])
 
-	assert_that(order is None)
+	assert_eq(order, None)
 
 
 def test_a_record_without_a_neighbour_above_moves_first():
@@ -135,4 +135,4 @@ def test_a_record_dropped_back_among_hidden_records_in_its_gap_is_a_no_op():
 		{above, below},
 	)
 
-	assert_that(order is None)
+	assert_eq(order, None)

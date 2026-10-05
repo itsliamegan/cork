@@ -1,4 +1,4 @@
-from luna.test.assertion import assert_eq, assert_that
+from luna.test.assertion import assert_eq
 
 from app import Invite, User
 from test.support import TestApplication
@@ -14,7 +14,7 @@ def test_create_stores_untargeted_invite():
 		assert_eq(res.status_code, 302)
 		invite = app.store.find_all(Invite)[0]
 		assert_eq(invite.creator_id, creator.id)
-		assert_that(invite.target_id is None)
+		assert_eq(invite.target_id, None)
 
 
 def test_create_stores_targeted_invite():

@@ -1,7 +1,7 @@
 from datetime import UTC, datetime, timedelta
 
 from helios.database import NotFoundError
-from luna.test.assertion import assert_eq, assert_raises, assert_that
+from luna.test.assertion import assert_eq, assert_not_none, assert_raises, assert_that
 
 from app import Invite, User
 from test.support import TestStore
@@ -16,7 +16,7 @@ def test_untargeted_invite_lasts_a_week():
 		after = datetime.now(UTC)
 
 		assert_eq(invite.creator_id, creator.id)
-		assert_that(invite.target_id is None)
+		assert_eq(invite.target_id, None)
 		assert_that(before + timedelta(days=7) <= invite.expires_at)
 		assert_that(invite.expires_at <= after + timedelta(days=7))
 
@@ -40,9 +40,9 @@ def test_invite_expires_at_boundary():
 		invite = Invite.create(store, creator)
 
 		found = Invite.find_valid(store, invite.token.value)
-		assert_that(found is not None and found.id == invite.id)
+		assert_eq(assert_not_none(found).id, invite.id)
 		store.update(invite, expires_at=datetime.now(UTC))
-		assert_that(Invite.find_valid(store, invite.token.value) is None)
+		assert_eq(Invite.find_valid(store, invite.token.value), None)
 
 
 def test_unknown_token_is_invalid():
@@ -52,7 +52,7 @@ def test_unknown_token_is_invalid():
 
 		invite = Invite.find_valid(store, "not-a-real-token")
 
-		assert_that(invite is None)
+		assert_eq(invite, None)
 
 
 def test_redeeming_untargeted_invite_creates_user_and_spends_invite():
@@ -66,7 +66,7 @@ def test_redeeming_untargeted_invite_creates_user_and_spends_invite():
 		assert_eq(
 			{stored.name for stored in store.find_all(User)}, {"Creator", "Newcomer"}
 		)
-		assert_that(Invite.find_valid(store, invite.token.value) is None)
+		assert_eq(Invite.find_valid(store, invite.token.value), None)
 
 
 def test_redeeming_targeted_invite_returns_target_and_spends_invite():
@@ -78,7 +78,7 @@ def test_redeeming_targeted_invite_returns_target_and_spends_invite():
 
 		assert_eq(redeemed.id, creator.id)
 		assert_eq(len(store.find_all(User)), 1)
-		assert_that(Invite.find_valid(store, invite.token.value) is None)
+		assert_eq(Invite.find_valid(store, invite.token.value), None)
 
 
 def test_redeem_refuses_a_targeted_invite():
@@ -91,7 +91,7 @@ def test_redeem_refuses_a_targeted_invite():
 
 		assert_eq(len(store.find_all(User)), 1)
 		found = Invite.find_valid(store, invite.token.value)
-		assert_that(found is not None and found.id == invite.id)
+		assert_eq(assert_not_none(found).id, invite.id)
 
 
 def test_redeem_for_target_refuses_an_untargeted_invite():
@@ -103,7 +103,7 @@ def test_redeem_for_target_refuses_an_untargeted_invite():
 			invite.redeem_for_target(store)
 
 		found = Invite.find_valid(store, invite.token.value)
-		assert_that(found is not None and found.id == invite.id)
+		assert_eq(assert_not_none(found).id, invite.id)
 
 
 def test_redeeming_one_invite_leaves_others_valid():
@@ -114,9 +114,9 @@ def test_redeeming_one_invite_leaves_others_valid():
 
 		first.redeem(store, "Newcomer")
 
-		assert_that(Invite.find_valid(store, first.token.value) is None)
+		assert_eq(Invite.find_valid(store, first.token.value), None)
 		found = Invite.find_valid(store, second.token.value)
-		assert_that(found is not None and found.id == second.id)
+		assert_eq(assert_not_none(found).id, second.id)
 
 
 def test_find_created_by_hides_other_creators_invites():

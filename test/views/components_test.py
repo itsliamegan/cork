@@ -2,7 +2,7 @@ from uuid import uuid4
 
 from helios.http import URL
 from helios.view import Attributes, Engine
-from luna.test.assertion import assert_not, assert_raises, assert_that
+from luna.test.assertion import assert_in, assert_not_in, assert_raises
 
 from app import Access, Archival, Board, Pin, Placement, Preferences, Share, User
 from app.views.archivals.item import ArchivalItem
@@ -24,8 +24,8 @@ def test_external_link_in_new_tab_withholds_the_opener():
 
 		html = engine.render(link)
 
-		assert_that('target="_blank"' in html)
-		assert_that('rel="noopener noreferrer"' in html)
+		assert_in('target="_blank"', html)
+		assert_in('rel="noopener noreferrer"', html)
 
 
 def test_external_link_in_same_tab_sets_no_target():
@@ -35,8 +35,8 @@ def test_external_link_in_same_tab_sets_no_target():
 
 		html = engine.render(link)
 
-		assert_not("target=" in html)
-		assert_not("rel=" in html)
+		assert_not_in("target=", html)
+		assert_not_in("rel=", html)
 
 
 def test_external_link_refuses_a_caller_target():
@@ -55,7 +55,7 @@ def test_external_link_without_content_shows_its_url():
 
 		html = engine.render(link)
 
-		assert_that(">https://example.com/sartre</a>" in html)
+		assert_in(">https://example.com/sartre</a>", html)
 
 
 def test_pin_link_with_url_opens_the_url():
@@ -68,8 +68,8 @@ def test_pin_link_with_url_opens_the_url():
 
 		html = engine.render(link)
 
-		assert_that('href="https://sartre.example"' in html)
-		assert_that('target="_blank"' in html)
+		assert_in('href="https://sartre.example"', html)
+		assert_in('target="_blank"', html)
 
 
 def test_pin_link_without_url_opens_the_pin_in_the_same_tab():
@@ -80,9 +80,9 @@ def test_pin_link_without_url_opens_the_pin_in_the_same_tab():
 
 		html = engine.render(link)
 
-		assert_that(f'href="/pins/{pin.id}"' in html)
-		assert_not("target=" in html)
-		assert_not("rel=" in html)
+		assert_in(f'href="/pins/{pin.id}"', html)
+		assert_not_in("target=", html)
+		assert_not_in("rel=", html)
 
 
 def test_confirm_button_opens_the_dialog_it_renders():
@@ -98,12 +98,12 @@ def test_confirm_button_opens_the_dialog_it_renders():
 
 		html = engine.render(button)
 
-		assert_that('command="show-modal" commandfor="pin-delete-dialog"' in html)
-		assert_that('<dialog id="pin-delete-dialog"' in html)
-		assert_that('form="pin-delete-form"' in html)
-		assert_that('<form id="pin-delete-form" action="/pins/1"' in html)
-		assert_that('name="_method" value="DELETE"' in html)
-		assert_that("Delete this pin?" in html)
+		assert_in('command="show-modal" commandfor="pin-delete-dialog"', html)
+		assert_in('<dialog id="pin-delete-dialog"', html)
+		assert_in('form="pin-delete-form"', html)
+		assert_in('<form id="pin-delete-form" action="/pins/1"', html)
+		assert_in('name="_method" value="DELETE"', html)
+		assert_in("Delete this pin?", html)
 
 
 def test_pin_placements_label_private_and_shared_boards():
@@ -126,8 +126,8 @@ def test_pin_placements_label_private_and_shared_boards():
 
 		html = engine.render(placements)
 
-		assert_that(">Private</span>" in html)
-		assert_that(">Shared · bob, Carmen</span>" in html)
+		assert_in(">Private</span>", html)
+		assert_in(">Shared · bob, Carmen</span>", html)
 
 
 def test_board_chips_mark_an_unfiled_pin():
@@ -137,7 +137,7 @@ def test_board_chips_mark_an_unfiled_pin():
 
 		html = engine.render(chips)
 
-		assert_that("Not on any boards" in html)
+		assert_in("Not on any boards", html)
 
 
 def test_board_chips_without_boards_leave_a_filed_pin_unmarked():
@@ -147,7 +147,7 @@ def test_board_chips_without_boards_leave_a_filed_pin_unmarked():
 
 		html = engine.render(chips)
 
-		assert_not("Not on any boards" in html)
+		assert_not_in("Not on any boards", html)
 
 
 def test_board_item_offers_its_menu_only_to_the_boards_creator():
@@ -164,9 +164,9 @@ def test_board_item_offers_its_menu_only_to_the_boards_creator():
 			BoardItem(board=board, access=Access(app.store, participant))
 		)
 
-		assert_that(f'href="/boards/{board.id}/edit">Edit</a>' in creator_html)
-		assert_that(f'action="/boards/{board.id}"' in creator_html)
-		assert_not('class="board-actions"' in participant_html)
+		assert_in(f'href="/boards/{board.id}/edit">Edit</a>', creator_html)
+		assert_in(f'action="/boards/{board.id}"', creator_html)
+		assert_not_in('class="board-actions"', participant_html)
 
 
 def test_placement_menu_offers_edit_only_to_the_pins_creator():
@@ -197,10 +197,10 @@ def test_placement_menu_offers_edit_only_to_the_pins_creator():
 			)
 		)
 
-		assert_that(f'href="/pins/{pin.id}">View</a>' in creator_html)
-		assert_that(f'href="/pins/{pin.id}/edit">Edit</a>' in creator_html)
-		assert_that(f'href="/pins/{pin.id}">View</a>' in reader_html)
-		assert_not(">Edit</a>" in reader_html)
+		assert_in(f'href="/pins/{pin.id}">View</a>', creator_html)
+		assert_in(f'href="/pins/{pin.id}/edit">Edit</a>', creator_html)
+		assert_in(f'href="/pins/{pin.id}">View</a>', reader_html)
+		assert_not_in(">Edit</a>", reader_html)
 
 
 def test_placement_menu_offers_remove_only_when_allowed():
@@ -232,8 +232,8 @@ def test_placement_menu_offers_remove_only_when_allowed():
 			)
 		)
 
-		assert_that(f'action="/placements/{placement.id}"' in removable_html)
-		assert_not(f'action="/placements/{placement.id}"' in fixed_html)
+		assert_in(f'action="/placements/{placement.id}"', removable_html)
+		assert_not_in(f'action="/placements/{placement.id}"', fixed_html)
 
 
 def test_placement_item_archives_its_placement():
@@ -257,8 +257,8 @@ def test_placement_item_archives_its_placement():
 
 		html = engine.render(item)
 
-		assert_that('<form action="/archivals/" method="POST">' in html)
-		assert_that(f'name="placement_id" value="{placement.id}"' in html)
+		assert_in('<form action="/archivals/" method="POST">', html)
+		assert_in(f'name="placement_id" value="{placement.id}"', html)
 
 
 def test_archival_item_unarchives_its_archival():
@@ -283,8 +283,8 @@ def test_archival_item_unarchives_its_archival():
 
 		html = engine.render(item)
 
-		assert_that(f'<form action="/archivals/{archival.id}" method="POST">' in html)
-		assert_that('name="_method" value="DELETE"' in html)
+		assert_in(f'<form action="/archivals/{archival.id}" method="POST">', html)
+		assert_in('name="_method" value="DELETE"', html)
 
 
 def test_placement_item_opens_its_pin_in_a_new_tab_when_set():
@@ -308,4 +308,4 @@ def test_placement_item_opens_its_pin_in_a_new_tab_when_set():
 
 		html = engine.render(item)
 
-		assert_that('target="_blank"' in html)
+		assert_in('target="_blank"', html)

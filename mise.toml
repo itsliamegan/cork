@@ -9,7 +9,7 @@ build = "podman build --tag cork ."
 serve = "podman run --name cork --replace --systemd always --volume .:/srv/cork:ro --volume ./data:/var/lib/cork --publish 4000:80 cork"
 migrate = "podman exec --user cork --workdir /srv/cork cork /opt/cork/venv/bin/python bin/migrate.py apply"
 "migrate:status" = "podman exec --user cork --workdir /srv/cork cork /opt/cork/venv/bin/python bin/migrate.py status"
-test = "uv run -m luna.test.runner"
+test = "uv run luna test"
 lint = [
 	"ruff format",
 	"ruff check --fix",

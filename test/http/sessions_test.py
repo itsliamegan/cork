@@ -4,7 +4,7 @@ from uuid import uuid4
 
 from helios.auth.password import Digest
 from helios.http import Input
-from luna.test.assertion import assert_eq, assert_that
+from luna.test.assertion import assert_eq, assert_in, assert_not_in, assert_that
 
 from app import Recovery, User
 from app.http.sessions import SignInForm
@@ -142,7 +142,7 @@ def test_stored_session_remains_authenticated():
 
 		assert_eq(res.status_code, 200)
 		assert_eq(app.client.get_cookie("session_id").value, str(session_id))
-		assert_that(str(session_id) in persisted)
+		assert_in(str(session_id), persisted)
 
 
 def test_expired_session_is_rejected():
@@ -167,4 +167,4 @@ def test_expired_session_is_rejected():
 		persisted = json.loads(app.sessions_file.read_text())
 
 		assert_eq(res.status_code, 302)
-		assert_that(str(session_id) not in persisted)
+		assert_not_in(str(session_id), persisted)
