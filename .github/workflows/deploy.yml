@@ -40,6 +40,6 @@ jobs:
             sudo systemctl stop cork.socket cork.service
             sudo systemctl start cork-backup.service
             /srv/cork/.venv/bin/python bin/helios assets:compile
-            sudo -u cork /srv/cork/.venv/bin/python bin/migrate.py apply
+            sudo -u cork /srv/cork/.venv/bin/python bin/helios migrate
             sudo systemctl start cork.socket cork.service
           '

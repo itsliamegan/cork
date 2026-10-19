@@ -41,6 +41,7 @@ def assets(_environment: Environment) -> helios.assets.config.Config:
 def database(environment: Environment) -> helios.database.config.Config:
 	return helios.database.config.Config(
 		environment.path("APP_DATABASE_FILE", Path(DATA_DIR, "store.sqlite")),
+		migrations=Path(ROOT_DIR, "database", "migrations"),
 	)
 
 
