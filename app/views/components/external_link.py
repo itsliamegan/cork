@@ -1,9 +1,10 @@
 from helios.http import URL
-from helios.view import Attributes, Component, Markup
+from helios.view import Attributes, Component
+from markupsafe import Markup
 
 
 class ExternalLink(Component):
-	template = "components.external_link"
+	template = "components/external_link"
 
 	url: URL
 	new_tab: bool = False

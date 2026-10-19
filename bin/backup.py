@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 from compression import zstd
+from dataclasses import dataclass
 from datetime import UTC, date, datetime, timedelta
 import hashlib
 from pathlib import Path
@@ -8,9 +9,11 @@ import re
 import sqlite3
 import sys
 from tempfile import TemporaryDirectory
+from typing import Self
 
 from boto3 import client
-from helios.config import ConfigError
+from helios.config import ConfigError, Environment
+import helios.database.config
 from luna.cli import Program, option
 
 import app.config
@@ -19,15 +22,23 @@ ZSTD_LEVEL = 10
 KEEP_DAYS = 30
 
 
-class Config(app.config.Config):
-	def __init__(self, values: dict[str, str]):
-		super().__init__(values)
+@dataclass
+class Config:
+	endpoint: str
+	access_key_id: str
+	secret_access_key: str
+	bucket: str
+	prefix: str
 
-		self.endpoint = self.require("APP_BACKUP_ENDPOINT")
-		self.access_key_id = self.require("APP_BACKUP_ACCESS_KEY_ID")
-		self.secret_access_key = self.require("APP_BACKUP_SECRET_ACCESS_KEY")
-		self.bucket = self.require("APP_BACKUP_BUCKET")
-		self.prefix = self.text("APP_BACKUP_PREFIX", "backups").strip("/")
+	@classmethod
+	def read(cls, environment: Environment) -> Self:
+		return cls(
+			endpoint=environment.require("APP_BACKUP_ENDPOINT"),
+			access_key_id=environment.require("APP_BACKUP_ACCESS_KEY_ID"),
+			secret_access_key=environment.require("APP_BACKUP_SECRET_ACCESS_KEY"),
+			bucket=environment.require("APP_BACKUP_BUCKET"),
+			prefix=environment.text("APP_BACKUP_PREFIX", "backups").strip("/"),
+		)
 
 
 class Backup(Program):
@@ -46,8 +57,10 @@ class Backup(Program):
 	)
 
 	def run(self):
+		environment = Environment.load(env_file=app.config.ENV_FILE)
+		database = app.config.database(environment)
 		try:
-			config = Config.load(env_file=app.config.ENV_FILE)
+			config = Config.read(environment)
 		except ConfigError as error:
 			raise SystemExit(f"backup: error: {error}") from None
 
@@ -60,14 +73,19 @@ class Backup(Program):
 		)
 		archive = Archive(config)
 
-		backup(s3, archive, config, self.dry)
+		backup(s3, archive, database, self.dry)
 		prune(s3, archive, self.keep, self.dry)
 
 
-def backup(s3, archive: Archive, config: Config, dry: bool):
+def backup(
+	s3,
+	archive: Archive,
+	database: helios.database.config.Config,
+	dry: bool,
+):
 	"""Upload a compressed snapshot of the database."""
 
-	raw = snapshot(config)
+	raw = snapshot(database)
 	body = zstd.compress(raw, level=ZSTD_LEVEL)
 	key = archive.key(datetime.now(UTC).date())
 
@@ -115,10 +133,10 @@ def prune(s3, archive: Archive, keep: int, dry: bool):
 		raise SystemExit(1)
 
 
-def snapshot(config: Config) -> bytes:
+def snapshot(database: helios.database.config.Config) -> bytes:
 	"""Copy the live database with VACUUM INTO, and read the copy."""
 
-	source_uri = f"{config.database.path.resolve().as_uri()}?mode=ro"
+	source_uri = f"{database.path.resolve().as_uri()}?mode=ro"
 	with TemporaryDirectory() as directory:
 		destination_file = Path(directory, "snapshot.sqlite")
 		source = sqlite3.connect(source_uri, uri=True)

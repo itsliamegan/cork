@@ -13,8 +13,8 @@ It is built on the [Helios](https://tangled.org/liamegan.com/helios) framework.
 - `app/http/*.py`: handlebrs, one module per resource.
 - `app/__init__.py`: re-exports every model and the `models` list.
 - `app/*.py` (e.g. `app/pin.py`): models, one module per class.
-- `app/views/`: Jinja templates, addressed by dotted path: `boards/show.html`
-  is rendered as `"boards.show"`.
+- `app/views/`: Jinja templates, addressed by slashed path: `boards/show.html`
+  is rendered as `"boards/show"`.
 - `app/assets/`, `public/static/`: styles and scripts.
 - `database/migrations/`: numbered SQL migrations, applied with
   `mise run migrate`.

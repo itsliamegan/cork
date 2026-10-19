@@ -6,7 +6,7 @@ from helios.database import Store
 from helios.flash import Flashes
 from helios.http import Request, Response
 from helios.routing import URLs
-from helios.view import Views
+from helios.view.views import Views
 
 from app import Recovery, User
 
@@ -39,7 +39,7 @@ def show(request: Request, context: Context, id: UUID) -> Response:
 		return Response.redirect(urls.route("settings.show"))
 
 	return views.render(
-		"recoveries.show",
+		"recoveries/show",
 		{
 			"recovery_code": flash["recovery_code"],
 		},

@@ -4,7 +4,7 @@ from helios.database import Store
 from helios.form import Form
 from helios.http import Request, Response, Status, URL
 from helios.routing import URLs
-from helios.view import Views
+from helios.view.views import Views
 
 from app import User
 
@@ -36,7 +36,7 @@ def show(request: Request, context: Context) -> Response:
 	views = context.get(Views)
 
 	return views.render(
-		"settings.show",
+		"settings/show",
 		{
 			"return_to": _settings_return_url(context, request.referrer),
 		},

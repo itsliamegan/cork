@@ -4,7 +4,7 @@ from app import Access, Board
 
 
 class BoardItem(Component):
-	template = "boards.item"
+	template = "boards/item"
 
 	board: Board
 	access: Access

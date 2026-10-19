@@ -7,7 +7,7 @@ from helios.form.filter import Unspace, Upcase
 from helios.form.rule import Length, Only
 from helios.http import Request, Response
 from helios.routing import URLs
-from helios.view import Views
+from helios.view.views import Views
 
 from app import Recovery, User
 
@@ -62,7 +62,7 @@ def new(request: Request, context: Context) -> Response:
 	if auth.is_signed_in():
 		return Response.redirect(urls.route("boards.index"))
 
-	return views.render("sessions.new")
+	return views.render("sessions/new")
 
 
 def delete(request: Request, context: Context) -> Response:

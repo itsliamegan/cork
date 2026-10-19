@@ -1,9 +1,8 @@
-{% extends "layouts.app" %}
-{% set active_nav = "boards" %}
+{% layout "layouts/app" %}
+{% section "nav" %}boards{% endsection %}
 
-{% block title %}Cork - Edit board{% endblock %}
+{% section "title" %}Cork - Edit board{% endsection %}
 
-{% block content %}
 <header id="page-header">
 	<h2 id="page-title">Edit board</h2>
 </header>
@@ -42,4 +41,3 @@
 		<button class="button button--action" type="submit">Save</button>
 	</footer>
 </form>
-{% endblock %}

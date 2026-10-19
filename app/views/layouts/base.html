@@ -3,12 +3,9 @@
 	<head>
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width,initial-scale=1">
-		{% block turbo_control %}
-		<meta name="turbo-visit-control" content="reload">
-		{% endblock %}
-		{% block metadata %}{% endblock %}
+		{{ sections.turbo_control }}
 
-		<title>{% block title %}Cork{% endblock %}</title>
+		<title>{{ sections.title or "Cork" }}</title>
 
 		<link rel="icon" href="/static/favicon.ico">
 		<link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
@@ -19,7 +16,7 @@
 		<link rel="stylesheet" type="text/css" href="/static/styles/theme.css">
 		<link rel="stylesheet" type="text/css" href="/static/styles/main.css">
 
-		{% block scripts %}{% endblock %}
+		{{ sections.scripts }}
 	</head>
 
 	<body>
@@ -31,15 +28,9 @@
 				<rect x="58" y="16" width="22" height="22" rx="3" fill="var(--color-surface, #f1f1f1)"/>
 			</svg>
 
-			{% block header %}
-			{% endblock %}
+			{{ sections.header }}
 		</header>
 
-		{% block page %}
-		<main id="auth-page">
-			{% block content %}
-			{% endblock %}
-		</main>
-		{% endblock %}
+		{{ content }}
 	</body>
 </html>

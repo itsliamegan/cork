@@ -5,7 +5,7 @@ from helios.flash import Flashes
 from helios.form import Form, Submissions
 from helios.http import Request, Response
 from helios.routing import URLs
-from helios.view import Views
+from helios.view.views import Views
 
 from app import Invite, Recovery, User
 
@@ -77,7 +77,7 @@ def new(request: Request, context: Context) -> Response:
 		store.load(invite, "creator", "target")
 
 	return views.render(
-		"redemptions.new",
+		"redemptions/new",
 		{
 			"token": token,
 			"invite": invite,

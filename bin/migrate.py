@@ -5,13 +5,13 @@ import sqlite3
 import sys
 from typing import NoReturn
 
-from helios.config import ConfigError
+from helios.config import Environment
 from luna.cli import Command, Program, option
 
-from app.config import Config, ENV_FILE, ROOT_DIR
+import app.config
 from lib.migrate import MigrationError, Migrations, Migrator
 
-MIGRATIONS_DIR = Path(ROOT_DIR, "database", "migrations")
+MIGRATIONS_DIR = Path(app.config.ROOT_DIR, "database", "migrations")
 
 
 class Apply(Command):
@@ -66,17 +66,14 @@ class Status(Command):
 
 
 def load_migrator() -> Migrator:
-	try:
-		config = Config.load(env_file=ENV_FILE)
-	except ConfigError as error:
-		raise SystemExit(f"migrate: error: {error}") from None
+	environment = Environment.load(env_file=app.config.ENV_FILE)
 
 	try:
 		migrations = Migrations.load(MIGRATIONS_DIR)
 	except MigrationError as error:
 		fail(error)
 
-	return Migrator(config.database, migrations)
+	return Migrator(app.config.database(environment), migrations)
 
 
 def report_version(migrator: Migrator):

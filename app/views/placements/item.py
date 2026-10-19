@@ -4,7 +4,7 @@ from app import Access, Placement, Preferences
 
 
 class PlacementItem(Component):
-	template = "placements.item"
+	template = "placements/item"
 
 	placement: Placement
 	access: Access
