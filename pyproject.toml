@@ -1,7 +1,7 @@
 [project]
 name = "cork"
 version = "0.1.0"
-requires-python = ">=3.14"
+requires-python = ">=3.15"
 dependencies = [
 	"gunicorn>=26.2.0",
 	"helios",
@@ -36,7 +36,7 @@ luna = { git = "https://github.com/itsliamegan/luna", branch = "main" }
 
 [tool.ruff]
 extend-include = ["bin/helios"]
-target-version = "py314"
+target-version = "py315"
 
 [tool.ruff.format]
 indent-style = "tab"
