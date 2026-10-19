@@ -9,18 +9,15 @@ from helios.auth.password import Digest
 from helios.config import Environment
 from helios.database import Model, Store
 import helios.database.config
+from helios.database.migration import Migrations, Migrator
 from helios.database.sqlite import connect
 from helios.wsgi.test import TestClient
 from luna.test.assertion import assert_eq
 
-from app import User, models
-from app.config import ROOT_DIR
+from app import User, config, models
 from app.wsgi import Application
-from lib.migrate import Migrations, Migrator
 
 Digest.method = "pbkdf2:sha256:1"
-
-MIGRATIONS_DIR = Path(ROOT_DIR, "database", "migrations")
 
 
 def ids(records: Iterable[Model]) -> list[UUID]:
@@ -31,11 +28,17 @@ class TestStore:
 	def __init__(self):
 		self.directory = TemporaryDirectory()
 		try:
-			config = helios.database.config.Config(
-				Path(self.directory.name, "store.sqlite")
+			database = config.database(
+				Environment(
+					{
+						"APP_DATABASE_FILE": str(
+							Path(self.directory.name, "store.sqlite")
+						)
+					}
+				)
 			)
-			Migrator(config, Migrations.load(MIGRATIONS_DIR)).apply()
-			self.connection = connect(config)
+			Migrator(database, Migrations.load(database.migrations)).apply()
+			self.connection = connect(database)
 		except Exception:
 			self.directory.cleanup()
 			raise
@@ -69,8 +72,8 @@ class TestApplication(Application):
 					}
 				)
 			)
+			self.container.get(Migrator).apply()
 			database = self.container.get(helios.database.config.Config)
-			Migrator(database, Migrations.load(MIGRATIONS_DIR)).apply()
 			self.boot()
 			self.connection = connect(database)
 			self.refresh()

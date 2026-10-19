@@ -6,8 +6,8 @@ python.uv_venv_auto = "create|source"
 
 [tasks]
 serve = "bin/helios serve"
-migrate = "bin/migrate.py apply"
-"migrate:status" = "bin/migrate.py status"
+migrate = "bin/helios migrate"
+"migrate:status" = "bin/helios migrate:status"
 test = [
 	"bin/helios assets:compile",
 	"uv run luna test",
