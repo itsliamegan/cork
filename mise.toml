@@ -8,7 +8,10 @@ python.uv_venv_auto = "create|source"
 serve = "bin/helios serve"
 migrate = "bin/migrate.py apply"
 "migrate:status" = "bin/migrate.py status"
-test = "uv run luna test"
+test = [
+	"bin/helios assets:compile",
+	"uv run luna test",
+]
 lint = [
 	"ruff format",
 	"ruff check --fix",

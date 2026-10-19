@@ -1,4 +1,7 @@
-export default class ReorderController extends Stimulus.Controller {
+import { Controller } from "@hotwired/stimulus"
+import * as Turbo from "@hotwired/turbo"
+
+export default class ReorderController extends Controller {
 	static targets = ["item", "list"]
 
 	connect() {

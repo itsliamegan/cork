@@ -1,4 +1,6 @@
-export default class CopyController extends Stimulus.Controller {
+import { Controller } from "@hotwired/stimulus"
+
+export default class CopyController extends Controller {
 	static targets = ["source", "button"]
 
 	connect() {

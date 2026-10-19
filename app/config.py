@@ -2,6 +2,7 @@ from datetime import timedelta
 from pathlib import Path
 
 import helios.app
+import helios.assets.config
 from helios.config import Environment
 import helios.database.config
 from helios.http import URL
@@ -25,6 +26,15 @@ def application(environment: Environment) -> helios.app.Config:
 def views(environment: Environment) -> helios.view.config.Config:
 	return helios.view.config.Config(
 		environment.path("APP_VIEWS_DIR", Path(ROOT_DIR, "app", "views")),
+	)
+
+
+def assets(_environment: Environment) -> helios.assets.config.Config:
+	return helios.assets.config.Config(
+		directory=Path(ROOT_DIR, "app", "assets"),
+		output=Path(ROOT_DIR, "public", "assets"),
+		scripts=["main"],
+		styles=["main"],
 	)
 
 

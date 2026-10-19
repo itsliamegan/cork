@@ -1,9 +1,7 @@
 {% layout "layouts/base" %}
 
 {% section "scripts" %}
-<script type="module" src="https://cdn.jsdelivr.net/npm/@hotwired/turbo@8.0"></script>
-<script type="module" src="https://cdn.jsdelivr.net/npm/@hotwired/stimulus@3.2"></script>
-<script type="module" src="/static/scripts/main.js"></script>
+{{ assets.script("main") }}
 {% endsection %}
 
 {% section "header" %}

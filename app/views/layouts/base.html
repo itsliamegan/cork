@@ -7,14 +7,12 @@
 
 		<title>{{ sections.title or "Cork" }}</title>
 
-		<link rel="icon" href="/static/favicon.ico">
-		<link rel="icon" type="image/svg+xml" href="/static/favicon.svg">
-		<link rel="icon" type="image/png" sizes="192x192" href="/static/favicon.png">
-		<link rel="apple-touch-icon" sizes="180x180" href="/static/apple.png">
+		<link rel="icon" href="/favicon.ico">
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+		<link rel="icon" type="image/png" sizes="192x192" href="/favicon.png">
+		<link rel="apple-touch-icon" sizes="180x180" href="/apple.png">
 
-		<link rel="stylesheet" type="text/css" href="/static/styles/prelude.css">
-		<link rel="stylesheet" type="text/css" href="/static/styles/theme.css">
-		<link rel="stylesheet" type="text/css" href="/static/styles/main.css">
+		{{ assets.style("main") }}
 
 		{{ sections.scripts }}
 	</head>

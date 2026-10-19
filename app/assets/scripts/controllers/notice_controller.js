@@ -1,4 +1,6 @@
-export default class NoticeController extends Stimulus.Controller {
+import { Controller } from "@hotwired/stimulus"
+
+export default class NoticeController extends Controller {
 	static DELAY = 5000
 	static DURATION = 400
 

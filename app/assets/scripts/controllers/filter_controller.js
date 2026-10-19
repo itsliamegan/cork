@@ -1,4 +1,6 @@
-export default class FilterController extends Stimulus.Controller {
+import { Controller } from "@hotwired/stimulus"
+
+export default class FilterController extends Controller {
 	static targets = ["query", "item", "empty"]
 
 	connect() {

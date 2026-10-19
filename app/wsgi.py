@@ -1,3 +1,4 @@
+import helios.assets.provider
 import helios.auth
 from helios.config import Environment
 import helios.database
@@ -20,6 +21,7 @@ class Application(Application):
 			config.application(environment),
 			Router(routes),
 			[
+				helios.assets.provider.Provider(config.assets(environment)),
 				helios.view.provider.Provider(
 					config.views(environment),
 					helpers=helpers,
