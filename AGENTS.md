@@ -20,9 +20,11 @@ file represents a current working state, not a historical record.
 
 ## Commands
 
-- `mise run serve`: Run a devserver on port 4000 with the reloader watching views
-  and assets. This should always already be running in the background, never
-  start one yourself.
+- `mise run serve`: Run `bin/helios serve`, the devserver, on the host at
+  `APP_BASE_URL` (port 4000). It serves `public/` and restarts on any change to
+  a Python file or a view. This should always already be running in the
+  background, never start one yourself.
+- `mise run migrate`: Apply pending migrations to the database `.env` names.
 - `mise run lint`: Run Ruff for formatting & linting.
 - `mise run check`: Run Ty for type checking.
 

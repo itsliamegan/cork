@@ -21,4 +21,4 @@ It is built on the [Helios](https://tangled.org/liamegan.com/helios) framework.
 - `/var/lib/cork/store.sqlite`, `/var/lib/cork/sessions.json`: the persisted
   state, by default. A fresh environment needs `sessions.json` containing `{}`
   and a migrated database.
-- `bin/`: the migration runner and backups.
+- `bin/`: the `helios` program (`serve`), the migration runner, and backups.

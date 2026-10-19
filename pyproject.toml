@@ -35,6 +35,7 @@ helios = { git = "https://github.com/itsliamegan/helios", branch = "main", subdi
 luna = { git = "https://github.com/itsliamegan/luna", branch = "main" }
 
 [tool.ruff]
+extend-include = ["bin/helios"]
 target-version = "py314"
 
 [tool.ruff.format]
@@ -52,3 +53,6 @@ case-sensitive = true
 known-first-party = ["app", "lib"]
 force-sort-within-sections = true
 order-by-type = false
+
+[tool.ty.src]
+include = ["**", "bin/helios"]
