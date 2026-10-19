@@ -1,40 +1,40 @@
-import helios.app
+import helios.assets.provider
 import helios.auth
+from helios.config import Environment
 import helios.database
 import helios.flash
 import helios.form
 import helios.limit
 from helios.routing import Router
 import helios.session
-from helios.session.file import Driver
-import helios.view
+import helios.view.provider
 from helios.wsgi import Application
 
-from app import User, models
-from app.config import Config
+from app import User, config, models
 from app.http import routes
 from app.views import components, helpers
 
 
 class Application(Application):
-	def __init__(self, config: Config):
+	def __init__(self, environment: Environment):
 		super().__init__(
-			helios.app.Config(base_url=config.base_url),
+			config.application(environment),
 			Router(routes),
 			[
-				helios.view.Provider(
-					config.views,
+				helios.assets.provider.Provider(config.assets(environment)),
+				helios.view.provider.Provider(
+					config.views(environment),
 					helpers=helpers,
 					components=components,
 				),
 				helios.session.Provider(
-					config.session,
-					Driver(config.session_file, config.session_lock_file),
+					config.session(environment),
+					config.session_driver(environment),
 				),
-				helios.database.Provider(config.database, models),
+				helios.database.Provider(config.database(environment), models),
 				helios.flash.Provider(),
 				helios.form.Provider(),
 				helios.auth.Provider(User),
 			],
-			[helios.limit.Middleware(config.rate_limit)],
+			[helios.limit.Middleware(config.rate_limit(environment))],
 		)

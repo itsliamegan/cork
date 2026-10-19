@@ -1,9 +1,8 @@
-{% extends "layouts.app" %}
-{% set active_nav = "pins" %}
+{% layout "layouts/app" %}
+{% section "nav" %}pins{% endsection %}
 
-{% block title %}Cork - Pins{% endblock %}
+{% section "title" %}Cork - Pins{% endsection %}
 
-{% block content %}
 <header id="page-header">
 	<h2 id="page-title">Pins</h2>
 	<section id="page-actions">
@@ -71,4 +70,3 @@
 		<li class="frame-item frame-empty pin-index-no-match" data-filter-target="empty" hidden>No matching pins.</li>
 	</ol>
 </section>
-{% endblock %}

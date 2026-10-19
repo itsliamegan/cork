@@ -1,3 +1,6 @@
+@import "./prelude.css";
+@import "./theme.css";
+
 html {
 	font-size: var(--font-size-root);
 }

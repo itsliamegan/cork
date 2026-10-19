@@ -7,7 +7,7 @@ from helios.form import Form, Rules, Submission, Submissions
 from helios.form.rule import Distinct
 from helios.http import Request, Response, Status, URL
 from helios.routing import URLs
-from helios.view import Views
+from helios.view.views import Views
 
 from app import (
 	Access,
@@ -55,7 +55,7 @@ def index(request: Request, context: Context) -> Response:
 	private, shared = Ordering.arrange(store, access)
 
 	return views.render(
-		"boards.index",
+		"boards/index",
 		{
 			"access": access,
 			"private": private,
@@ -96,7 +96,7 @@ def new(request: Request, context: Context) -> Response:
 	submission = context.get(Submission)
 
 	return views.render(
-		"boards.new",
+		"boards/new",
 		{
 			"owner": auth.user,
 			"users": _sharable_users(context, auth.user.id),
@@ -123,7 +123,7 @@ def show(request: Request, context: Context, id: UUID) -> Response:
 	store.load(placements, "pin", "board")
 
 	return views.render(
-		"boards.show",
+		"boards/show",
 		{
 			"access": access,
 			"board": board,
@@ -147,7 +147,7 @@ def edit(request: Request, context: Context, id: UUID) -> Response:
 	shared_user_ids = [share.user_id for share in board.shares]
 
 	return views.render(
-		"boards.edit",
+		"boards/edit",
 		{
 			"board": board,
 			"owner": auth.user,

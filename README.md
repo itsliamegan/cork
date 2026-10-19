@@ -13,12 +13,13 @@ It is built on the [Helios](https://tangled.org/liamegan.com/helios) framework.
 - `app/http/*.py`: handlebrs, one module per resource.
 - `app/__init__.py`: re-exports every model and the `models` list.
 - `app/*.py` (e.g. `app/pin.py`): models, one module per class.
-- `app/views/`: Jinja templates, addressed by dotted path: `boards/show.html`
-  is rendered as `"boards.show"`.
-- `app/assets/`, `public/static/`: styles and scripts.
+- `app/views/`: Jinja templates, addressed by slashed path: `boards/show.html`
+  is rendered as `"boards/show"`.
+- `app/assets/`: styles and scripts, compiled by esbuild into `public/assets/`.
+- `public/`: files served as they are, such as the favicons.
 - `database/migrations/`: numbered SQL migrations, applied with
   `mise run migrate`.
 - `/var/lib/cork/store.sqlite`, `/var/lib/cork/sessions.json`: the persisted
   state, by default. A fresh environment needs `sessions.json` containing `{}`
   and a migrated database.
-- `bin/`: the migration runner and backups.
+- `bin/`: the `helios` program (`serve`), the migration runner, and backups.

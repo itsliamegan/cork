@@ -1,4 +1,6 @@
-export default class PinDetailsController extends Stimulus.Controller {
+import { Controller } from "@hotwired/stimulus"
+
+export default class PinDetailsController extends Controller {
 	static targets = ["link", "frame"]
 
 	toggle(event) {

@@ -5,6 +5,7 @@ requires-python = ">=3.14"
 dependencies = [
 	"gunicorn>=26.2.0",
 	"helios",
+	"markupsafe>=3.0.3",
 ]
 
 [dependency-groups]
@@ -30,10 +31,11 @@ module-name = ["app", "lib"]
 module-root = ""
 
 [tool.uv.sources]
-helios = { git = "https://github.com/itsliamegan/helios", branch = "main" }
+helios = { git = "https://github.com/itsliamegan/helios", branch = "main", subdirectory = "packages/framework" }
 luna = { git = "https://github.com/itsliamegan/luna", branch = "main" }
 
 [tool.ruff]
+extend-include = ["bin/helios"]
 target-version = "py314"
 
 [tool.ruff.format]
@@ -51,3 +53,6 @@ case-sensitive = true
 known-first-party = ["app", "lib"]
 force-sort-within-sections = true
 order-by-type = false
+
+[tool.ty.src]
+include = ["**", "bin/helios"]

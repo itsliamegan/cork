@@ -4,7 +4,7 @@ from app import Board, User
 
 
 class PinPlacements(Component):
-	template = "pins.placements"
+	template = "pins/placements"
 
 	boards: list[Board]
 	viewer: User

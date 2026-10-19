@@ -4,7 +4,7 @@ from app import User
 
 
 class BoardSharing(Component):
-	template = "boards.sharing"
+	template = "boards/sharing"
 
 	owner: User
 	users: list[User]

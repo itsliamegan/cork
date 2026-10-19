@@ -7,7 +7,7 @@ from helios.flash import Flashes
 from helios.form import Form, Submissions
 from helios.http import Request, Response
 from helios.routing import URLs
-from helios.view import Views
+from helios.view.views import Views
 
 from app import Invite, User
 
@@ -57,7 +57,7 @@ def show(request: Request, context: Context, id: UUID) -> Response:
 
 	token = flash["invite_token"]
 	return views.render(
-		"invites.show",
+		"invites/show",
 		{
 			"invite": invite,
 			"invite_link": str(

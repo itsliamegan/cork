@@ -2,7 +2,7 @@ from helios.view import Component
 
 
 class ConfirmDialog(Component):
-	template = "components.confirm_dialog"
+	template = "components/confirm_dialog"
 
 	name: str
 	action: str

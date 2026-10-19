@@ -1,10 +1,11 @@
-from helios.view import Attributes, Component, Markup
+from helios.view import Attributes, Component
+from markupsafe import Markup
 
 from app.views.components.confirm_dialog import ConfirmDialog
 
 
 class ConfirmButton(Component):
-	template = "components.confirm_button"
+	template = "components/confirm_button"
 
 	name: str
 	action: str

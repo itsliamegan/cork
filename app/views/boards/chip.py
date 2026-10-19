@@ -4,6 +4,6 @@ from app import Board
 
 
 class BoardChip(Component):
-	template = "boards.chip"
+	template = "boards/chip"
 
 	board: Board

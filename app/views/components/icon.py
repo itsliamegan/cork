@@ -4,6 +4,6 @@ from helios.view import Component
 
 
 class Icon(Component):
-	template = "components.icon"
+	template = "components/icon"
 
 	name: Literal["archive", "drag", "overflow"]

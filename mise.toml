@@ -5,11 +5,13 @@ uv = "latest"
 python.uv_venv_auto = "create|source"
 
 [tasks]
-build = "podman build --tag cork ."
-serve = "podman run --name cork --replace --systemd always --volume .:/srv/cork:ro --volume ./data:/var/lib/cork --publish 4000:80 cork"
-migrate = "podman exec --user cork --workdir /srv/cork cork /opt/cork/venv/bin/python bin/migrate.py apply"
-"migrate:status" = "podman exec --user cork --workdir /srv/cork cork /opt/cork/venv/bin/python bin/migrate.py status"
-test = "uv run luna test"
+serve = "bin/helios serve"
+migrate = "bin/migrate.py apply"
+"migrate:status" = "bin/migrate.py status"
+test = [
+	"bin/helios assets:compile",
+	"uv run luna test",
+]
 lint = [
 	"ruff format",
 	"ruff check --fix",

@@ -8,7 +8,7 @@ from helios.form import Form, Rules, Submission, Submissions
 from helios.form.rule import Distinct, Rule, RuleError
 from helios.http import Request, Response, Status, URL
 from helios.routing import URLs
-from helios.view import Views
+from helios.view.views import Views
 
 from app import Access, Board, Ownership, Pin, Placement, User
 from app.access import NotPermitted
@@ -89,7 +89,7 @@ def index(request: Request, context: Context) -> Response:
 	store.load(pins, "placements")
 
 	return views.render(
-		"pins.index",
+		"pins/index",
 		{
 			"pins": pins,
 		},
@@ -164,7 +164,7 @@ def new(request: Request, context: Context) -> Response:
 		return_to = urls.route("pins.index")
 
 	return views.render(
-		"pins.new",
+		"pins/new",
 		{
 			"originating_board": board,
 			"placeable_boards": find_placeable_boards(context),
@@ -191,7 +191,7 @@ def show(request: Request, context: Context, id: UUID) -> Response:
 		_referring_board_id(context, request.referrer, placements),
 	)
 	return views.render(
-		"pins.show",
+		"pins/show",
 		{
 			"access": access,
 			"pin": pin,
@@ -215,7 +215,7 @@ def edit(request: Request, context: Context, id: UUID) -> Response:
 	selected_board_ids = [placement.board_id for placement in placements]
 
 	return views.render(
-		"pins.edit",
+		"pins/edit",
 		{
 			"pin": pin,
 			"placeable_boards": find_placeable_boards(context),

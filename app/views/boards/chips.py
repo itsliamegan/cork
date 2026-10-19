@@ -4,7 +4,7 @@ from app import Board
 
 
 class BoardChips(Component):
-	template = "boards.chips"
+	template = "boards/chips"
 
 	boards: list[Board]
 	is_unfiled: bool

@@ -4,7 +4,7 @@ from app import Access, Archival, Preferences
 
 
 class ArchivalItem(Component):
-	template = "archivals.item"
+	template = "archivals/item"
 
 	archival: Archival
 	access: Access

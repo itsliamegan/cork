@@ -1,8 +1,7 @@
-{% extends "layouts.base" %}
+{% layout "layouts/auth" %}
 
-{% block title %}Cork - {% if invite %}{% if invite.target_id %}New session{% else %}New account{% endif %}{% else %}Invite unavailable{% endif %}{% endblock %}
+{% section "title" %}Cork - {% if invite %}{% if invite.target_id %}New session{% else %}New account{% endif %}{% else %}Invite unavailable{% endif %}{% endsection %}
 
-{% block content %}
 {% if invite %}
 <header id="page-header">
 	<h2 id="page-title">{% if invite.target_id %}New session{% else %}New account{% endif %}</h2>
@@ -46,4 +45,3 @@
 	<div class="frame-item frame-empty">This link is invalid or expired.</div>
 </section>
 {% endif %}
-{% endblock %}

@@ -4,7 +4,7 @@ from app import Access, Placement
 
 
 class PlacementMenu(Component):
-	template = "placements.menu"
+	template = "placements/menu"
 
 	placement: Placement
 	access: Access

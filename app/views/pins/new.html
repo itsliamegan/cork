@@ -1,5 +1,8 @@
-{% extends "layouts.app" %} {% set active_nav = "pins" if originating_board is none else "boards" %} {% block title
-%}Cork - New pin{% endblock %} {% block content %}
+{% layout "layouts/app" %}
+{% section "nav" %}{% if originating_board is none %}pins{% else %}boards{% endif %}{% endsection %}
+
+{% section "title" %}Cork - New pin{% endsection %}
+
 <header id="page-header">
 	<h2 id="page-title">New pin</h2>
 </header>
@@ -52,4 +55,3 @@
 		<button class="button button--action" type="submit">Save</button>
 	</footer>
 </form>
-{% endblock %}
