@@ -24,6 +24,7 @@ requires = ["uv_build"]
 build-backend = "uv_build"
 
 [tool.uv]
+default-groups = ["backup", "dev"]
 package = true
 
 [tool.uv.build-backend]
