@@ -18,7 +18,7 @@ It is built on the [Helios](https://tangled.org/liamegan.com/helios) framework.
 - `app/assets/`: styles and scripts, compiled by esbuild into `public/assets/`.
 - `public/`: files served as they are, such as the favicons.
 - `database/migrations/`: numbered SQL migrations, applied with
-  `mise run migrate`.
+  `just migrate`.
 - `/var/lib/cork/store.sqlite`, `/var/lib/cork/sessions.json`: the persisted
   state, by default. A fresh environment needs `sessions.json` containing `{}`
   and a migrated database.

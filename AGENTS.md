@@ -20,15 +20,15 @@ file represents a current working state, not a historical record.
 
 ## Commands
 
-- `mise run serve`: Run `bin/helios serve`, the devserver, on the host at
+- `just serve`: Run `bin/helios serve`, the devserver, on the host at
   `APP_BASE_URL` (port 4000). It serves `public/`, and recompiles the assets and
   restarts on any change to a Python file, a view, or an asset. This should always already be running in the
   background, never start one yourself.
-- `mise run migrate`: Apply pending migrations to the database `.env` names.
-- `mise run test`: Compile the assets with esbuild, which needs `npm ci` first,
+- `just migrate`: Apply pending migrations to the database `.env` names.
+- `just test`: Compile the assets with esbuild, which needs `npm ci` first,
   and run the test suite.
-- `mise run lint`: Run Ruff for formatting & linting.
-- `mise run check`: Run Ty for type checking.
+- `just lint`: Run Ruff for formatting & linting.
+- `just check`: Run Ty for type checking.
 
 ## Workflow
 
