@@ -1,5 +1,5 @@
 version = 1
-revision = 3
+revision = 5
 requires-python = ">=3.15"
 
 [[package]]
@@ -46,6 +46,7 @@ wheels = [
 name = "cork"
 version = "0.1.0"
 source = { editable = "." }
+default-groups = ["backup", "dev"]
 dependencies = [
     { name = "gunicorn" },
     { name = "helios" },
@@ -93,7 +94,7 @@ wheels = [
 [[package]]
 name = "helios"
 version = "0.1"
-source = { git = "https://github.com/itsliamegan/helios?subdirectory=packages%2Fframework&branch=main#cf2e54817be36cde0da3d0b6aeb7648e003ca5b1" }
+source = { git = "https://github.com/itsliamegan/helios?subdirectory=packages%2Fframework&branch=main#c2c0c5ed22296dc896502b75e513f4c84c5924ad" }
 dependencies = [
     { name = "helios-assets" },
     { name = "helios-url" },
@@ -107,7 +108,7 @@ dependencies = [
 [[package]]
 name = "helios-assets"
 version = "0.1"
-source = { git = "https://github.com/itsliamegan/helios?subdirectory=packages%2Fassets&branch=main#cf2e54817be36cde0da3d0b6aeb7648e003ca5b1" }
+source = { git = "https://github.com/itsliamegan/helios?subdirectory=packages%2Fassets&branch=main#c2c0c5ed22296dc896502b75e513f4c84c5924ad" }
 dependencies = [
     { name = "markupsafe" },
 ]
@@ -115,12 +116,12 @@ dependencies = [
 [[package]]
 name = "helios-url"
 version = "0.1"
-source = { git = "https://github.com/itsliamegan/helios?subdirectory=packages%2Furl&branch=main#cf2e54817be36cde0da3d0b6aeb7648e003ca5b1" }
+source = { git = "https://github.com/itsliamegan/helios?subdirectory=packages%2Furl&branch=main#c2c0c5ed22296dc896502b75e513f4c84c5924ad" }
 
 [[package]]
 name = "helios-view"
 version = "0.1"
-source = { git = "https://github.com/itsliamegan/helios?subdirectory=packages%2Fview&branch=main#cf2e54817be36cde0da3d0b6aeb7648e003ca5b1" }
+source = { git = "https://github.com/itsliamegan/helios?subdirectory=packages%2Fview&branch=main#c2c0c5ed22296dc896502b75e513f4c84c5924ad" }
 dependencies = [
     { name = "jinja2" },
     { name = "luna" },
@@ -160,7 +161,7 @@ wheels = [
 [[package]]
 name = "luna"
 version = "0.1.0"
-source = { git = "https://github.com/itsliamegan/luna?branch=main#b37200b35b3630b7ae7283176cdedf391eff2252" }
+source = { git = "https://github.com/itsliamegan/luna?branch=main#6e5fdcb29432b45261ad4327eb3fc3f9f1987572" }
 
 [[package]]
 name = "markupsafe"
