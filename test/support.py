@@ -10,7 +10,7 @@ from helios.config import Environment
 from helios.database import Model, Store
 import helios.database.config
 from helios.database.migration import Migrations, Migrator
-from helios.database.sqlite import connect
+from helios.database.sqlite import Connection
 from helios.wsgi.test import TestClient
 from luna.test.assertion import assert_eq
 
@@ -37,8 +37,12 @@ class TestStore:
 					}
 				)
 			)
-			Migrator(database, Migrations.load(database.migrations)).apply()
-			self.connection = connect(database)
+			Migrator(
+				database.path,
+				Migrations.load(database.migrations),
+				busy_timeout=database.busy_timeout,
+			).apply()
+			self.connection = Connection.open(database.path, database.busy_timeout)
 		except Exception:
 			self.directory.cleanup()
 			raise
@@ -75,20 +79,17 @@ class TestApplication(Application):
 			self.container.get(Migrator).apply()
 			database = self.container.get(helios.database.config.Config)
 			self.boot()
-			self.connection = connect(database)
+			self.connection = Connection.open(database.path, database.busy_timeout)
 			self.refresh()
 			self.client = TestClient(self)
 		except Exception:
 			self.temp_dir.cleanup()
 			raise
 
-	def __enter__(self):
-		return self
-
-	def __exit__(self, exc_type, exc, traceback):
+	def __exit__(self, exception_type, exception, traceback):
 		try:
 			self.connection.close()
-			self.close()
+			super().__exit__(exception_type, exception, traceback)
 		finally:
 			self.temp_dir.cleanup()
 

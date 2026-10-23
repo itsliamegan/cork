@@ -2,7 +2,6 @@ import helios.assets.provider
 import helios.auth
 from helios.config import Environment
 import helios.database
-import helios.flash
 import helios.form
 import helios.limit
 from helios.routing import Router
@@ -32,7 +31,6 @@ class Application(Application):
 					config.session_driver(environment),
 				),
 				helios.database.Provider(config.database(environment), models),
-				helios.flash.Provider(),
 				helios.form.Provider(),
 				helios.auth.Provider(User),
 			],

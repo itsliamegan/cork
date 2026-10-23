@@ -2,7 +2,7 @@ import json
 from uuid import uuid4
 
 from helios.http import URL
-from luna.test.assertion import assert_eq
+from luna.test.assertion import assert_eq, assert_not_none
 
 from app import Archival, Board, Pin, Placement, Share, User
 from test.support import TestApplication
@@ -25,7 +25,7 @@ def test_archive_redirects_to_the_board_with_a_flash():
 
 		res = app.client.post("/archivals/", form={"placement_id": str(placement.id)})
 
-		session_id = app.client.get_cookie("session_id").value
+		session_id = assert_not_none(app.client.get_cookie("session_id")).value
 		session = json.loads(app.sessions_file.read_text())[session_id]
 		archivals = app.store.find_all(Archival)
 		assert_eq(res.status_code, 302)
