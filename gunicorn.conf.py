@@ -1,6 +1,6 @@
-def worker_exit(server, worker):
-	# A worker only has an application once it has loaded one. The arbiter also
-	# calls this hook with its own record of a worker that already died, which
-	# never loaded one.
+def worker_exit(_server, worker):
+	# Before closing the application, ensure that the worker actually has a loaded
+	# one. If a worker failed to start, or if Gunicorn couldn't signal it, then it
+	# has none.
 	if hasattr(worker, "wsgi"):
 		worker.wsgi.close()
