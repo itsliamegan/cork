@@ -3,9 +3,9 @@ from uuid import UUID
 from helios.app import Context
 from helios.auth import Authenticator
 from helios.database import Store
-from helios.flash import Flashes
 from helios.http import Request, Response
 from helios.routing import URLs
+from helios.session import Flash
 from helios.view.views import Views
 
 from app import Recovery, User
@@ -14,7 +14,7 @@ from app import Recovery, User
 def create(request: Request, context: Context) -> Response:
 	store = context.get(Store)
 	auth = context.get(Authenticator[User])
-	flash = context.get(Flashes)
+	flash = context.get(Flash)
 	urls = context.get(URLs)
 
 	recovery = Recovery.create(store, auth.user)
@@ -26,7 +26,7 @@ def create(request: Request, context: Context) -> Response:
 def show(request: Request, context: Context, id: UUID) -> Response:
 	store = context.get(Store)
 	auth = context.get(Authenticator[User])
-	flash = context.get(Flashes)
+	flash = context.get(Flash)
 	views = context.get(Views)
 	urls = context.get(URLs)
 

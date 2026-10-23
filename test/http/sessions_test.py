@@ -4,7 +4,13 @@ from uuid import uuid4
 
 from helios.auth.password import Digest
 from helios.http import Input
-from luna.test.assertion import assert_eq, assert_in, assert_not_in, assert_that
+from luna.test.assertion import (
+	assert_eq,
+	assert_in,
+	assert_not_in,
+	assert_not_none,
+	assert_that,
+)
 
 from app import Recovery, User
 from app.http.sessions import SignInForm
@@ -141,7 +147,9 @@ def test_stored_session_remains_authenticated():
 		persisted = json.loads(app.sessions_file.read_text())
 
 		assert_eq(res.status_code, 200)
-		assert_eq(app.client.get_cookie("session_id").value, str(session_id))
+		assert_eq(
+			assert_not_none(app.client.get_cookie("session_id")).value, str(session_id)
+		)
 		assert_in(str(session_id), persisted)
 
 

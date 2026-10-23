@@ -1,12 +1,12 @@
 from helios.app import Context
 from helios.auth import Authenticator
 from helios.database import Store
-from helios.flash import Flashes
 from helios.form import Filters, Form, Rules, Submissions
 from helios.form.filter import Unspace, Upcase
 from helios.form.rule import Length, Only
 from helios.http import Request, Response
 from helios.routing import URLs
+from helios.session import Flash
 from helios.view.views import Views
 
 from app import Recovery, User
@@ -29,7 +29,7 @@ class SignInForm(Form):
 def create(request: Request, context: Context) -> Response:
 	store = context.get(Store)
 	auth = context.get(Authenticator[User])
-	flash = context.get(Flashes)
+	flash = context.get(Flash)
 	submissions = context.get(Submissions)
 	urls = context.get(URLs)
 
