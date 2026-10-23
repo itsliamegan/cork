@@ -9,4 +9,5 @@ from app.config import ENV_FILE
 from app.wsgi import Application
 
 if __name__ == "__main__":
-	Program.main(sys.argv, Application(Environment.load(env_file=ENV_FILE)))
+	with Application(Environment.load(env_file=ENV_FILE)) as application:
+		Program.main(sys.argv, application)
