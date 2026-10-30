@@ -1,7 +1,7 @@
 import json
 from uuid import uuid4
 
-from helios.http import URL
+from helios.url import URL
 from luna.test.assertion import assert_eq, assert_not_none
 
 from app import Archival, Board, Pin, Placement, Share, User

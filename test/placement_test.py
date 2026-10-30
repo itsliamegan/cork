@@ -1,5 +1,5 @@
 from helios.database import Store
-from helios.http import URL
+from helios.url import URL
 from luna.test.assertion import assert_eq, assert_not_none, assert_raises, assert_that
 
 from app import Access, Archival, Board, Move, Pin, Placement, Share, User

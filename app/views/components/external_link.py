@@ -1,4 +1,4 @@
-from helios.http import URL
+from helios.url import URL
 from helios.view import Attributes, Component
 from markupsafe import Markup
 

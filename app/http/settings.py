@@ -2,8 +2,9 @@ from helios.app import Context
 from helios.auth import Authenticator
 from helios.database import Store
 from helios.form import Form
-from helios.http import Request, Response, Status, URL
+from helios.http import Request, Response, Status
 from helios.routing import URLs
+from helios.url import URL
 from helios.view.views import Views
 
 from app import User

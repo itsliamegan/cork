@@ -5,10 +5,10 @@ import helios.app
 import helios.assets.config
 from helios.config import Environment
 import helios.database.config
-from helios.http import URL
 import helios.limit.config
 import helios.session.config
 import helios.session.file
+from helios.url import URL
 import helios.view.config
 
 ROOT_DIR = Path(__file__).resolve().parent.parent

@@ -5,8 +5,9 @@ from helios.auth import Authenticator
 from helios.database import Store
 from helios.form import Form, Rules, Submission, Submissions
 from helios.form.rule import Distinct
-from helios.http import Request, Response, Status, URL
+from helios.http import Request, Response, Status
 from helios.routing import URLs
+from helios.url import URL
 from helios.view.views import Views
 
 from app import (
@@ -32,7 +33,7 @@ def _board_return_url(context: Context, raw_url: str | None, id: UUID) -> URL:
 	urls = context.get(URLs)
 
 	match = urls.match(raw_url)
-	if match is not None and match.route.name == "boards.index":
+	if match is not None and match.named("boards.index"):
 		return urls.route("boards.index")
 	else:
 		return urls.route("boards.show", {"id": id})

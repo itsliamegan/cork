@@ -1,4 +1,4 @@
-from helios.http import URL
+from helios.url import URL
 from luna.test.assertion import assert_eq
 
 from app import Access, Archival, Board, Pin, Placement, Share, User

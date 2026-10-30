@@ -1,6 +1,6 @@
 from uuid import uuid4
 
-from helios.http import URL
+from helios.url import URL
 from luna.test.assertion import assert_eq, assert_in
 
 from app import Board, Pin, Placement, Share, User

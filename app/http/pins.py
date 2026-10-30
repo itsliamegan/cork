@@ -6,8 +6,9 @@ from helios.auth import Authenticator
 from helios.database import NotFoundError, Store
 from helios.form import Form, Rules, Submission, Submissions
 from helios.form.rule import Distinct, Rule, RuleError
-from helios.http import Request, Response, Status, URL
+from helios.http import Request, Response, Status
 from helios.routing import URLs
+from helios.url import URL
 from helios.view.views import Views
 
 from app import Access, Board, Ownership, Pin, Placement, User
@@ -45,7 +46,7 @@ def _referring_board_id(
 	urls = context.get(URLs)
 
 	match = urls.match(raw_url)
-	if match is None or match.route.name != "boards.show":
+	if match is None or not match.named("boards.show"):
 		return None
 	for placement in placements:
 		if placement.board_id == match.parameters["id"]:
@@ -62,7 +63,7 @@ def _pin_return_url(
 	urls = context.get(URLs)
 
 	match = urls.match(raw_url)
-	if match is not None and match.route.name == "pins.index":
+	if match is not None and match.named("pins.index"):
 		return urls.route("pins.index")
 	board_id = _referring_board_id(context, raw_url, placements)
 	if board_id is None:
@@ -115,7 +116,7 @@ def create(request: Request, context: Context) -> Response:
 	if errors:
 		submissions.flash(errors, request.input)
 		match = urls.match(form.return_to) if "return_to" not in errors else None
-		if match is not None and match.route.name == "boards.show":
+		if match is not None and match.named("boards.show"):
 			query = {"board_id": str(match.parameters["id"])}
 			return Response.redirect(urls.route("pins.new", query=query))
 		else:
@@ -133,7 +134,7 @@ def create(request: Request, context: Context) -> Response:
 	match = urls.match(form.return_to)
 	if (
 		match is not None
-		and match.route.name == "boards.show"
+		and match.named("boards.show")
 		and match.parameters["id"] in {board.id for board in boards}
 	):
 		return Response.redirect(urls.route("boards.show", match.parameters))
@@ -159,14 +160,12 @@ def new(request: Request, context: Context) -> Response:
 		selected_board_ids = [board.id]
 		return_to = urls.route("boards.show", {"id": board.id})
 	else:
-		board = None
 		selected_board_ids = []
 		return_to = urls.route("pins.index")
 
 	return views.render(
 		"pins/new",
 		{
-			"originating_board": board,
 			"placeable_boards": find_placeable_boards(context),
 			"selected_board_ids": set(
 				submission.value("board_ids", selected_board_ids)
