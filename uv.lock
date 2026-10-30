@@ -94,7 +94,7 @@ wheels = [
 [[package]]
 name = "helios"
 version = "0.1"
-source = { git = "https://github.com/itsliamegan/helios?subdirectory=packages%2Fframework&branch=main#9a1e7424319ead3a731741fedb31221a4472a76d" }
+source = { git = "https://github.com/itsliamegan/helios?subdirectory=packages%2Fframework&branch=main#08fdae0b758659b0b158fd45a952eb91da46119f" }
 dependencies = [
     { name = "helios-assets" },
     { name = "helios-url" },
@@ -108,7 +108,7 @@ dependencies = [
 [[package]]
 name = "helios-assets"
 version = "0.1"
-source = { git = "https://github.com/itsliamegan/helios?subdirectory=packages%2Fassets&branch=main#9a1e7424319ead3a731741fedb31221a4472a76d" }
+source = { git = "https://github.com/itsliamegan/helios?subdirectory=packages%2Fassets&branch=main#08fdae0b758659b0b158fd45a952eb91da46119f" }
 dependencies = [
     { name = "markupsafe" },
 ]
@@ -116,12 +116,12 @@ dependencies = [
 [[package]]
 name = "helios-url"
 version = "0.1"
-source = { git = "https://github.com/itsliamegan/helios?subdirectory=packages%2Furl&branch=main#9a1e7424319ead3a731741fedb31221a4472a76d" }
+source = { git = "https://github.com/itsliamegan/helios?subdirectory=packages%2Furl&branch=main#08fdae0b758659b0b158fd45a952eb91da46119f" }
 
 [[package]]
 name = "helios-view"
 version = "0.1"
-source = { git = "https://github.com/itsliamegan/helios?subdirectory=packages%2Fview&branch=main#9a1e7424319ead3a731741fedb31221a4472a76d" }
+source = { git = "https://github.com/itsliamegan/helios?subdirectory=packages%2Fview&branch=main#08fdae0b758659b0b158fd45a952eb91da46119f" }
 dependencies = [
     { name = "jinja2" },
     { name = "luna" },

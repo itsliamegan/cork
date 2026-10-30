@@ -1,5 +1,5 @@
 from helios.database import NotFoundError
-from helios.http import URL
+from helios.url import URL
 from luna.test.assertion import assert_eq, assert_raises
 
 from app import Access, Archival, Board, Pin, Placement, Share, User

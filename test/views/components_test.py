@@ -1,6 +1,6 @@
 from uuid import uuid4
 
-from helios.http import URL
+from helios.url import URL
 from helios.view import Attributes, Engine
 from luna.test.assertion import assert_in, assert_not_in, assert_raises
 

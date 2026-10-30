@@ -2,7 +2,7 @@ from typing import TYPE_CHECKING
 from uuid import UUID
 
 from helios.database import Model, Store, belongs_to, has_many
-from helios.http import URL
+from helios.url import URL
 
 from app.placement import Placement
 from app.user import User
