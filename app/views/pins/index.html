@@ -1,13 +1,10 @@
 {% layout "layouts/app" %}
 
-{% section "title" %}Cork - Pins{% endsection %}
+{% section "title" %}Pins{% endsection %}
 
-<header id="page-header">
-	<h2 id="page-title">Pins</h2>
-	<section id="page-actions">
-		<a class="button button--action" href="{{ urls.route("pins.new") }}">New pin</a>
-	</section>
-</header>
+{% section "actions" %}
+<a class="button button--action" href="{{ urls.route("pins.new") }}">New pin</a>
+{% endsection %}
 
 <section class="frame" data-controller="filter">
 	<header class="frame-header">

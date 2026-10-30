@@ -1,16 +1,12 @@
 {% layout "layouts/app" %}
 
-{% section "title" %}Cork - {{ pin.title }}{% endsection %}
+{% section "title" %}{{ pin.title }}{% endsection %}
 
-<header id="page-header">
-	<h2 id="page-title">{{ pin.title }}</h2>
-
-	{% if pin.is_editable_by(access) %}
-	<section id="page-actions">
-		<a class="button" href="{{ urls.route("pins.edit", {"id": pin.id}) }}">Edit</a>
-	</section>
-	{% endif %}
-</header>
+{% section "actions" %}
+{% if pin.is_editable_by(access) %}
+<a class="button" href="{{ urls.route("pins.edit", {"id": pin.id}) }}">Edit</a>
+{% endif %}
+{% endsection %}
 
 <section class="frame">
 	<header class="frame-header">
