@@ -3,7 +3,7 @@
 {% section "title" %}New pin{% endsection %}
 
 <form class="frame" method="POST" action="{{ urls.route("pins.create") }}" autocomplete="off">
-	<input type="hidden" name="return_to" value="{{ submission.value("return_to", return_to) }}" />
+	<input type="hidden" name="return_to" value="{{ submission.value("return_to", return_to) }}" >
 	<header class="frame-header">
 		<h3 class="frame-title">Details</h3>
 	</header>
