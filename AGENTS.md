@@ -30,6 +30,34 @@ file represents a current working state, not a historical record.
 - `just lint`: Run Ruff for formatting & linting.
 - `just check`: Run Ty for type checking.
 
+The development database and sessions in `./data` can be overwritten without
+asking. Seed representative dummy data there for browser checks, and leave it
+in place.
+
+## Design
+
+- Models hold domain rules and record changes. They never validate or
+  normalize user input. The HTTP layer does, through form objects when the
+  validation is worth extracting from a controller.
+- Models never shape data only for display, such as grouping rows or picking
+  fields for a page. That belongs in the controller. The canonical order of
+  pins on a board and of boards on the index is domain, so it lives in the
+  models (`Placement.arrange`, `Ordering.arrange`).
+
+## Code
+
+- Export domain classes from `app/__init__.py`, but not their exceptions.
+  Import an exception from its module (`from app.move import OutOfDate`).
+- Give a field that holds a UUID an `_id` suffix (`record_id`).
+- The generic name for a model instance is `record`.
+
+## Testing
+
+- HTTP tests do not assert on markup, such as page copy or hidden-field
+  values. Markup checks belong in the component tests in `test/views/`.
+- Test a form in the test file for the module that declares it, beside the
+  controller's tests (`PinForm` in `test/http/pins_test.py`).
+
 ## Workflow
 
 Always ensure the test suite passes, the formatter is clean, and the type
