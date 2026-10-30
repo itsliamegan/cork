@@ -1,22 +1,18 @@
 {% layout "layouts/app" %}
 
-{% section "title" %}Cork - {{ board.title }}{% endsection %}
+{% section "title" %}{{ board.title }}{% endsection %}
 
 {% section "turbo_control" %}
 <meta name="turbo-refresh-method" content="morph">
 <meta name="turbo-refresh-scroll" content="preserve">
 {% endsection %}
 
-<header id="page-header">
-	<h2 id="page-title">{{ board.title }}</h2>
-
-	<section id="page-actions">
-		{% if board.is_editable_by(access) %}
-		<a class="button" href="{{ urls.route("boards.edit", {"id": board.id}) }}">Edit</a>
-		{% endif %}
-		<a class="button button--action" href="{{ urls.route("pins.new", query={"board_id": board.id}) }}">New pin</a>
-	</section>
-</header>
+{% section "actions" %}
+{% if board.is_editable_by(access) %}
+<a class="button" href="{{ urls.route("boards.edit", {"id": board.id}) }}">Edit</a>
+{% endif %}
+<a class="button button--action" href="{{ urls.route("pins.new", query={"board_id": board.id}) }}">New pin</a>
+{% endsection %}
 
 {% if "archived" in flash %}
 {% set archived = flash["archived"] %}

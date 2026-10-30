@@ -1,14 +1,10 @@
 {% layout "layouts/app" %}
 
-{% section "title" %}Cork - Boards{% endsection %}
+{% section "title" %}Boards{% endsection %}
 
-<header id="page-header">
-	<h2 id="page-title">Boards</h2>
-
-	<section id="page-actions">
-		<a class="button button--action" href="{{ urls.route("boards.new") }}">New board</a>
-	</section>
-</header>
+{% section "actions" %}
+<a class="button button--action" href="{{ urls.route("boards.new") }}">New board</a>
+{% endsection %}
 
 <section
 	class="frame"

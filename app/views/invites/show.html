@@ -1,10 +1,6 @@
 {% layout "layouts/app" %}
 
-{% section "title" %}Cork - {% if invite.target_id %}New session{% else %}New invite{% endif %}{% endsection %}
-
-<header id="page-header">
-	<h2 id="page-title">{% if invite.target_id %}New session{% else %}New invite{% endif %}</h2>
-</header>
+{% section "title" %}{% if invite.target_id %}New session{% else %}New invite{% endif %}{% endsection %}
 
 <section class="frame">
 	<header class="frame-header">

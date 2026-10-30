@@ -33,5 +33,14 @@
 {% endsection %}
 
 <main id="page">
+	<header id="page-header">
+		<h2 id="page-title">{{ sections.title }}</h2>
+		{% if sections.actions %}
+		<section id="page-actions">
+			{{ sections.actions }}
+		</section>
+		{% endif %}
+	</header>
+
 	{{ content }}
 </main>

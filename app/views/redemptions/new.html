@@ -1,12 +1,8 @@
 {% layout "layouts/auth" %}
 
-{% section "title" %}Cork - {% if invite %}{% if invite.target_id %}New session{% else %}New account{% endif %}{% else %}Invite unavailable{% endif %}{% endsection %}
+{% section "title" %}{% if invite %}{% if invite.target_id %}New session{% else %}New account{% endif %}{% else %}Invite unavailable{% endif %}{% endsection %}
 
 {% if invite %}
-<header id="page-header">
-	<h2 id="page-title">{% if invite.target_id %}New session{% else %}New account{% endif %}</h2>
-</header>
-
 <form class="frame" action="{{ urls.route("redemptions.create") }}" method="POST">
 	<input type="hidden" name="token" value="{{ token }}">
 	{% if invite.target_id %}
@@ -37,10 +33,6 @@
 </form>
 
 {% else %}
-<header id="page-header">
-	<h2 id="page-title">Invite unavailable</h2>
-</header>
-
 <section class="frame">
 	<div class="frame-item frame-empty">This link is invalid or expired.</div>
 </section>

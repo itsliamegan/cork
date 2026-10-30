@@ -1,10 +1,6 @@
 {% layout "layouts/app" %}
 
-{% section "title" %}Cork - New pin{% endsection %}
-
-<header id="page-header">
-	<h2 id="page-title">New pin</h2>
-</header>
+{% section "title" %}New pin{% endsection %}
 
 <form class="frame" method="POST" action="{{ urls.route("pins.create") }}" autocomplete="off">
 	<input type="hidden" name="return_to" value="{{ submission.value("return_to", return_to) }}" />

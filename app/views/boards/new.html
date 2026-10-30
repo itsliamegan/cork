@@ -1,10 +1,6 @@
 {% layout "layouts/app" %}
 
-{% section "title" %}Cork - New board{% endsection %}
-
-<header id="page-header">
-	<h2 id="page-title">New board</h2>
-</header>
+{% section "title" %}New board{% endsection %}
 
 <form class="frame" action="{{ urls.route("boards.create") }}" method="POST" autocomplete="off">
 	<header class="frame-header">
