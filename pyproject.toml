@@ -35,25 +35,5 @@ module-root = ""
 helios = { git = "https://github.com/itsliamegan/helios", branch = "main", subdirectory = "packages/framework" }
 luna = { git = "https://github.com/itsliamegan/luna", branch = "main" }
 
-[tool.ruff]
-extend-include = ["bin/helios"]
-target-version = "py315"
-
-[tool.ruff.format]
-indent-style = "tab"
-nested-string-quote-style = "preferred"
-quote-style = "double"
-
-[tool.ruff.lint]
-ignore = [
-	"RUF012",
-]
-
-[tool.ruff.lint.isort]
-case-sensitive = true
-known-first-party = ["app"]
-force-sort-within-sections = true
-order-by-type = false
-
 [tool.ty.src]
 include = ["**", "bin/helios"]
