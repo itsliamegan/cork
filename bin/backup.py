@@ -13,7 +13,8 @@ from typing import Self
 
 from boto3 import client
 from helios.config import ConfigError, Environment
-import helios.database.config
+from helios.database import Database
+from helios.database.registry import Registry
 from luna.cli import Program, option
 
 import app.config
@@ -58,7 +59,13 @@ class Backup(Program):
 
 	def run(self):
 		environment = Environment.load(env_file=app.config.ENV_FILE)
-		database = app.config.database(environment)
+		database_config = app.config.database(environment)
+		# The backup copies the database file and reads no models.
+		database = Database(
+			database_config.path,
+			Registry([]),
+			busy_timeout=database_config.busy_timeout,
+		)
 		try:
 			config = Config.read(environment)
 		except ConfigError as error:
@@ -80,7 +87,7 @@ class Backup(Program):
 def backup(
 	s3,
 	archive: Archive,
-	database: helios.database.config.Config,
+	database: Database,
 	dry: bool,
 ):
 	"""Upload a compressed snapshot of the database."""
@@ -133,17 +140,14 @@ def prune(s3, archive: Archive, keep: int, dry: bool):
 		raise SystemExit(1)
 
 
-def snapshot(database: helios.database.config.Config) -> bytes:
+def snapshot(database: Database) -> bytes:
 	"""Copy the live database with VACUUM INTO, and read the copy."""
 
-	source_uri = f"{database.path.resolve().as_uri()}?mode=ro"
 	with TemporaryDirectory() as directory:
 		destination_file = Path(directory, "snapshot.sqlite")
-		source = sqlite3.connect(source_uri, uri=True)
-		try:
-			source.execute("VACUUM INTO ?", (str(destination_file),))
-		finally:
-			source.close()
+		with database.connection(read_only=True) as connection:
+			cursor = connection.execute("VACUUM INTO ?", (str(destination_file),))
+			cursor.close()
 
 		destination = sqlite3.connect(destination_file)
 		try:
