@@ -1,8 +1,6 @@
 from uuid import UUID
 
 from helios.database import Model, NotFoundError, Store
-from helios.http import Status
-from helios.http.error import HTTPError
 
 from app.archival import Archival
 from app.board import Board
@@ -12,9 +10,7 @@ from app.placement import Placement
 from app.user import User
 
 
-class NotPermitted(HTTPError):
-	status = Status.FORBIDDEN
-
+class NotPermitted(Exception):
 	def __init__(self, record: Model):
 		self.record = record
 		super().__init__(f"{type(record).__name__} {record.id} not permitted")

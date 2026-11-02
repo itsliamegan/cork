@@ -1,8 +1,9 @@
 import helios.assets.provider
 import helios.auth
 from helios.config import Environment
-import helios.database
+import helios.database.provider
 import helios.form
+from helios.http import Status
 import helios.limit
 from helios.routing import Router
 import helios.session
@@ -10,6 +11,7 @@ import helios.view.provider
 from helios.wsgi import Application
 
 from app import User, config, models
+from app.access import NotPermitted
 from app.http import routes
 from app.views import components, helpers
 
@@ -30,9 +32,10 @@ class Application(Application):
 					config.session(environment),
 					config.session_driver(environment),
 				),
-				helios.database.Provider(config.database(environment), models),
+				helios.database.provider.Provider(config.database(environment), models),
 				helios.form.Provider(),
 				helios.auth.Provider(User),
 			],
 			[helios.limit.Middleware(config.rate_limit(environment))],
 		)
+		self.rescue(NotPermitted, Status.FORBIDDEN)

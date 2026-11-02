@@ -3,7 +3,7 @@
 {% section "title" %}Edit board{% endsection %}
 
 <form class="frame" action="{{ urls.route("boards.update", {"id": board.id}) }}" method="POST" autocomplete="off">
-	<input type="text" name="_method" value="PUT" hidden>
+	{{ method("PUT") }}
 	<input type="hidden" name="return_to" value="{{ submission.value("return_to", return_to) }}">
 
 	<header class="frame-header">

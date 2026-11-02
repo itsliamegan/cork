@@ -22,5 +22,5 @@ class ConfirmButton(Component):
 			action=self.action,
 			confirm=self.confirm,
 			content=self.message,
-			method=self.method,
+			form_method=self.method,
 		)

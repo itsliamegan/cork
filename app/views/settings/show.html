@@ -50,7 +50,7 @@
 	</header>
 
 	<form class="frame-item setting-item" action="{{ urls.route("sessions.delete") }}" method="POST" data-turbo="false">
-		<input type="hidden" name="_method" value="DELETE">
+		{{ method("DELETE") }}
 		<span class="setting-label">This browser</span>
 		<span class="setting-note">Active</span>
 		<button class="button" type="submit">Sign out</button>
@@ -61,7 +61,7 @@
 	</header>
 
 	<form action="{{ urls.route("settings.update") }}" method="POST">
-		<input type="text" name="_method" value="PUT" hidden>
+		{{ method("PUT") }}
 		<input type="hidden" name="return_to" value="{{ return_to }}">
 		<label class="frame-item setting-option">
 			<input
