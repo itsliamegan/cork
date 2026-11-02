@@ -8,7 +8,16 @@ read it directly rather than guessing at its API. See Helios' own README for the
 module breakdown.
 
 Local changes to `../helios/` or `../luna/` reach Cork only once pushed and
-re-locked with `uv lock --upgrade-package helios` (or `luna`).
+re-locked. Helios is five packages from one repository. Upgrading `helios` alone
+leaves the lock unchanged, so upgrade all five together:
+
+```sh
+uv lock --upgrade-package helios --upgrade-package helios-assets \
+	--upgrade-package helios-database --upgrade-package helios-url \
+	--upgrade-package helios-view
+```
+
+Re-lock Luna with `uv lock --upgrade-package luna`.
 
 ### Friction
 
