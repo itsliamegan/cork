@@ -8,7 +8,7 @@ class ConfirmDialog(Component):
 	action: str
 	confirm: str
 	content: str
-	method: str | None = None
+	form_method: str | None = None
 
 	@property
 	def dialog_id(self) -> str:

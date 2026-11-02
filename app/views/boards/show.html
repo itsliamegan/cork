@@ -21,7 +21,7 @@
 	<button class="button button--small" type="submit" form="archive-notice-{{ archived.archival_id }}-unarchive">Unarchive</button>
 </p>
 <form id="archive-notice-{{ archived.archival_id }}-unarchive" action="{{ urls.route("archivals.delete", {"id": archived.archival_id}) }}" method="POST" hidden>
-	<input type="hidden" name="_method" value="DELETE">
+	{{ method("DELETE") }}
 </form>
 {% endif %}
 

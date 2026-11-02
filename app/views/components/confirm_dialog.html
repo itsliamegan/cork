@@ -6,7 +6,7 @@
 		<button class="button" command="close" commandfor="{{ component.dialog_id }}">Cancel</button>
 		<button class="button button--danger" type="submit" form="{{ component.form_id }}">{{ confirm }}</button>
 		<form id="{{ component.form_id }}" action="{{ action }}" method="POST" hidden>
-			{% if method %}<input type="text" name="_method" value="{{ method }}" hidden>{% endif %}
+			{% if form_method %}{{ method(form_method) }}{% endif %}
 		</form>
 	</footer>
 </dialog>
