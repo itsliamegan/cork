@@ -141,7 +141,10 @@ def prune(s3, archive: Archive, keep: int, dry: bool):
 
 
 def snapshot(database: Database) -> bytes:
-	"""Copy the live database with VACUUM INTO, and read the copy."""
+	"""Copy the live database with VACUUM INTO, delete its sessions, and read the copy.
+
+	Restoring the snapshot signs everyone out.
+	"""
 
 	with TemporaryDirectory() as directory:
 		destination_file = Path(directory, "snapshot.sqlite")
@@ -149,8 +152,13 @@ def snapshot(database: Database) -> bytes:
 			cursor = connection.execute("VACUUM INTO ?", (str(destination_file),))
 			cursor.close()
 
-		destination = sqlite3.connect(destination_file)
+		destination = sqlite3.connect(destination_file, autocommit=True)
 		try:
+			# A session can hold a flashed recovery code in plaintext. Secure
+			# delete overwrites the deleted rows, so no copy of them is left in
+			# the file's free pages.
+			destination.execute("PRAGMA secure_delete = ON")
+			destination.execute("DELETE FROM sessions")
 			(result,) = destination.execute("PRAGMA quick_check").fetchone()
 		finally:
 			destination.close()

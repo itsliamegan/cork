@@ -19,7 +19,6 @@ It is built on the [Helios](https://tangled.org/liamegan.com/helios) framework.
 - `public/`: files served as they are, such as the favicons.
 - `database/migrations/`: numbered SQL migrations, applied with
   `just migrate`.
-- `/var/lib/cork/store.sqlite`, `/var/lib/cork/sessions.json`: the persisted
-  state, by default. A fresh environment needs `sessions.json` containing `{}`
-  and a migrated database.
+- `/var/lib/cork/store.sqlite`: the persisted state, by default. A fresh
+  environment needs a migrated database.
 - `bin/`: the `helios` program (`serve`), the migration runner, and backups.
