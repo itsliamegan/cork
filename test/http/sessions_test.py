@@ -1,13 +1,12 @@
 from datetime import UTC, datetime, timedelta
-import json
-from uuid import uuid4
 
+from helios.auth.authenticator import SESSION_KEY
 from helios.auth.password import Digest
+import helios.auth.test
 from helios.http import Input
 from luna.test.assertion import (
 	assert_eq,
-	assert_in,
-	assert_not_in,
+	assert_is,
 	assert_not_none,
 	assert_that,
 )
@@ -130,49 +129,23 @@ def test_guard_redirects_to_new_session():
 def test_stored_session_remains_authenticated():
 	with TestApplication() as app:
 		user = app.store.create(User, name="User")
-		session_id = uuid4()
-		app.sessions_file.write_text(
-			json.dumps(
-				{
-					str(session_id): {
-						"items": {"_user_id": str(user.id)},
-						"last_active_at": None,
-					}
-				}
-			)
-		)
-		app.client.set_cookie("session_id", str(session_id))
+		helios.auth.test.sign_in(app.client, user)
+		token = assert_not_none(app.client.get_cookie("session_id")).value
 
 		res = app.client.get("/boards/")
-		persisted = json.loads(app.sessions_file.read_text())
 
 		assert_eq(res.status_code, 200)
-		assert_eq(
-			assert_not_none(app.client.get_cookie("session_id")).value, str(session_id)
-		)
-		assert_in(str(session_id), persisted)
+		assert_eq(assert_not_none(app.client.get_cookie("session_id")).value, token)
 
 
 def test_expired_session_is_rejected():
 	with TestApplication() as app:
 		user = app.store.create(User, name="User")
-		session_id = uuid4()
-		app.sessions_file.write_text(
-			json.dumps(
-				{
-					str(session_id): {
-						"items": {"_user_id": str(user.id)},
-						"last_active_at": (
-							datetime.now(UTC) - timedelta(days=31)
-						).isoformat(),
-					}
-				}
-			)
-		)
-		app.client.set_cookie("session_id", str(session_id))
+		with app.client.session() as session:
+			session[SESSION_KEY] = str(user.id)
+			session.last_active_at = datetime.now(UTC) - timedelta(days=31)
 
 		res = app.client.get("/boards/")
-		persisted = json.loads(app.sessions_file.read_text())
 
 		assert_eq(res.status_code, 302)
-		assert_not_in(str(session_id), persisted)
+		assert_is(app.client.get_cookie("session_id"), None)

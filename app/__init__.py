@@ -1,3 +1,6 @@
+from helios.database import Registry
+
+from app import invite, recovery
 from app.access import Access
 from app.archival import Archival
 from app.board import Board
@@ -26,17 +29,21 @@ __all__ = [
 	"Recovery",
 	"Share",
 	"User",
-	"models",
+	"registry",
 ]
 
-models = [
-	Archival,
-	Board,
-	Invite,
-	Ordering,
-	Pin,
-	Placement,
-	Recovery,
-	Share,
-	User,
-]
+
+def registry() -> Registry:
+	registry = Registry()
+	registry.model(Archival)
+	registry.model(Board)
+	registry.model(Invite)
+	registry.model(Ordering)
+	registry.model(Pin)
+	registry.model(Placement)
+	registry.model(Recovery)
+	registry.model(Share)
+	registry.model(User)
+	registry.codec(invite.Codec())
+	registry.codec(recovery.Codec())
+	return registry

@@ -1,20 +1,20 @@
 from collections.abc import Iterable
-import json
 from pathlib import Path
 import re
 from tempfile import TemporaryDirectory
-from uuid import UUID, uuid4
+from uuid import UUID
 
 from helios.auth.password import Digest
+import helios.auth.test
 from helios.config import Environment
-from helios.database import Model, Store
+from helios.database import Model, Registry, Store
 import helios.database.config
 from helios.database.migration import Migrations, Migrator
 from helios.database.sqlite import Connection
 from helios.wsgi.test import TestClient
 from luna.test.assertion import assert_eq
 
-from app import User, config, models
+from app import User, config, registry
 from app.wsgi import Application
 
 Digest.method = "pbkdf2:sha256:1"
@@ -48,7 +48,7 @@ class TestStore:
 			raise
 
 	def __enter__(self) -> Store:
-		return Store(self.connection, models)
+		return Store(self.connection, registry())
 
 	def __exit__(self, exc_type, exc, traceback):
 		try:
@@ -62,17 +62,10 @@ class TestApplication(Application):
 		self.temp_dir = TemporaryDirectory()
 		try:
 			self.dir = Path(self.temp_dir.name)
-			self.sessions_file = self.dir.joinpath("sessions.json")
-			self.sessions_file.write_text("{}")
-
 			super().__init__(
 				Environment(
 					{
 						"APP_DATABASE_FILE": str(self.dir.joinpath("store.sqlite")),
-						"APP_SESSION_STORE_FILE": str(self.sessions_file),
-						"APP_SESSION_LOCK_FILE": str(
-							self.dir.joinpath("sessions.lock")
-						),
 					}
 				)
 			)
@@ -96,21 +89,10 @@ class TestApplication(Application):
 	def refresh(self):
 		"""Replace the store, so later reads see what a request committed."""
 
-		self.store = Store(self.connection, models)
+		self.store = Store(self.connection, self.container.get(Registry))
 
 	def sign_in(self, user: User):
-		session_id = uuid4()
-		self.sessions_file.write_text(
-			json.dumps(
-				{
-					str(session_id): {
-						"items": {"_user_id": str(user.id)},
-						"last_active_at": None,
-					}
-				}
-			)
-		)
-		self.client.set_cookie("session_id", str(session_id))
+		helios.auth.test.sign_in(self.client, user)
 		res = self.client.get("/boards/")
 		assert_eq(res.status_code, 200)
 
