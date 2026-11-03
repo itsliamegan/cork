@@ -10,7 +10,7 @@ import helios.session
 import helios.view.provider
 from helios.wsgi import Application
 
-from app import User, config, models
+from app import User, config, registry
 from app.access import NotPermitted
 from app.http import routes
 from app.views import components, helpers
@@ -28,11 +28,11 @@ class Application(Application):
 					helpers=helpers,
 					components=components,
 				),
-				helios.session.Provider(
-					config.session(environment),
-					config.session_driver(environment),
+				helios.session.Provider(config.session(environment)),
+				helios.database.provider.Provider(
+					config.database(environment),
+					registry(),
 				),
-				helios.database.provider.Provider(config.database(environment), models),
 				helios.form.Provider(),
 				helios.auth.Provider(User),
 			],

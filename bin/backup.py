@@ -63,7 +63,7 @@ class Backup(Program):
 		# The backup copies the database file and reads no models.
 		database = Database(
 			database_config.path,
-			Registry([]),
+			Registry(),
 			busy_timeout=database_config.busy_timeout,
 		)
 		try:

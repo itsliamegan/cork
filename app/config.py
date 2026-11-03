@@ -7,7 +7,7 @@ from helios.config import Environment
 import helios.database.config
 import helios.limit.config
 import helios.session.config
-import helios.session.file
+import helios.session.driver.database
 from helios.url import URL
 import helios.view.config
 
@@ -48,14 +48,8 @@ def database(environment: Environment) -> helios.database.config.Config:
 def session(environment: Environment) -> helios.session.config.Config:
 	base_url = environment.url("APP_BASE_URL", BASE_URL)
 	return helios.session.config.Config(
+		helios.session.driver.database.Config(),
 		secure=base_url.scheme == "https",
-	)
-
-
-def session_driver(environment: Environment) -> helios.session.file.Driver:
-	return helios.session.file.Driver(
-		environment.path("APP_SESSION_STORE_FILE", Path(DATA_DIR, "sessions.json")),
-		environment.path("APP_SESSION_LOCK_FILE", Path(DATA_DIR, "sessions.lock")),
 	)
 
 
