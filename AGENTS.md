@@ -39,9 +39,8 @@ file represents a current working state, not a historical record.
 - `just lint`: Run Ruff for formatting & linting.
 - `just check`: Run Ty for type checking.
 
-The development database and sessions in `./data` can be overwritten without
-asking. Seed representative dummy data there for browser checks, and leave it
-in place.
+The development database in `./data` can be overwritten without asking. Seed
+representative dummy data there for browser checks, and leave it in place.
 
 ## Design
 
