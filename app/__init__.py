@@ -35,6 +35,7 @@ __all__ = [
 
 def registry() -> Registry:
 	registry = Registry()
+
 	registry.model(Archival)
 	registry.model(Board)
 	registry.model(Invite)
@@ -44,6 +45,8 @@ def registry() -> Registry:
 	registry.model(Recovery)
 	registry.model(Share)
 	registry.model(User)
+
 	registry.codec(invite.Codec())
 	registry.codec(recovery.Codec())
+
 	return registry
